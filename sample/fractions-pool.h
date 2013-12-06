@@ -6,6 +6,11 @@
 class FractionsPool
 {
 public:
+    enum Fractions
+    {
+        FR_FRACTION1 = 0,
+        FR_COUNT
+    };
 //    Fraction1 fraction1;
     //Fraction2 fraction2;
     

@@ -11,8 +11,8 @@ class Axis
 public:
     Axis();
     
-    /// Read section from config file
-    void configure(const PropertyTree& properties);
+    void uniformInit(double min, double max, unsigned int count);
+    void specificInit(const std::string& fileName);
     
     /// Get segment's middle coordinate value by point's number
     double getPoint(size_t number) const;

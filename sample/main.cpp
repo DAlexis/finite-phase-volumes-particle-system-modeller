@@ -9,7 +9,9 @@ int main()
     cout << "Starting modelling" << endl;
     
     GridDescription<1> descr;
-    Grid<1, 1> grid;
+    Grid<1, double> grid;
+    
+    grid.constructGrid(descr);
     
     Model model;
     cout << "Modelling done" << endl;

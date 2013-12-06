@@ -12,6 +12,34 @@ Axis::Axis() :
 {
 }
 
+void Axis::uniformInit(double min, double max, unsigned int count)
+{
+    m_minValue = min;
+    m_maxValue = max;
+    m_count = count;
+    m_mode = UNIFORM;
+}
+
+void Axis::specificInit(const std::string& fileName)
+{
+    std::ifstream file(fileName);
+    if (file.eof()) throw ExSegmentFileIsInvalid();
+    
+    file >> m_minValue;
+    double prevBorder;
+    double border = m_minValue;
+    while (not file.eof())
+    {
+        prevBorder = border;
+        file >> border;
+        if (prevBorder == border) continue; // To delect last line
+        m_points.push_back( (border+prevBorder) / 2 );
+    }
+    m_maxValue = border;
+    m_count = m_points.size();
+    file.close();
+}
+
 double Axis::getPoint(size_t number) const
 {
     switch(m_mode)
@@ -98,48 +126,6 @@ double Axis::getMinSegmentCenter() const
 double Axis::getMaxSegmentCenter() const
 {
     return getPoint(m_count-1);
-}
-
-void Axis::configure(const PropertyTree& properties)
-{
-    using namespace std;
-    m_name = properties.get<string>("name");
-    const string divType = properties.get<string>("division");
-    if (divType == "uniform")
-    {
-        m_mode = UNIFORM;
-        m_minValue = properties.get<double>("min_value");
-        m_maxValue = properties.get<double>("max_value");
-        m_count = properties.get<size_t>("segments_count");
-    } else if (divType == "specific")
-    {
-        m_mode = SPECIFIC;
-        const string fileName = properties.get<string>("segments_file");
-        try {
-            ifstream file(fileName);
-            if (file.eof()) throw ExSegmentFileIsInvalid();
-            
-            file >> m_minValue;
-            double prevBorder;
-            double border = m_minValue;
-            while (not file.eof())
-            {
-                prevBorder = border;
-                file >> border;
-                if (prevBorder == border) continue; // To delect last line
-                m_points.push_back( (border+prevBorder) / 2 );
-            }
-            m_maxValue = border;
-            m_count = m_points.size();
-            file.close();
-        }
-        catch(std::exception)
-        {
-            throw ExSegmentFileIsInvalid();
-        }
-        /// @todo Implement here
-    } else
-        throw ExInvalidConfig();
 }
 
 void Axis::sortPoints()
