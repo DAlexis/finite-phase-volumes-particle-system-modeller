@@ -32,6 +32,9 @@ public:
     /// Maximal coordinate of segment's center
     double getMaxSegmentCenter() const;
     
+    /// Set axis human-readable name (for output etc.)
+    void setName(const std::string& name);
+    
     class Exception : public std::exception {};
     
     class ExInvalidConfig : public Exception

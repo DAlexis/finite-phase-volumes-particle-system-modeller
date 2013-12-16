@@ -30,7 +30,10 @@ public:
         volume = 1.0;
     }
     
-    void init(void* parent) { parentGrid = parent; }
+    void init(void* parent)
+    {
+        parentGrid = parent;
+    }
 };
 
 template <int AxisCount>
@@ -61,12 +64,12 @@ public:
         // Allocating memory
         elements = new GridElementType[elementsCount];
         
+        // Initialising size, neighbor pointers, etc.
+        recursiveInitGridElements(0);
+        
         // Setting grid pointer
         for (size_t i = 0; i != elementsCount; i++)
             elements[i].init(this);
-        
-        // Initialising size, neighbor pointers, etc.
-        recursiveInitGridElements(0);
     }
     
     Grid() : elements(0), elementsCount(0) {}

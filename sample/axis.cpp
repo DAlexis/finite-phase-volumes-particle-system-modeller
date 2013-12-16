@@ -128,6 +128,10 @@ double Axis::getMaxSegmentCenter() const
     return getPoint(m_count-1);
 }
 
+void Axis::setName(const std::string& name)
+{
+}
+
 void Axis::sortPoints()
 {
     std::sort (m_points.begin(), m_points.end());

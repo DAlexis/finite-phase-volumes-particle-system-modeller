@@ -1,6 +1,8 @@
 #ifndef FRACTION_1_H_INCLUDED
 #define FRACTION_1_H_INCLUDED
 
+#include "grid-template.h"
+
 class Fraction1Cell
 {
 public:
@@ -23,13 +25,14 @@ private:
 
 };
 
-class Fraction1Space
+class Fraction1Space : public Grid<1, Fraction1Cell>
 {
 public:
-    Fraction1Cell* cells;
+    void init(const GridElement<1, Fraction1Space>* parentCell);
     
 private:
-
+    /// Space grid element, where this fraction space located
+    GridElement<1, Fraction1Space> *parent;
 };
 
 
