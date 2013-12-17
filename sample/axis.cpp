@@ -1,6 +1,5 @@
 #include "axis.h"
 #include "math-funcs.h"
-#include "config-reader.h"
 #include <algorithm>
 #include <fstream>
 

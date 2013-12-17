@@ -11,8 +11,8 @@ public:
         FR_FRACTION1 = 0,
         FR_COUNT
     };
-//    Fraction1 fraction1;
-    //Fraction2 fraction2;
+    
+    Fraction1Space fraction1;
     
 private:
     

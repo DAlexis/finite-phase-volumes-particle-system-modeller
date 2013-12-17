@@ -8,6 +8,6 @@ cpp_sources =   main.cpp \
                 space.cpp \
                 model.cpp \
                 axis.cpp \
-                config-reader.cpp
+                fraction-1.cpp
 
 include $(HOME_DIR)/Makefile.inc

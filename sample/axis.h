@@ -1,7 +1,6 @@
 #ifndef AXIS_H_INCLUDED
 #define AXIS_H_INCLUDED
 
-#include "config-reader.h"
 #include <string>
 #include <vector>
 

@@ -18,11 +18,16 @@ public:
         FRACTION1_COORDS_COUNT
     };
     
-    /// Fraction variables
+    /// Space coordinates derivatives
+    double xDer;
     
+    /// Fraction coordinates derivatives
+    double vxDer;
+    
+    void calculateDerivatives();
     
 private:
-
+    
 };
 
 class Fraction1Space : public Grid<1, Fraction1Cell>
@@ -30,16 +35,13 @@ class Fraction1Space : public Grid<1, Fraction1Cell>
 public:
     void init(const GridElement<1, Fraction1Space>* parentCell);
     
+    Fraction1Space();
+    
 private:
     /// Space grid element, where this fraction space located
     GridElement<1, Fraction1Space> *parent;
-};
-
-
-
-class Fraction2
-{
-
+    
+    GridDescription<1> gridDescription;
 };
 
 #endif // FRACTION_1_H_INCLUDED
