@@ -37,6 +37,8 @@ public:
                 prev[i] = 0; next[i] = 0; size[i] = 0; coordinates[i] = 0;
             }
             volume = 1.0;
+            // Tell associated data where it associated to
+            data.init(this);
         }
         
         void init(void* parent)

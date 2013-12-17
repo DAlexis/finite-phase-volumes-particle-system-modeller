@@ -3,6 +3,8 @@
 
 #define DOUBLE_NULL        1e-8
 
+#define SPACE_DIMENSION     1
+
 #include <math.h>
 
 typedef unsigned int uint;

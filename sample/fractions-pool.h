@@ -16,8 +16,12 @@ public:
     
     FractionsPool();
     
-private:
+    void init(void* parentGridElement);
+
+    void* parent;
     
+private:
+
 };
 
 #endif // FRACTIONS_POOL_H_INCLUDED

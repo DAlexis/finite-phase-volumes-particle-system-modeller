@@ -4,11 +4,15 @@
 #include "grid-template.h"
 
 // This fraction cell, this fraction space and fractions pool to use pointer to it 
-class FractionsPool;
-class Fraction1Space;
-class Fraction1Cell;
 
-typedef Grid<1, Fraction1Cell> Fraction1GridType;
+class Fraction1Cell;
+class Fraction1Space;
+class FractionsPool;
+class Space;
+
+#define FRACTION1_SPACE_DIMENSION   1
+
+typedef Grid<FRACTION1_SPACE_DIMENSION, Fraction1Cell> Fraction1GridType;
 
 class Fraction1Cell
 {
@@ -26,10 +30,10 @@ public:
     };
     
     /// Space coordinates derivatives
-    double xDer;
+    double spaceCoordsDerivatives[SPACE_DIMENSION];
     
     /// Fraction coordinates derivatives
-    double vxDer;
+    double fractionCoordsDerivatives[FRACTION1_SPACE_DIMENSION];
     
     void calculateDerivatives();
     
@@ -39,15 +43,19 @@ public:
     
 private:
     Fraction1GridType::GridElement* parent;
+    
+    void* getSpaceCell();
+    void* getFractionPool();
 };
 
 class Fraction1Space : public Fraction1GridType
 {
 public:
     Fraction1Space(FractionsPool* parentFractionsPool);
+    FractionsPool* parent;
     
 private:
-    FractionsPool* parent;
+    
     Fraction1GridType::GridDescription gridDescription;
 };
 

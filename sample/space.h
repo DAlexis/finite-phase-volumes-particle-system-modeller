@@ -3,12 +3,18 @@
 
 #include "fractions-pool.h"
 #include "grid-template.h"
+#include "global-defines.h"
 
-typedef Grid<1, FractionsPool> SpaceGridType;
+typedef Grid<SPACE_DIMENSION, FractionsPool> SpaceGridType;
 
-class Space : SpaceGridType
+class Space : public SpaceGridType
 {
 public:
+    enum SpaceCoordinates {
+        SPACE_COORDS_X = 0,
+        SPACE_COORDS_COUNT /// @todo This duplicate global define. May be I need to move it to global-defines.h
+    };
+    
     Space();
     
 private:
