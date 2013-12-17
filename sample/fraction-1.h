@@ -2,6 +2,7 @@
 #define FRACTION_1_H_INCLUDED
 
 #include "grid-template.h"
+#include "fraction-cell-template.h"
 
 // This fraction cell, this fraction space and fractions pool to use pointer to it 
 
@@ -10,11 +11,14 @@ class Fraction1Space;
 class FractionsPool;
 class Space;
 
+/// @todo I really need to move all enums to global include file
+
 #define FRACTION1_SPACE_DIMENSION   1
+#define FRACTION1_QUANTITIES_COUNT  1
 
 typedef Grid<FRACTION1_SPACE_DIMENSION, Fraction1Cell> Fraction1GridType;
 
-class Fraction1Cell
+class Fraction1Cell : public FractionCell<SPACE_DIMENSION, FRACTION1_SPACE_DIMENSION, FRACTION1_QUANTITIES_COUNT>
 {
 public:
     enum Variables
@@ -28,12 +32,6 @@ public:
         FRACTION1_COORDS_VX = 0,
         FRACTION1_COORDS_COUNT
     };
-    
-    /// Space coordinates derivatives
-    double spaceCoordsDerivatives[SPACE_DIMENSION];
-    
-    /// Fraction coordinates derivatives
-    double fractionCoordsDerivatives[FRACTION1_SPACE_DIMENSION];
     
     void calculateDerivatives();
     
@@ -54,6 +52,7 @@ public:
     Fraction1Space(FractionsPool* parentFractionsPool);
     FractionsPool* parent;
     
+    void calculateFlowsEvolution(double dt);
 private:
     
     Fraction1GridType::GridDescription gridDescription;
