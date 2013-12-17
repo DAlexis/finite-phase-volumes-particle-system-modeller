@@ -3,6 +3,13 @@
 
 #include "grid-template.h"
 
+// This fraction cell, this fraction space and fractions pool to use pointer to it 
+class FractionsPool;
+class Fraction1Space;
+class Fraction1Cell;
+
+typedef Grid<1, Fraction1Cell> Fraction1GridType;
+
 class Fraction1Cell
 {
 public:
@@ -26,22 +33,22 @@ public:
     
     void calculateDerivatives();
     
-private:
+    Fraction1Cell();
     
+    void init(Fraction1GridType::GridElement* parentGridElement);
+    
+private:
+    Fraction1GridType::GridElement* parent;
 };
 
-class Fraction1Space : public Grid<1, Fraction1Cell>
+class Fraction1Space : public Fraction1GridType
 {
 public:
-    void init(const GridElement<1, Fraction1Space>* parentCell);
-    
-    Fraction1Space();
+    Fraction1Space(FractionsPool* parentFractionsPool);
     
 private:
-    /// Space grid element, where this fraction space located
-    GridElement<1, Fraction1Space> *parent;
-    
-    GridDescription<1> gridDescription;
+    FractionsPool* parent;
+    Fraction1GridType::GridDescription gridDescription;
 };
 
 #endif // FRACTION_1_H_INCLUDED

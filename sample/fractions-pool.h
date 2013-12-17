@@ -14,6 +14,8 @@ public:
     
     Fraction1Space fraction1;
     
+    FractionsPool();
+    
 private:
     
 };

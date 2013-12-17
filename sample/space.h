@@ -4,13 +4,15 @@
 #include "fractions-pool.h"
 #include "grid-template.h"
 
-class SpaceGrid : public Grid<1, FractionsPool>
+typedef Grid<1, FractionsPool> SpaceGridType;
+
+class Space : SpaceGridType
 {
 public:
-    SpaceGrid();
+    Space();
     
 private:
-    GridDescription<1> gridDescription;
+    SpaceGridType::GridDescription gridDescription;
 };
 
 #endif // LOCATION_SPACE_H_INCLUDED

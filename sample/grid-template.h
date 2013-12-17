@@ -5,51 +5,47 @@
 #include "global-defines.h"
 
 template <int AxisCount, class AssociatedData>
-class GridElement
-{
-public:
-    /// Fraction coordinates
-    double coordinates[AxisCount];
-    double size[AxisCount];
-    double volume;
-    
-    /// Neighbors pointers
-    GridElement* prev[AxisCount];
-    GridElement* next[AxisCount];
-    
-    void* parentGrid;
-    
-    AssociatedData data;
-    
-    GridElement() : parentGrid(0)
-    {
-        for (unsigned int i=0; i<AxisCount; i++)
-        {
-            prev[i] = 0; next[i] = 0; size[i] = 0; coordinates[i] = 0;
-        }
-        volume = 1.0;
-    }
-    
-    void init(void* parent)
-    {
-        parentGrid = parent;
-    }
-};
-
-template <int AxisCount>
-class GridDescription
-{
-public:
-    Axis axis[AxisCount];
-};
-
-template <int AxisCount, class AssociatedData>
 class Grid
 {
 public:
-    typedef GridElement<AxisCount, AssociatedData> GridElementType;
+    class GridDescription
+    {
+    public:
+        Axis axis[AxisCount];
+    };
     
-    void constructGrid(const GridDescription<AxisCount>& description)
+    class GridElement
+    {
+    public:
+        /// Fraction coordinates
+        double coordinates[AxisCount];
+        double size[AxisCount];
+        double volume;
+        
+        /// Neighbors pointers
+        GridElement* prev[AxisCount];
+        GridElement* next[AxisCount];
+        
+        void* parentGrid;
+        
+        AssociatedData data;
+        
+        GridElement() : parentGrid(0)
+        {
+            for (unsigned int i=0; i<AxisCount; i++)
+            {
+                prev[i] = 0; next[i] = 0; size[i] = 0; coordinates[i] = 0;
+            }
+            volume = 1.0;
+        }
+        
+        void init(void* parent)
+        {
+            parentGrid = parent;
+        }
+    };
+    
+    void constructGrid(const GridDescription& description)
     {
         gridDescription = &description;
         // Calculating offsets
@@ -62,7 +58,7 @@ public:
             currentCoords_d[i] = 0.0;
         }
         // Allocating memory
-        elements = new GridElementType[elementsCount];
+        elements = new GridElement[elementsCount];
         
         // Initialising size, neighbor pointers, etc.
         recursiveInitGridElements(0);
@@ -75,7 +71,7 @@ public:
     Grid() : elements(0), elementsCount(0) {}
     ~Grid() { if (elements) delete[] elements; }
     
-    GridElementType* accessElement(const uint* coords)
+    GridElement* accessElement(const uint* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
@@ -85,7 +81,7 @@ public:
         return &(elements[resInd]);
     }
 
-    GridElementType* accessElement(const double* coords)
+    GridElement* accessElement(const double* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
@@ -97,8 +93,8 @@ public:
 
     
 protected:
-    const GridDescription<AxisCount>* gridDescription;
-    GridElementType* elements;
+    const GridDescription* gridDescription;
+    GridElement* elements;
     uint offsets[AxisCount];
     uint elementsCount;
     
@@ -118,7 +114,7 @@ protected:
             }
         } else {
             // Initialising GridElement
-            GridElementType *currentElement = accessElement(currentCoords_ui);
+            GridElement *currentElement = accessElement(currentCoords_ui);
             currentElement->volume = 1;
             for (uint i=0; i!=AxisCount; i++)
             {

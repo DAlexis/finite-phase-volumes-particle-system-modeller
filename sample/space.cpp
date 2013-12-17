@@ -1,6 +1,6 @@
 #include "space.h"
 
-SpaceGrid::SpaceGrid()
+Space::Space()
 {
     // Setting up x coordinate
     Axis& xCoord = gridDescription.axis[0];

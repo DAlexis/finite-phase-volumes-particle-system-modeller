@@ -8,7 +8,7 @@ int main()
     using namespace std;
     cout << "Starting modelling" << endl;
     
-    GridDescription<1> descr;
+    Grid<1, double>::GridDescription descr;
     Grid<1, double> grid;
     
     grid.constructGrid(descr);

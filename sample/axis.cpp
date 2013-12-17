@@ -1,5 +1,4 @@
 #include "axis.h"
-#include "math-funcs.h"
 #include <algorithm>
 #include <fstream>
 
@@ -74,7 +73,7 @@ size_t Axis::getIndex(double value) const
     switch (m_mode) 
     {
         case UNIFORM: 
-            return _round((value-m_minValue) / (m_maxValue-m_minValue) * m_count);
+            return round((value-m_minValue) / (m_maxValue-m_minValue) * m_count);
         
         case SPECIFIC: {
             size_t left = 0;
