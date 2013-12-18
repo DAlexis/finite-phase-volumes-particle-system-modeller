@@ -27,10 +27,11 @@ public:
         GridElement* next[AxisCount];
         
         void* parentGrid;
+        size_t elementIndex;
         
         AssociatedData data;
         
-        GridElement() : parentGrid(0)
+        GridElement() : parentGrid(0), elementIndex(0)
         {
             for (unsigned int i=0; i<AxisCount; i++)
             {
@@ -41,9 +42,10 @@ public:
             data.init(this);
         }
         
-        void init(void* parent)
+        void init(void* parent, size_t index)
         {
             parentGrid = parent;
+            elementIndex = index;
         }
     };
     
@@ -67,13 +69,13 @@ public:
         
         // Setting grid pointer
         for (size_t i = 0; i != elementsCount; i++)
-            elements[i].init(this);
+            elements[i].init(this, i);
     }
     
     Grid() : elements(0), elementsCount(0) {}
     ~Grid() { if (elements) delete[] elements; }
     
-    GridElement* accessElement(const uint* coords)
+    GridElement* accessElement_ui(const uint* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
@@ -83,7 +85,7 @@ public:
         return &(elements[resInd]);
     }
 
-    GridElement* accessElement(const double* coords)
+    GridElement* accessElement_d(const double* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
@@ -93,10 +95,10 @@ public:
         return &(elements[resInd]);
     }
 
-    
+    GridElement* elements;
 protected:
     const GridDescription* gridDescription;
-    GridElement* elements;
+    
     uint offsets[AxisCount];
     uint elementsCount;
     
@@ -116,21 +118,21 @@ protected:
             }
         } else {
             // Initialising GridElement
-            GridElement *currentElement = accessElement(currentCoords_ui);
+            GridElement *currentElement = accessElement_ui(currentCoords_ui);
             currentElement->volume = 1;
             for (uint i=0; i!=AxisCount; i++)
             {
                 // Previous cells
                 if (currentCoords_ui[i] != 0) {
                     currentCoords_ui[i]--;
-                    currentElement->prev[i] = accessElement(currentCoords_ui);
+                    currentElement->prev[i] = accessElement_ui(currentCoords_ui);
                     currentCoords_ui[i]++;
                 }
                 // Next cells
                 if (currentCoords_ui[i] != gridDescription->axis[i].getSegmentsCount()-1)
                 {
                     currentCoords_ui[i]++;
-                    currentElement->next[i] = accessElement(currentCoords_ui);
+                    currentElement->next[i] = accessElement_ui(currentCoords_ui);
                     currentCoords_ui[i]--;
                 }
                 // Coordinates

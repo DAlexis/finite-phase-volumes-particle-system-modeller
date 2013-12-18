@@ -7,13 +7,7 @@ template <int SpaceDimension,
           class GridInstanceType>
 class FractionCell
 {
-public:
-    /// Space coordinates derivatives
-    double spaceCoordsDerivatives[SpaceDimension];
-    
-    /// Fraction coordinates derivatives
-    double fractionCoordsDerivatives[FractionSpaceDimension];
-    
+public: 
     FractionCell()
     {
         for (unsigned int i=0; i<QuantitiesCount; i++) {
@@ -44,6 +38,11 @@ public:
     
     double* quantities;
     double* nextStepQuantities;
+    
+     /// Space coordinates derivatives
+    double spaceCoordsDerivatives[SpaceDimension];
+    /// Fraction coordinates derivatives
+    double fractionCoordsDerivatives[FractionSpaceDimension];
     
 protected:
     typename GridInstanceType::GridElement *parent;

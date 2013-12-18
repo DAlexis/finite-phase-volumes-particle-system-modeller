@@ -6,9 +6,17 @@
 int main()
 {
     using namespace std;
-    cout << "Starting modelling" << endl;
+    cout << "Initialising model... ";
     Model model;
-    model.iterate(0.01);
+    cout << "Done" << endl;
+    
+    cout << "Starting modelling" << endl;
+    
+    const double dt = 0.01;
+    
+    for (double t=0; t<0.1; t+=dt)
+        model.iterate(dt);
+        
     cout << "Modelling done" << endl;
     return 0; 
 }

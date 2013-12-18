@@ -31,6 +31,79 @@ void Fraction1Cell::calculateDerivatives()
     fractionCoordsDerivatives[FRACTION1_COORDS_VX] = -9.8;
 }
 
+void Fraction1Cell::calculateFlowsEvolution(double dt)
+{
+    /// @todo Implement here for multi-sign values (like charge)
+    /// @todo optimize here?
+    
+    // For each quantity
+    for (uint quantity=0; quantity<FRACTION1_QUANTITIES_COUNT; quantity++)
+    {
+        // Flows in fraction space
+        for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
+        {
+            if (parent->next[coord] == NULL) continue;
+            
+            Fraction1Cell& next = parent->next[coord]->data;
+            
+            /// @todo Interpolation should be added here
+            double borderValue = (quantities[quantity]
+                + next.quantities[quantity])
+                / 2;
+            
+            double borderCoordDerivative = (fractionCoordsDerivatives[coord]
+                + next.fractionCoordsDerivatives[coord])
+                / 2;
+            
+            // Flow out from this cell in positive coordinate direction
+            double flow = borderValue*borderCoordDerivative*dt;
+            
+            // We suppose that quantity could be only positive
+            if (flow > 0)
+                flow = std::min(flow, quantities[quantity]);
+            else
+                flow = std::min(flow, next.quantities[quantity]);
+            
+            nextStepQuantities[quantity] -= flow;
+            next.nextStepQuantities[quantity] += flow;
+        }
+        
+        // Flows in coordinate space
+        for (uint coord=0; coord<SPACE_COORDS_COUNT; coord++)
+        {
+            SpaceGridType::GridElement* spaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+            if (spaceCell->next[coord] == NULL) continue;
+            
+            Fraction1Cell& next = spaceCell->next[coord]->data.fraction1.elements[parent->elementIndex].data;
+            
+            double borderValue = (quantities[quantity]
+                + next.quantities[quantity])
+                / 2;
+            
+            double borderCoordDerivative = (spaceCoordsDerivatives[coord]
+                + next.spaceCoordsDerivatives[coord])
+                / 2;
+            
+            // Flow out from this cell in positive coordinate direction
+            double flow = borderValue*borderCoordDerivative*dt;
+            
+            // We suppose that quantity could be only positive
+            if (flow > 0)
+                flow = std::min(flow, quantities[quantity]);
+            else
+                flow = std::min(flow, next.quantities[quantity]);
+            
+            nextStepQuantities[quantity] -= flow;
+            next.nextStepQuantities[quantity] += flow;
+        }
+    }
+}
+
+void Fraction1Cell::calculateSourceEvolution(double dt)
+{
+    nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] += 0.1*parent->volume*dt;
+}
+
 Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
     FractionSpace(parentFractionsPool)
 {
@@ -46,47 +119,14 @@ void Fraction1Space::calculateFlowsEvolution(double dt)
 {
     // Simpliest way. May be cirles need to be merged
     for (size_t i=0; i<elementsCount; i++)
-    {
         elements[i].data.calculateDerivatives();
-    }
+    
     for (size_t i=0; i<elementsCount; i++)
-    {
-        /// @todo implement here
-        /// @todo optimize here
-        
-        for (uint quantity=0; quantity<FRACTION1_QUANTITIES_COUNT; quantity++)
-        {
-            // Counting flow for each coordinate
-            for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
-            {
-                /// Flow from this to next
-                if (elements[i].next[i] == NULL) continue;
-                
-                /// @todo Interpolation should be added here
-                double borderValue = (elements[i].data.quantities[quantity]
-                    + elements[i].next[coord]->data.quantities[quantity])
-                    / 2;
-                
-                double borderDerivative = (elements[i].data.fractionCoordsDerivatives[coord]
-                    + elements[i].next[coord]->data.fractionCoordsDerivatives[coord])
-                    / 2;
-                
-                double flow = borderValue*borderDerivative*dt;
-                
-                // We suppose that quantity could be only positive
-                if (flow > 0)
-                    flow = std::min(flow, elements[i].data.quantities[quantity]);
-                else
-                    flow = std::min(flow, elements[i].next[coord]->data.quantities[quantity]);
-                /// @todo I need to enter connected values
-                elements[i].data.nextStepQuantities[quantity] -= flow;
-                elements[i].next[coord]->data.nextStepQuantities[quantity] += flow;
-            }
-        }
-    }
+        elements[i].data.calculateFlowsEvolution(dt);
 }
 
 void Fraction1Space::calculateSourceEvolution(double dt)
 {
-    
+     for (size_t i=0; i<elementsCount; i++)
+        elements[i].data.calculateSourceEvolution(dt);
 }

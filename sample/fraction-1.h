@@ -19,6 +19,8 @@ public:
     /// Fraction-specific calculations
     void calculateDerivatives();
     
+    void calculateSourceEvolution(double dt);
+    void calculateFlowsEvolution(double dt);
     /// Fraction-specific initialisation
     Fraction1Cell();
 private:
