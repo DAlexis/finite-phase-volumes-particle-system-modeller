@@ -34,7 +34,8 @@ public:
     Fraction1Space(FractionsPool* parentFractionsPool);
     
     void calculateFlowsEvolution(double dt);
-
+    void calculateSourceEvolution(double dt);
+    
 private:
     
 };

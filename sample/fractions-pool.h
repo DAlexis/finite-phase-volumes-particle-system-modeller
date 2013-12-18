@@ -2,24 +2,17 @@
 #define FRACTIONS_POOL_H_INCLUDED
 
 #include "fraction-1.h"
+#include "fractions-pool-template.h"
 
-class FractionsPool
+class FractionsPool : public FractionsPoolTemplate
 {
 public:
-    enum Fractions
-    {
-        FR_FRACTION1 = 0,
-        FR_COUNT
-    };
-    
     Fraction1Space fraction1;
-    
     FractionsPool();
     
-    void init(void* parentGridElement);
-
-    void* parent;
-    
+    void calculateFlowsEvolution(double dt);
+    void calculateSourceEvolution(double dt);
+    void swapBuffers();
 private:
 
 };

@@ -56,7 +56,6 @@ void Fraction1Space::calculateFlowsEvolution(double dt)
         
         for (uint quantity=0; quantity<FRACTION1_QUANTITIES_COUNT; quantity++)
         {
-            elements[i].data.nextStepQuantities[quantity] = elements[i].data.quantities[quantity];
             // Counting flow for each coordinate
             for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
             {
@@ -85,4 +84,9 @@ void Fraction1Space::calculateFlowsEvolution(double dt)
             }
         }
     }
+}
+
+void Fraction1Space::calculateSourceEvolution(double dt)
+{
+    
 }

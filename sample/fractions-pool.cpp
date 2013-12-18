@@ -5,7 +5,17 @@ FractionsPool::FractionsPool() :
 {
 }
 
-void FractionsPool::init(void* parentGridElement)
+void FractionsPool::calculateFlowsEvolution(double dt)
 {
-    parent = parentGridElement;
+    fraction1.calculateFlowsEvolution(dt);
+}
+
+void FractionsPool::calculateSourceEvolution(double dt)
+{
+    fraction1.calculateSourceEvolution(dt);
+}
+
+void FractionsPool::swapBuffers()
+{
+    fraction1.swapBuffers();
 }

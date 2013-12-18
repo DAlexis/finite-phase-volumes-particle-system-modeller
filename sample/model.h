@@ -8,6 +8,7 @@ class Model
 public:
     Space space;
     
+    void iterate(double dt);
 private:
 };
 

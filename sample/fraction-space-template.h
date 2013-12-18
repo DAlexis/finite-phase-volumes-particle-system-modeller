@@ -13,6 +13,11 @@ public:
     
     FractionsPool* parent;
     
+    void swapBuffers()
+    {
+        for (size_t i=0; i<this->elementsCount; i++)
+            this->elements[i].data.swapBuffers();
+    }
 
 protected:
     typename GridType::GridDescription gridDescription;

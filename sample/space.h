@@ -4,10 +4,11 @@
 #include "fractions-pool.h"
 #include "grid-template.h"
 #include "global-defines.h"
+#include "space-template.h"
 
 typedef Grid<SPACE_COORDS_COUNT, FractionsPool> SpaceGridType;
 
-class Space : public SpaceGridType
+class Space : public SpaceBase<SpaceGridType>
 {
 public:
     Space();

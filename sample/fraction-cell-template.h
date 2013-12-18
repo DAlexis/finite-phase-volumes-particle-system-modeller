@@ -34,6 +34,10 @@ public:
             quantities = quantitiesBuffer0;
             nextStepQuantities = quantitiesBuffer1;
         }
+        for (unsigned int i=0; i<QuantitiesCount; i++)
+        {
+            nextStepQuantities[i] = quantities[i];
+        }
     }
     
     void init(typename GridInstanceType::GridElement* parentGridElement) { parent = parentGridElement; }

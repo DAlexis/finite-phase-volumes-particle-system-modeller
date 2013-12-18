@@ -16,6 +16,13 @@ enum SpaceCoordinate {
     SPACE_COORDS_COUNT
 };
 
+enum Fraction
+{
+    FR_FRACTION1 = 0,
+    FR_COUNT
+};
+    
+
 //////////////////////////
 // Fraction 1 enums
 enum Fraction1Quantity
