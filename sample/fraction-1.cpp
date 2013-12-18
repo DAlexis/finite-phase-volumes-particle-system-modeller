@@ -19,25 +19,20 @@ void* Fraction1Cell::getSpaceCell()
 void* Fraction1Cell::getFractionPool()
 {
     /// @todo Remove this temporary pointers and write 1-line optimal code
-    Fraction1GridType* pFractionGrid = static_cast<Fraction1GridType*>(parent->parentGrid);
+    Fraction1SpaceGridType* pFractionGrid = static_cast<Fraction1SpaceGridType*>(parent->parentGrid);
     Fraction1Space* pFractionSpace = static_cast<Fraction1Space*>(pFractionGrid);
     FractionsPool* pFractionsPool = pFractionSpace->parent;
     return pFractionsPool;
 }
 
-void Fraction1Cell::init(Fraction1GridType::GridElement* parentGridElement)
-{
-    parent = parentGridElement;
-}
-
 void Fraction1Cell::calculateDerivatives()
 {
-    spaceCoordsDerivatives[Space::SPACE_COORDS_X] = parent->coordinates[FRACTION1_COORDS_VX];
+    spaceCoordsDerivatives[SPACE_COORDS_X] = parent->coordinates[FRACTION1_COORDS_VX];
     fractionCoordsDerivatives[FRACTION1_COORDS_VX] = -9.8;
 }
 
 Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
-    parent(parentFractionsPool)
+    FractionSpace(parentFractionsPool)
 {
     // Setting up x coordinate
     Axis& xSpeed = gridDescription.axis[0];
@@ -63,7 +58,7 @@ void Fraction1Space::calculateFlowsEvolution(double dt)
         {
             elements[i].data.nextStepQuantities[quantity] = elements[i].data.quantities[quantity];
             // Counting flow for each coordinate
-            for (uint coord=0; coord<FRACTION1_SPACE_DIMENSION; coord++)
+            for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
             {
                 /// Flow from this to next
                 if (elements[i].next[i] == NULL) continue;
@@ -84,7 +79,7 @@ void Fraction1Space::calculateFlowsEvolution(double dt)
                     flow = std::min(flow, elements[i].data.quantities[quantity]);
                 else
                     flow = std::min(flow, elements[i].next[coord]->data.quantities[quantity]);
-                /// @todo I need t oenter connected values
+                /// @todo I need to enter connected values
                 elements[i].data.nextStepQuantities[quantity] -= flow;
                 elements[i].next[coord]->data.nextStepQuantities[quantity] += flow;
             }

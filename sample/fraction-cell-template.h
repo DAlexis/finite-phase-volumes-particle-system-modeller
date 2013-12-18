@@ -1,7 +1,10 @@
 #ifndef FRACTION_CELL_TEMPLATE
 #define FRACTION_CELL_TEMPLATE
 
-template <int SpaceDimension, int FractionSpaceDimension, int QuantitiesCount>
+template <int SpaceDimension,
+          int FractionSpaceDimension,
+          int QuantitiesCount,
+          class GridInstanceType>
 class FractionCell
 {
 public:
@@ -33,8 +36,13 @@ public:
         }
     }
     
+    void init(typename GridInstanceType::GridElement* parentGridElement) { parent = parentGridElement; }
+    
     double* quantities;
     double* nextStepQuantities;
+    
+protected:
+    typename GridInstanceType::GridElement *parent;
     
 private:
     double quantitiesBuffer0[QuantitiesCount];
