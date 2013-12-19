@@ -1,3 +1,7 @@
+/*
+ * This file is model-independent and should be used as is in any generated model
+ */
+
 #ifndef AXIS_H_INCLUDED
 #define AXIS_H_INCLUDED
 

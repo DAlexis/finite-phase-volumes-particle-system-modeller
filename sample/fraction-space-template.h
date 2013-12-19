@@ -1,10 +1,14 @@
+/*
+ * This file is model-independent and should be used as is in any generated model
+ */
+
 #ifndef FRACTION_SPACE_TEMPLATE_H_INCLUDED
 #define FRACTION_SPACE_TEMPLATE_H_INCLUDED
 
 class FractionsPool;
 
-template<class GridType>
-class FractionSpace : public GridType
+template<class GridInstanceType>
+class FractionSpace : public GridInstanceType
 {
 public:
     FractionSpace(FractionsPool* parentFractionsPool) :
@@ -20,7 +24,7 @@ public:
     }
 
 protected:
-    typename GridType::GridDescription gridDescription;
+    typename GridInstanceType::GridDescription gridDescription;
 };
 
 #endif

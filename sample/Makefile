@@ -8,6 +8,8 @@ cpp_sources =   main.cpp \
                 space.cpp \
                 model.cpp \
                 axis.cpp \
-                fraction-1.cpp
+                fraction-1.cpp \
+                output.cpp \
+                model-output.cpp
 
 include $(HOME_DIR)/Makefile.inc

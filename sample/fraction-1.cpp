@@ -101,7 +101,9 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
 
 void Fraction1Cell::calculateSourceEvolution(double dt)
 {
-    nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] += 0.1*parent->volume*dt;
+    SpaceGridType::GridElement* spaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+    //if (spaceCell->coordinates[SPACE_COORDS_X] <0)
+        nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] += 0.1*spaceCell->volume*dt;
 }
 
 Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
@@ -109,7 +111,7 @@ Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
 {
     // Setting up x coordinate
     Axis& xSpeed = gridDescription.axis[0];
-    xSpeed.uniformInit(-100.0, 100.0, 10);
+    xSpeed.uniformInit(-200.0, 100.0, 10);
     xSpeed.setName("Horisontal speed, m");
     
     constructGrid(gridDescription);
@@ -117,7 +119,6 @@ Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
 
 void Fraction1Space::calculateFlowsEvolution(double dt)
 {
-    // Simpliest way. May be cirles need to be merged
     for (size_t i=0; i<elementsCount; i++)
         elements[i].data.calculateDerivatives();
     

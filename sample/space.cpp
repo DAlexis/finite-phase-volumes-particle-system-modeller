@@ -3,9 +3,9 @@
 Space::Space()
 {
     // Setting up x coordinate
-    Axis& xCoord = gridDescription.axis[0];
-    xCoord.uniformInit(-10.0, 10.0, 10);
+    Axis& xCoord = spaceGridDescription.axis[0];
+    xCoord.uniformInit(-10.0, 10.0, 20);
     xCoord.setName("Horisontal coordinate, m");
     
-    constructGrid(gridDescription);
+    constructGrid(spaceGridDescription);
 }

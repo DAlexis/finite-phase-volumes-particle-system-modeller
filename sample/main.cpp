@@ -12,7 +12,7 @@ int main()
     
     cout << "Starting modelling" << endl;
     
-    const double dt = 0.01;
+    const double dt = 0.005;
     
     for (double t=0; t<0.1; t+=dt)
         model.iterate(dt);

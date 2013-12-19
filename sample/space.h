@@ -14,7 +14,7 @@ public:
     Space();
     
 private:
-    SpaceGridType::GridDescription gridDescription;
+    SpaceGridType::GridDescription spaceGridDescription;
 };
 
 #endif // LOCATION_SPACE_H_INCLUDED

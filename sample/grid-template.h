@@ -1,3 +1,7 @@
+/*
+ * This file is model-independent and should be used as is in any generated model
+ */
+
 #ifndef GRID_TEMPLATE_H_INCLUDED
 #define GRID_TEMPLATE_H_INCLUDED
 
@@ -96,11 +100,12 @@ public:
     }
 
     GridElement* elements;
-protected:
     const GridDescription* gridDescription;
+    uint elementsCount;
+    
+protected:
     
     uint offsets[AxisCount];
-    uint elementsCount;
     
     /// Service buffer to save double coordinates inside class
     double currentCoords_d[AxisCount];
