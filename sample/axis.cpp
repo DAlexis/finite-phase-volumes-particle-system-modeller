@@ -47,7 +47,7 @@ double Axis::getPoint(size_t number) const
     switch(m_mode)
     {
         case UNIFORM:
-            return (m_maxValue-m_minValue)/m_count*(number+0.5);
+            return m_minValue+(m_maxValue-m_minValue)/m_count*(number+0.5);
         break;
         case SPECIFIC:
             return m_points[number];
@@ -77,7 +77,7 @@ size_t Axis::getIndex(double value) const
     switch (m_mode) 
     {
         case UNIFORM: 
-            return round((value-m_minValue) / (m_maxValue-m_minValue) * m_count);
+            return round((value-m_minValue) / (m_maxValue-m_minValue) * (m_count-1) );
         
         case SPECIFIC: {
             size_t left = 0;

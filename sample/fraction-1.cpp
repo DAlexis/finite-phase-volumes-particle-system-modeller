@@ -1,5 +1,5 @@
 #include "fraction-1.h"
-#include "space.h"
+#include "model.h"
 
 #include <algorithm>
 
@@ -23,6 +23,13 @@ void* Fraction1Cell::getFractionPool()
     Fraction1Space* pFractionSpace = static_cast<Fraction1Space*>(pFractionGrid);
     FractionsPool* pFractionsPool = pFractionSpace->parent;
     return pFractionsPool;
+}
+
+void* Fraction1Cell::getModel()
+{
+    SpaceGridType::GridElement* spaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+    Space* space = static_cast<Space*>(spaceCell->parentGrid);
+    return space->parent;
 }
 
 void Fraction1Cell::calculateDerivatives()
@@ -56,18 +63,18 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
                 / 2;
             
             // Flow out from this cell in positive coordinate direction
-            double flow = borderValue*borderCoordDerivative*dt;
+            double totalTransfer = borderValue*borderCoordDerivative*dt;
             
             // We suppose that quantity could be only positive
-            if (flow > 0)
-                flow = std::min(flow, quantities[quantity]);
+            if (totalTransfer > 0)
+                totalTransfer = std::min(totalTransfer, quantities[quantity]);
             else
-                flow = std::min(flow, next.quantities[quantity]);
+                totalTransfer = std::max(totalTransfer, -next.quantities[quantity]);
             
-            nextStepQuantities[quantity] -= flow;
-            next.nextStepQuantities[quantity] += flow;
+            nextStepQuantities[quantity] -= totalTransfer;
+            next.nextStepQuantities[quantity] += totalTransfer;
         }
-        
+        /*
         // Flows in coordinate space
         for (uint coord=0; coord<SPACE_COORDS_COUNT; coord++)
         {
@@ -91,30 +98,38 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
             if (flow > 0)
                 flow = std::min(flow, quantities[quantity]);
             else
-                flow = std::min(flow, next.quantities[quantity]);
+                flow = std::max(flow, -next.quantities[quantity]);
             
             nextStepQuantities[quantity] -= flow;
             next.nextStepQuantities[quantity] += flow;
-        }
+        }*/
     }
 }
 
 void Fraction1Cell::calculateSourceEvolution(double dt)
 {
     SpaceGridType::GridElement* spaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+    
+    if (static_cast<Model*>(getModel())->time < 0.02 && fabs(parent->coordinates[FRACTION1_COORDS_VX]) < 1)
+    
+    //if (fabs(parent->coordinates[FRACTION1_COORDS_VX]) < 10)
     //if (spaceCell->coordinates[SPACE_COORDS_X] <0)
-        nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] += 0.1*spaceCell->volume*dt;
+    //    nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] += 0.1*spaceCell->volume*dt;
+    nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] = 1;//spaceCell->coordinates[SPACE_COORDS_X]/30;
+    
+    //else
+    //nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] = 0;
 }
 
 Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
     FractionSpace(parentFractionsPool)
 {
     // Setting up x coordinate
-    Axis& xSpeed = gridDescription.axis[0];
-    xSpeed.uniformInit(-200.0, 100.0, 10);
+    Axis& xSpeed = frtactionGridDescription.axis[0];
+    xSpeed.uniformInit(-20.0, 10.0, 30);
     xSpeed.setName("Horisontal speed, m");
     
-    constructGrid(gridDescription);
+    constructGrid(frtactionGridDescription);
 }
 
 void Fraction1Space::calculateFlowsEvolution(double dt)

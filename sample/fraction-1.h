@@ -27,6 +27,7 @@ private:
     
     void* getSpaceCell();
     void* getFractionPool();
+    void* getModel();
 };
 
 class Fraction1Space : public FractionSpace<Fraction1SpaceGridType>
@@ -35,6 +36,7 @@ public:
     /// Setting up axis
     Fraction1Space(FractionsPool* parentFractionsPool);
     
+    /// @todo Move this functions to template
     void calculateFlowsEvolution(double dt);
     void calculateSourceEvolution(double dt);
     

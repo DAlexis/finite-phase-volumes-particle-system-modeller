@@ -24,7 +24,7 @@ public:
     }
 
 protected:
-    typename GridInstanceType::GridDescription gridDescription;
+    typename GridInstanceType::GridDescription frtactionGridDescription;
 };
 
 #endif

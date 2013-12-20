@@ -11,7 +11,7 @@ typedef Grid<SPACE_COORDS_COUNT, FractionsPool> SpaceGridType;
 class Space : public SpaceBase<SpaceGridType>
 {
 public:
-    Space();
+    Space(void* model);
     
 private:
     SpaceGridType::GridDescription spaceGridDescription;

@@ -3,14 +3,25 @@
 
 #include "output.h"
 
-class Fraction1ConcentrationOutput : public OutputInstanceBase
+class Fraction1ConcentrationVsCoordsOutput : public OutputInstanceBase
 {
 public:
-    Fraction1ConcentrationOutput();
-    virtual ~Fraction1ConcentrationOutput();
+    Fraction1ConcentrationVsCoordsOutput();
+    virtual ~Fraction1ConcentrationVsCoordsOutput();
     
 protected:
     virtual void printToFile(double time);
 };
+
+class Fraction1ConcentrationVsVelocityOutput : public OutputInstanceBase
+{
+public:
+    Fraction1ConcentrationVsVelocityOutput();
+    virtual ~Fraction1ConcentrationVsVelocityOutput();
+    
+protected:
+    virtual void printToFile(double time);
+};
+
 
 #endif // MODEL_OUTPUT_H_INCLUDED

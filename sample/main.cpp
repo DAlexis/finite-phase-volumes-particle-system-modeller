@@ -14,7 +14,7 @@ int main()
     
     const double dt = 0.005;
     
-    for (double t=0; t<0.1; t+=dt)
+    for (double t=0; t<1; t+=dt)
         model.iterate(dt);
         
     cout << "Modelling done" << endl;

@@ -39,6 +39,9 @@ void OutputInstanceBase::output(double time)
     
     if ((time >= m_lastOutput+m_period) || m_isFirst)
     {
+        if (not m_isFirst)
+            (*m_file) << std::endl;
+        
         printToFile(time);
         m_lastOutput = time;
     }

@@ -9,6 +9,10 @@ template<class GridType>
 class SpaceBase : public GridType
 {
 public:
+    SpaceBase(void* model) :
+        parent(model)
+    {}
+    
     void swapBuffers()
     {
         for (size_t i=0; i<this->elementsCount; i++)
@@ -27,6 +31,7 @@ public:
             this->elements[i].data.calculateSourceEvolution(dt);
     }
     
+    void* parent;
 };
 
 #endif // SPACE_TEMPLATE_H_INCLUDED

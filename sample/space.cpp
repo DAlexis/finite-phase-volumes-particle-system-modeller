@@ -1,6 +1,7 @@
 #include "space.h"
 
-Space::Space()
+Space::Space(void* model) :
+    SpaceBase(model)
 {
     // Setting up x coordinate
     Axis& xCoord = spaceGridDescription.axis[0];
