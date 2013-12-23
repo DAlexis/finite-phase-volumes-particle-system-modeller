@@ -58,7 +58,7 @@ void Fraction1ConcentrationVsVelocityOutput::printToFile(double time)
     Space& space = *(m_parent->m_space);
     
     // Here we will get a distribution
-    double spacePoint[SPACE_COORDS_COUNT] = { -3 };
+    double spacePoint[SPACE_COORDS_COUNT] = { 0 };
     
     Fraction1Space &fractionSpace = space.accessElement_d(spacePoint)->data.fraction1;
     

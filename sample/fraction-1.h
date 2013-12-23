@@ -28,6 +28,11 @@ private:
     void* getSpaceCell();
     void* getFractionPool();
     void* getModel();
+    Fraction1Cell* nextInSpace(unsigned int coordinate);
+    Fraction1Cell* nextInFractionSpace(unsigned int coordinate);
+    
+    Fraction1Cell* prevInSpace(unsigned int coordinate);
+    Fraction1Cell* prevInFractionSpace(unsigned int coordinate);
 };
 
 class Fraction1Space : public FractionSpace<Fraction1SpaceGridType>
