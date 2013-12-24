@@ -6,8 +6,6 @@
 #include "global-defines.h"
 #include "space-template.h"
 
-typedef Grid<SPACE_COORDS_COUNT, FractionsPool> SpaceGridType;
-
 class Space : public SpaceBase<SpaceGridType>
 {
 public:

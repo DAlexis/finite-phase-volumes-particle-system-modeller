@@ -1,7 +1,6 @@
 #include "fraction-1.h"
 #include "model.h"
 
-
 #include <string.h>
 #include <algorithm>
 
@@ -10,26 +9,9 @@ Fraction1Cell::Fraction1Cell()
     
 }
 
-void* Fraction1Cell::getSpaceCell()
-{
-    /// @todo Remove this temporary pointers and write 1-line optimal code
-    FractionsPool* pFractionsPool = static_cast<FractionsPool*>(getFractionPool());
-    SpaceGridType::GridElement* pSpaceGridElement = static_cast<SpaceGridType::GridElement*>(pFractionsPool->parent);
-    return pSpaceGridElement;
-}
-
-void* Fraction1Cell::getFractionPool()
-{
-    /// @todo Remove this temporary pointers and write 1-line optimal code
-    Fraction1SpaceGridType* pFractionGrid = static_cast<Fraction1SpaceGridType*>(parent->parentGrid);
-    Fraction1Space* pFractionSpace = static_cast<Fraction1Space*>(pFractionGrid);
-    FractionsPool* pFractionsPool = pFractionSpace->parent;
-    return pFractionsPool;
-}
-
 void* Fraction1Cell::getModel()
 {
-    SpaceGridType::GridElement* spaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+    SpaceGridType::GridElement* spaceCell = getSpaceCell();
     Space* space = static_cast<Space*>(spaceCell->parentGrid);
     return space->parent;
 }
@@ -42,7 +24,7 @@ void Fraction1Cell::calculateDerivatives()
 
 Fraction1Cell* Fraction1Cell::nextInSpace(unsigned int coordinate)
 {
-    SpaceGridType::GridElement* spaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+    SpaceGridType::GridElement* spaceCell = getSpaceCell();
     if (spaceCell->next[coordinate] == NULL)
         return NULL;
     
@@ -58,7 +40,7 @@ Fraction1Cell* Fraction1Cell::nextInFractionSpace(unsigned int coordinate)
 
 Fraction1Cell* Fraction1Cell::prevInSpace(unsigned int coordinate)
 {
-    SpaceGridType::GridElement* spaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+    SpaceGridType::GridElement* spaceCell = getSpaceCell();
     if (spaceCell->prev[coordinate] == NULL)
         return NULL;
     
@@ -74,8 +56,8 @@ Fraction1Cell* Fraction1Cell::prevInFractionSpace(unsigned int coordinate)
 
 double Fraction1Cell::getFlowInSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor)
 {
-    SpaceGridType::GridElement* thisSpaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
-    SpaceGridType::GridElement* neighborSpaceCell = static_cast<SpaceGridType::GridElement*>(neighbor->getSpaceCell());
+    SpaceGridType::GridElement* thisSpaceCell = getSpaceCell();
+    SpaceGridType::GridElement* neighborSpaceCell = neighbor->getSpaceCell();
     double l1 = thisSpaceCell->size[coordinate];
     double l2 = neighborSpaceCell->size[coordinate];
     
@@ -224,7 +206,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
 
 void Fraction1Cell::calculateSourceEvolution(double dt)
 {
-    SpaceGridType::GridElement* spaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+    SpaceGridType::GridElement* spaceCell = getSpaceCell();
     
     if (static_cast<Model*>(getModel())->time < 0.02)
     

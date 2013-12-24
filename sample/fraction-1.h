@@ -6,14 +6,9 @@
 #include "fraction-space-template.h"
 // This fraction cell, this fraction space and fractions pool to use pointer to it 
 
-class Fraction1Cell;
-class Fraction1Space;
-class FractionsPool;
-class Space;
+#include "global-defines.h"
 
-typedef Grid<FRACTION1_COORDS_COUNT, Fraction1Cell> Fraction1SpaceGridType;
-
-class Fraction1Cell : public FractionCell<SPACE_COORDS_COUNT, FRACTION1_COORDS_COUNT, FRACTION1_QUANTITIES_COUNT, Fraction1SpaceGridType>
+class Fraction1Cell : public FractionCell<FRACTION_FRACTION1, SPACE_COORDS_COUNT, FRACTION1_COORDS_COUNT, FRACTION1_QUANTITIES_COUNT, Fraction1SpaceGridType>
 {
 public:
     /// Fraction-specific calculations
@@ -25,8 +20,6 @@ public:
     Fraction1Cell();
 private:
     
-    void* getSpaceCell();
-    void* getFractionPool();
     void* getModel();
     Fraction1Cell* nextInSpace(unsigned int coordinate);
     Fraction1Cell* nextInFractionSpace(unsigned int coordinate);

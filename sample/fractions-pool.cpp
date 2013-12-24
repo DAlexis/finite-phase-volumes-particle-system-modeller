@@ -3,6 +3,7 @@
 FractionsPool::FractionsPool() :
     fraction1(this)
 {
+    fractions[0] = &fraction1;
 }
 
 void FractionsPool::calculateFlowsEvolution(double dt)

@@ -6,7 +6,7 @@
 #define GRID_TEMPLATE_H_INCLUDED
 
 #include "axis.h"
-#include "global-defines.h"
+
 
 template <int AxisCount, class AssociatedData>
 class Grid
