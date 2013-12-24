@@ -1,0 +1,21 @@
+model:
+    name: One dimension test config
+    cordinate_space_grid:
+      - id: x_coord
+        name: Horisontal coordinate, m
+        division:
+            mode: uniform
+            min: -10
+            max: 10
+            segments_count: 100
+    fractions:
+      - id: fract1
+        name: Test Fraction One
+        fraction_space_grid:
+          - id: x_speed
+            name: Horisontal speed, m/s
+            division:
+                mode: uniform
+                min: -10
+                max: 10
+                segments_count: 100

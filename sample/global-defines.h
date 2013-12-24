@@ -8,6 +8,8 @@
 #include "model-defines.h"
 #include <math.h>
 
+#define EVERY_FRACTION_COUNT_QUANTITY_INDEX     0
+
 #define DOUBLE_NULL        1e-8
 
 typedef unsigned int uint;

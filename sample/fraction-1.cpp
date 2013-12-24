@@ -114,96 +114,110 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
     /// @todo optimize here?
     
     // For each quantity
-    for (uint quantity=0; quantity<FRACTION1_QUANTITIES_COUNT; quantity++)
+    double flowOutUp[FRACTION1_COORDS_COUNT + SPACE_COORDS_COUNT];
+    double flowOutDown[FRACTION1_COORDS_COUNT + SPACE_COORDS_COUNT];
+    double totalFlowOut = 0;
+    memset( flowOutUp, 0, sizeof(double) * (FRACTION1_COORDS_COUNT+SPACE_COORDS_COUNT) );
+    memset( flowOutDown, 0, sizeof(double) * (FRACTION1_COORDS_COUNT+SPACE_COORDS_COUNT) );
+    
+    // Flows in fraction space
+    for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
     {
-        double flowOutUp[FRACTION1_COORDS_COUNT + SPACE_COORDS_COUNT];
-        double flowOutDown[FRACTION1_COORDS_COUNT + SPACE_COORDS_COUNT];
-        double totalFlowOut = 0;
-        memset( flowOutUp, 0, sizeof(double) * (FRACTION1_COORDS_COUNT+SPACE_COORDS_COUNT) );
-        memset( flowOutDown, 0, sizeof(double) * (FRACTION1_COORDS_COUNT+SPACE_COORDS_COUNT) );
-        
-        // Flows in fraction space
-        for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
+        Fraction1Cell* next = nextInFractionSpace(coord);
+        Fraction1Cell* prev = prevInFractionSpace(coord);
+        if (next)
         {
-            Fraction1Cell* next = nextInFractionSpace(coord);
-            Fraction1Cell* prev = prevInFractionSpace(coord);
-            if (next)
+            /// @todo Interpolation should be added here
+            double transfer = getFlowInFractionSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, TD_UP, next) *dt;
+            if (transfer > 0)
             {
-                /// @todo Interpolation should be added here
-                double transfer = getFlowInFractionSpace(coord, quantity, TD_UP, next) *dt;
-                if (transfer > 0)
-                {
-                    // Flow out from this cell in positive coordinate direction
-                    flowOutUp[coord] = transfer;
-                    totalFlowOut += transfer;
-                }
-            }
-            
-            if (prev)
-            {
-                double transfer = getFlowInFractionSpace(coord, quantity, TD_DOWN, prev) *dt;
-                if (transfer > 0)
-                {
-                    // Flow out from this cell in negative coordinate direction
-                    flowOutDown[coord] = transfer;
-                    totalFlowOut += transfer;
-                }
+                // Flow out from this cell in positive coordinate direction
+                flowOutUp[coord] = transfer;
+                totalFlowOut += transfer;
             }
         }
         
-        // Flows in coordinate space
-        for (uint coord=0; coord<SPACE_COORDS_COUNT; coord++)
+        if (prev)
         {
-            Fraction1Cell* next = nextInSpace(coord);
-            Fraction1Cell* prev = prevInSpace(coord);
-            if (next)
+            double transfer = getFlowInFractionSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, TD_DOWN, prev) *dt;
+            if (transfer > 0)
             {
-                double transfer = getFlowInSpace(coord, quantity, TD_UP, next) * dt;
-                if (transfer > 0)
-                {
-                    // Flow out from this cell in positive coordinate direction
-                    flowOutUp[FRACTION1_COORDS_COUNT + coord] = transfer;
-                    totalFlowOut += transfer;
-                }
-            }
-            if (prev)
-            {
-                double transfer = getFlowInSpace(coord, quantity, TD_DOWN, prev) * dt;
-                if (transfer > 0)
-                {
-                    // Flow out from this cell in negative coordinate direction
-                    flowOutDown[FRACTION1_COORDS_COUNT + coord] = transfer;
-                    totalFlowOut += transfer;
-                }
+                // Flow out from this cell in negative coordinate direction
+                flowOutDown[coord] = transfer;
+                totalFlowOut += transfer;
             }
         }
-        
-        double rewnormCoefficient = 1;
-        
-        if (totalFlowOut > quantities[quantity])
+    }
+    
+    // Flows in coordinate space
+    for (uint coord=0; coord<SPACE_COORDS_COUNT; coord++)
+    {
+        Fraction1Cell* next = nextInSpace(coord);
+        Fraction1Cell* prev = prevInSpace(coord);
+        if (next)
         {
-            rewnormCoefficient = quantities[quantity] / totalFlowOut;
+            double transfer = getFlowInSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, TD_UP, next) * dt;
+            if (transfer > 0)
+            {
+                // Flow out from this cell in positive coordinate direction
+                flowOutUp[FRACTION1_COORDS_COUNT + coord] = transfer;
+                totalFlowOut += transfer;
+            }
+        }
+        if (prev)
+        {
+            double transfer = getFlowInSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, TD_DOWN, prev) * dt;
+            if (transfer > 0)
+            {
+                // Flow out from this cell in negative coordinate direction
+                flowOutDown[FRACTION1_COORDS_COUNT + coord] = transfer;
+                totalFlowOut += transfer;
+            }
+        }
+    }
+    
+    double rewnormCoefficient = 1;
+    
+    // q[i]/n
+    double quantityOverParticlesCount[FRACTION1_QUANTITIES_COUNT];
+    for (unsigned int quantity=0; quantity<FRACTION1_QUANTITIES_COUNT; quantity++)
+        if (isNotNull(quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]))
+            quantityOverParticlesCount[quantity] = quantities[quantity] / quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
+        else
+            quantityOverParticlesCount[quantity] = 0;
+    
+    // Removing flowed out quantities including particles count
+    if (totalFlowOut > quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX])
+    {
+        rewnormCoefficient = quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX] / totalFlowOut;
+        for (unsigned int quantity=0; quantity<FRACTION1_QUANTITIES_COUNT; quantity++)
             nextStepQuantities[quantity] = 0;
-        } else {
-            nextStepQuantities[quantity] -= totalFlowOut;
-        }
-        // Adding to neighbors in fraction space
+    } else {
+        for (unsigned int quantity=0; quantity<FRACTION1_QUANTITIES_COUNT; quantity++)
+            nextStepQuantities[quantity] -= totalFlowOut * quantityOverParticlesCount[quantity];
+
+    }
+    
+    // Adding quantities to neighbors
+    for (unsigned int quantity=0; quantity<FRACTION1_QUANTITIES_COUNT; quantity++)
+    {
+        // In fraction space
         for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
         {
             Fraction1Cell *next = nextInFractionSpace(coord);
-            if (next) next->nextStepQuantities[quantity] += flowOutUp[coord]*rewnormCoefficient;
+            if (next) next->nextStepQuantities[quantity] += flowOutUp[coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
             
             Fraction1Cell *prev = prevInFractionSpace(coord);
-            if (prev) prev->nextStepQuantities[quantity] += flowOutDown[coord]*rewnormCoefficient;
+            if (prev) prev->nextStepQuantities[quantity] += flowOutDown[coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
         }
-        // Adding to neighbors in space
+        // In coordinate space
         for (uint coord=0; coord<SPACE_COORDS_COUNT; coord++)
         {
             Fraction1Cell *next = nextInSpace(coord);
-            if (next) next->nextStepQuantities[quantity] += flowOutUp[FRACTION1_COORDS_COUNT+coord]*rewnormCoefficient;
+            if (next) next->nextStepQuantities[quantity] += flowOutUp[FRACTION1_COORDS_COUNT+coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
             
             Fraction1Cell *prev = prevInSpace(coord);
-            if (prev) prev->nextStepQuantities[quantity] += flowOutDown[FRACTION1_COORDS_COUNT+coord]*rewnormCoefficient;
+            if (prev) prev->nextStepQuantities[quantity] += flowOutDown[FRACTION1_COORDS_COUNT+coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
         }
     }
 }
