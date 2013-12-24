@@ -33,6 +33,9 @@ private:
     
     Fraction1Cell* prevInSpace(unsigned int coordinate);
     Fraction1Cell* prevInFractionSpace(unsigned int coordinate);
+    
+    double getFlowInSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor);
+    double getFlowInFractionSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor);
 };
 
 class Fraction1Space : public FractionSpace<Fraction1SpaceGridType>

@@ -51,6 +51,12 @@ public:
 protected:
     typename GridInstanceType::GridElement *parent;
     
+    enum TransferDirection
+    {
+        TD_UP = 0,
+        TD_DOWN
+    };
+    
 private:
     double quantitiesBuffer0[QuantitiesCount];
     double quantitiesBuffer1[QuantitiesCount];

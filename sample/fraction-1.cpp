@@ -72,6 +72,42 @@ Fraction1Cell* Fraction1Cell::prevInFractionSpace(unsigned int coordinate)
     return &(parent->prev[coordinate]->data);
 }
 
+double Fraction1Cell::getFlowInSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor)
+{
+    SpaceGridType::GridElement* thisSpaceCell = static_cast<SpaceGridType::GridElement*>(getSpaceCell());
+    SpaceGridType::GridElement* neighborSpaceCell = static_cast<SpaceGridType::GridElement*>(neighbor->getSpaceCell());
+    double l1 = thisSpaceCell->size[coordinate];
+    double l2 = neighborSpaceCell->size[coordinate];
+    
+    double borderValue = (quantities[quantity]*l2 + neighbor->quantities[quantity]*l1)
+        / (l1 + l2);
+    double borderCoordDerivative = (spaceCoordsDerivatives[coordinate]*l2 + neighbor->spaceCoordsDerivatives[coordinate]*l1)
+        / (l1 + l2);
+    double flow = borderValue*borderCoordDerivative / l1;
+    
+    if (direction == TD_DOWN)
+        flow = -flow;
+    
+    return flow;
+}
+
+double Fraction1Cell::getFlowInFractionSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor)
+{
+    double l1 = parent->size[coordinate];
+    double l2 = neighbor->parent->size[coordinate];
+    
+    double borderValue = (quantities[quantity]*l2 + neighbor->quantities[quantity]*l1)
+        / (l1 + l2);
+    double borderCoordDerivative = (fractionCoordsDerivatives[coordinate]*l2 + neighbor->fractionCoordsDerivatives[coordinate]*l1)
+        / (l1 + l2);
+    double flow = borderValue*borderCoordDerivative / l1;
+    
+    if (direction == TD_DOWN)
+        flow = -flow;
+    
+    return flow;
+}
+
 void Fraction1Cell::calculateFlowsEvolution(double dt)
 {
     /// @todo Implement here for multi-sign values (like charge)
@@ -94,13 +130,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
             if (next)
             {
                 /// @todo Interpolation should be added here
-                double borderValue = (quantities[quantity]
-                    + next->quantities[quantity])
-                    / 2;
-                double borderCoordDerivative = (fractionCoordsDerivatives[coord]
-                    + next->fractionCoordsDerivatives[coord])
-                    / 2;
-                double transfer = borderValue*borderCoordDerivative*dt / parent->size[coord];
+                double transfer = getFlowInFractionSpace(coord, quantity, TD_UP, next) *dt;
                 if (transfer > 0)
                 {
                     // Flow out from this cell in positive coordinate direction
@@ -111,13 +141,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
             
             if (prev)
             {
-                double borderValue = (quantities[quantity]
-                    + prev->quantities[quantity])
-                    / 2;
-                double borderCoordDerivative = (fractionCoordsDerivatives[coord]
-                    + prev->fractionCoordsDerivatives[coord])
-                    / 2;
-                double transfer = -borderValue*borderCoordDerivative*dt / parent->size[coord];
+                double transfer = getFlowInFractionSpace(coord, quantity, TD_DOWN, prev) *dt;
                 if (transfer > 0)
                 {
                     // Flow out from this cell in negative coordinate direction
@@ -134,13 +158,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
             Fraction1Cell* prev = prevInSpace(coord);
             if (next)
             {
-                double borderValue = (quantities[quantity]
-                    + next->quantities[quantity])
-                    / 2;
-                double borderCoordDerivative = (spaceCoordsDerivatives[coord]
-                    + next->spaceCoordsDerivatives[coord])
-                    / 2;
-                double transfer = borderValue*borderCoordDerivative*dt / static_cast<SpaceGridType::GridElement*>(getSpaceCell())->size[coord];
+                double transfer = getFlowInSpace(coord, quantity, TD_UP, next) * dt;
                 if (transfer > 0)
                 {
                     // Flow out from this cell in positive coordinate direction
@@ -150,13 +168,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
             }
             if (prev)
             {
-                double borderValue = (quantities[quantity]
-                    + prev->quantities[quantity])
-                    / 2;
-                double borderCoordDerivative = (spaceCoordsDerivatives[coord]
-                    + prev->spaceCoordsDerivatives[coord])
-                    / 2;
-                double transfer = -borderValue*borderCoordDerivative*dt / static_cast<SpaceGridType::GridElement*>(getSpaceCell())->size[coord];
+                double transfer = getFlowInSpace(coord, quantity, TD_DOWN, prev) * dt;
                 if (transfer > 0)
                 {
                     // Flow out from this cell in negative coordinate direction
