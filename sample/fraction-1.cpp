@@ -79,11 +79,11 @@ double Fraction1Cell::getFlowInSpace(unsigned int coordinate, unsigned int quant
     double l1 = thisSpaceCell->size[coordinate];
     double l2 = neighborSpaceCell->size[coordinate];
     
-    double borderValue = (quantities[quantity]*l2 + neighbor->quantities[quantity]*l1)
+    double borderValue = (quantities[quantity]*l2/l1 + neighbor->quantities[quantity]*l1/l2)
         / (l1 + l2);
     double borderCoordDerivative = (spaceCoordsDerivatives[coordinate]*l2 + neighbor->spaceCoordsDerivatives[coordinate]*l1)
         / (l1 + l2);
-    double flow = borderValue*borderCoordDerivative / l1;
+    double flow = borderValue*borderCoordDerivative;
     
     if (direction == TD_DOWN)
         flow = -flow;
@@ -96,11 +96,11 @@ double Fraction1Cell::getFlowInFractionSpace(unsigned int coordinate, unsigned i
     double l1 = parent->size[coordinate];
     double l2 = neighbor->parent->size[coordinate];
     
-    double borderValue = (quantities[quantity]*l2 + neighbor->quantities[quantity]*l1)
+    double borderValue = (quantities[quantity]*l2/l1 + neighbor->quantities[quantity]*l1/l2)
         / (l1 + l2);
     double borderCoordDerivative = (fractionCoordsDerivatives[coordinate]*l2 + neighbor->fractionCoordsDerivatives[coordinate]*l1)
         / (l1 + l2);
-    double flow = borderValue*borderCoordDerivative / l1;
+    double flow = borderValue*borderCoordDerivative;
     
     if (direction == TD_DOWN)
         flow = -flow;
