@@ -26,7 +26,7 @@ enum Fraction1Coordinate
 
 enum Fraction1Quantity
 {
-    FRACTION1_QUANTITY_CONCENTRATION = 0,
+    FRACTION1_QUANTITY_COUNT = 0,
     FRACTION1_QUANTITIES_COUNT
 };
 

@@ -74,7 +74,6 @@ Fraction1Cell* Fraction1Cell::prevInFractionSpace(unsigned int coordinate)
 
 void Fraction1Cell::calculateFlowsEvolution(double dt)
 {
-    /// @todo Reimplement in this way: every cel should calculate flows out only to know how to distribute flows out if particles count is small
     /// @todo Implement here for multi-sign values (like charge)
     /// @todo optimize here?
     
@@ -101,7 +100,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
                 double borderCoordDerivative = (fractionCoordsDerivatives[coord]
                     + next->fractionCoordsDerivatives[coord])
                     / 2;
-                double transfer = borderValue*borderCoordDerivative*dt;
+                double transfer = borderValue*borderCoordDerivative*dt / parent->size[coord];
                 if (transfer > 0)
                 {
                     // Flow out from this cell in positive coordinate direction
@@ -118,7 +117,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
                 double borderCoordDerivative = (fractionCoordsDerivatives[coord]
                     + prev->fractionCoordsDerivatives[coord])
                     / 2;
-                double transfer = -borderValue*borderCoordDerivative*dt;
+                double transfer = -borderValue*borderCoordDerivative*dt / parent->size[coord];
                 if (transfer > 0)
                 {
                     // Flow out from this cell in negative coordinate direction
@@ -141,7 +140,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
                 double borderCoordDerivative = (spaceCoordsDerivatives[coord]
                     + next->spaceCoordsDerivatives[coord])
                     / 2;
-                double transfer = borderValue*borderCoordDerivative*dt;
+                double transfer = borderValue*borderCoordDerivative*dt / static_cast<SpaceGridType::GridElement*>(getSpaceCell())->size[coord];
                 if (transfer > 0)
                 {
                     // Flow out from this cell in positive coordinate direction
@@ -157,7 +156,7 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
                 double borderCoordDerivative = (spaceCoordsDerivatives[coord]
                     + prev->spaceCoordsDerivatives[coord])
                     / 2;
-                double transfer = -borderValue*borderCoordDerivative*dt;
+                double transfer = -borderValue*borderCoordDerivative*dt / static_cast<SpaceGridType::GridElement*>(getSpaceCell())->size[coord];
                 if (transfer > 0)
                 {
                     // Flow out from this cell in negative coordinate direction
@@ -203,14 +202,14 @@ void Fraction1Cell::calculateSourceEvolution(double dt)
     
     if (static_cast<Model*>(getModel())->time < 0.02)
     
-    if (fabs(parent->coordinates[FRACTION1_COORDS_VX]) < 5.1)
+    if (fabs(parent->coordinates[FRACTION1_COORDS_VX]+3) < 0.5)
     //if (fabs(parent->coordinates[FRACTION1_COORDS_VX]) < 10)
-    if (fabs(spaceCell->coordinates[SPACE_COORDS_X]) < 1.01)
-    //    nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] += 0.1*spaceCell->volume*dt;
-    nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] = 1;//spaceCell->coordinates[SPACE_COORDS_X]/30;
+    if (fabs(spaceCell->coordinates[SPACE_COORDS_X]-8) < 1)
+    //    nextStepQuantities[FRACTION1_QUANTITY_COUNT] += 0.1*spaceCell->volume*dt;
+    nextStepQuantities[FRACTION1_QUANTITY_COUNT] = 1;//spaceCell->coordinates[SPACE_COORDS_X]/30;
     
     //else
-    //nextStepQuantities[FRACTION1_QUANTITY_CONCENTRATION] = 0;
+    //nextStepQuantities[FRACTION1_QUANTITY_COUNT] = 0;
 }
 
 Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :

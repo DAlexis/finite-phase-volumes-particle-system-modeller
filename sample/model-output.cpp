@@ -2,9 +2,9 @@
 #include <iostream>
 
 Fraction1ConcentrationVsCoordsOutput::Fraction1ConcentrationVsCoordsOutput() :
-    OutputInstanceBase(FRACTION1_QUANTITY_CONCENTRATION,
+    OutputInstanceBase(FRACTION1_QUANTITY_COUNT,
         0.01,
-        50,
+        100,
         "Fraction1-concentration-x-slice-(t).txt")
 {
 }
@@ -31,7 +31,7 @@ void Fraction1ConcentrationVsCoordsOutput::printToFile(double time)
         double result = 0;
         for (unsigned int particleIndex=0; particleIndex<spaceCell.fraction1.elementsCount; particleIndex++)
         {
-            result += spaceCell.fraction1.elements[particleIndex].data.quantities[FRACTION1_QUANTITY_CONCENTRATION];
+            result += spaceCell.fraction1.elements[particleIndex].data.quantities[FRACTION1_QUANTITY_COUNT];
         }
         (*m_file) << time << " " << spacePoint[SPACE_COORDS_X] << " " << result << std::endl;
     }
@@ -42,7 +42,7 @@ void Fraction1ConcentrationVsCoordsOutput::printToFile(double time)
 // Fraction1ConcentrationVsVelocityOutput
 
 Fraction1ConcentrationVsVelocityOutput::Fraction1ConcentrationVsVelocityOutput() :
-    OutputInstanceBase(FRACTION1_QUANTITY_CONCENTRATION,
+    OutputInstanceBase(FRACTION1_QUANTITY_COUNT,
         0.01,
         50,
         "Fraction1-concentration-vx-slice-(t).txt")
@@ -73,7 +73,7 @@ void Fraction1ConcentrationVsVelocityOutput::printToFile(double time)
         
         Fraction1Cell &fractionCell = fractionSpace.accessElement_d(fractionSubspacePoint)->data;
         // Convolution in fraction1 space cell
-        double result = fractionCell.quantities[FRACTION1_QUANTITY_CONCENTRATION];
+        double result = fractionCell.quantities[FRACTION1_QUANTITY_COUNT];
         (*m_file) << time << " " << fractionSubspacePoint[FRACTION1_COORDS_VX] << " " << result << std::endl;
     }
 }
