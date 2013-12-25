@@ -11,21 +11,21 @@ Fraction1Cell::Fraction1Cell()
 
 void* Fraction1Cell::getModel()
 {
-    SpaceGridType::GridElement* spaceCell = getSpaceCell();
+    SpaceGridType::GridElement* spaceCell = this->getFractionPool();
     Space* space = static_cast<Space*>(spaceCell->parentGrid);
     return space->parent;
 }
 
 void Fraction1Cell::calculateDerivatives()
 {
-    spaceCoordsDerivatives[SPACE_COORDS_X] = parent->coordinates[FRACTION1_COORDS_VX];
+    spaceCoordsDerivatives[SPACE_COORDS_X] = this->coordinates[FRACTION1_COORDS_VX];
     fractionCoordsDerivatives[FRACTION1_COORDS_VX] = 0;// -9.8;
 }
 
 double Fraction1Cell::getFlowInSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor)
 {
-    SpaceGridType::GridElement* thisSpaceCell = getSpaceCell();
-    SpaceGridType::GridElement* neighborSpaceCell = neighbor->getSpaceCell();
+    SpaceGridType::GridElement* thisSpaceCell = getFractionPool();
+    SpaceGridType::GridElement* neighborSpaceCell = neighbor->getFractionPool();
     double l1 = thisSpaceCell->size[coordinate];
     double l2 = neighborSpaceCell->size[coordinate];
     
@@ -43,8 +43,8 @@ double Fraction1Cell::getFlowInSpace(unsigned int coordinate, unsigned int quant
 
 double Fraction1Cell::getFlowInFractionSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor)
 {
-    double l1 = parent->size[coordinate];
-    double l2 = neighbor->parent->size[coordinate];
+    double l1 = size[coordinate];
+    double l2 = neighbor->size[coordinate];
     
     double borderValue = (quantities[quantity]*l2/l1 + neighbor->quantities[quantity]*l1/l2)
         / (l1 + l2);
@@ -174,11 +174,11 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
 
 void Fraction1Cell::calculateSourceEvolution(double dt)
 {
-    SpaceGridType::GridElement* spaceCell = getSpaceCell();
+    SpaceGridType::GridElement* spaceCell = getFractionPool();
     
     if (static_cast<Model*>(getModel())->time < 0.02)
     
-    if (fabs(parent->coordinates[FRACTION1_COORDS_VX]+3) < 0.5)
+    if (fabs(coordinates[FRACTION1_COORDS_VX]+3) < 0.5)
     //if (fabs(parent->coordinates[FRACTION1_COORDS_VX]) < 10)
     if (fabs(spaceCell->coordinates[SPACE_COORDS_X]-8) < 1)
     //    nextStepQuantities[FRACTION1_QUANTITY_COUNT] += 0.1*spaceCell->volume*dt;
@@ -202,14 +202,14 @@ Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
 void Fraction1Space::calculateFlowsEvolution(double dt)
 {
     for (size_t i=0; i<elementsCount; i++)
-        elements[i].data->calculateDerivatives();
+        static_cast<Fraction1Cell*>( &(elements[i]) )->calculateDerivatives();
     
     for (size_t i=0; i<elementsCount; i++)
-        elements[i].data->calculateFlowsEvolution(dt);
+        static_cast<Fraction1Cell*>( &(elements[i]) )->calculateFlowsEvolution(dt);
 }
 
 void Fraction1Space::calculateSourceEvolution(double dt)
 {
      for (size_t i=0; i<elementsCount; i++)
-        elements[i].data->calculateSourceEvolution(dt);
+        static_cast<Fraction1Cell*>( &(elements[i]) )->calculateSourceEvolution(dt);
 }

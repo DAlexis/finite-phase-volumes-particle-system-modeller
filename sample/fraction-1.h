@@ -8,7 +8,13 @@
 
 #include "global-defines.h"
 
-class Fraction1Cell : public FractionCell<FRACTION_FRACTION1, SPACE_COORDS_COUNT, FRACTION1_COORDS_COUNT, FRACTION1_QUANTITIES_COUNT, Fraction1SpaceGridType>
+typedef FractionCell<FRACTION_FRACTION1,
+                     SPACE_COORDS_COUNT,
+                     FRACTION1_COORDS_COUNT,
+                     FRACTION1_QUANTITIES_COUNT,
+                     Fraction1SpaceGridType>       Fraction1CellBase;
+
+class Fraction1Cell : public Fraction1CellBase
 {
 public:
     /// Fraction-specific calculations

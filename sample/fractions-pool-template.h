@@ -7,9 +7,11 @@
 
 #include "global-defines.h"
 
-class FractionsPoolTemplate
+class FractionsPoolTemplate : public SpaceGridType::GridElement
 {
 public:
+    virtual ~FractionsPoolTemplate() {}
+    
     void init(void* parentGridElement) { parent = parentGridElement; }
     
     // To get fraction by index

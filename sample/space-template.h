@@ -16,19 +16,19 @@ public:
     void swapBuffers()
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].data->swapBuffers();
+            static_cast<typename GridType::CurrentGridElementType*>( &(this->elements[i]))->swapBuffers();
     }
     
     void calculateFlowsEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].data->calculateFlowsEvolution(dt);
+            static_cast<typename GridType::CurrentGridElementType*>( &(this->elements[i]))->calculateFlowsEvolution(dt);
     }
     
     void calculateSourceEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].data->calculateSourceEvolution(dt);
+            static_cast<typename GridType::CurrentGridElementType*>( &(this->elements[i]))->calculateSourceEvolution(dt);
     }
     
     void* parent;

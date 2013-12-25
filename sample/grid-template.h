@@ -8,10 +8,11 @@
 #include "axis.h"
 
 
-template <int AxisCount, class AssociatedData>
+template <int AxisCount, class GridElementType>
 class Grid
 {
 public:
+    typedef GridElementType CurrentGridElementType;
     class GridDescription
     {
     public:
@@ -27,15 +28,13 @@ public:
         double volume;
         
         /// Neighbors pointers
-        GridElement* prev[AxisCount];
-        GridElement* next[AxisCount];
+        GridElementType* prev[AxisCount];
+        GridElementType* next[AxisCount];
         
-        void* parentGrid;
+        Grid* parentGrid;
         size_t elementIndex;
         
-        AssociatedData* data;
-        
-        GridElement() : parentGrid(0), elementIndex(0), data(0)
+        GridElement() : parentGrid(0), elementIndex(0)
         {
             for (unsigned int i=0; i<AxisCount; i++)
             {
@@ -45,17 +44,12 @@ public:
             // Tell associated data where it associated to
         }
         
-        ~GridElement()
-        {
-            if (data) delete data;
-        }
+        virtual ~GridElement() { }
         
-        void init(void* parent, size_t index)
+        void init(Grid* parent, size_t index)
         {
             parentGrid = parent;
             elementIndex = index;
-            data = new AssociatedData;
-            data->init(this);
         }
     };
     
@@ -72,7 +66,7 @@ public:
             currentCoords_d[i] = 0.0;
         }
         // Allocating memory
-        elements = new GridElement[elementsCount];
+        elements = new GridElementType[elementsCount];
         
         // Initialising size, neighbor pointers, etc.
         recursiveInitGridElements(0);
@@ -85,24 +79,24 @@ public:
     Grid() : elements(0), elementsCount(0) {}
     ~Grid() { if (elements) delete[] elements; }
     
-    GridElement* accessElement_ui(const uint* coords)
+    GridElementType* accessElement_ui(const uint* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
         {
             resInd += offsets[i]*coords[i];
         }
-        return &(elements[resInd]);
+        return static_cast<GridElementType*> ( &(elements[resInd]) );
     }
 
-    GridElement* accessElement_d(const double* coords)
+    GridElementType* accessElement_d(const double* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
         {
             resInd += offsets[i]*gridDescription->axis[i].getIndex(coords[i]);
         }
-        return &(elements[resInd]);
+        return static_cast<GridElementType*> ( &(elements[resInd]) );
     }
 
     GridElement* elements;

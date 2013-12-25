@@ -9,6 +9,7 @@ class FractionsPool : public FractionsPoolTemplate
 public:
     Fraction1Space fraction1;
     FractionsPool();
+    virtual ~FractionsPool() {}
     
     void calculateFlowsEvolution(double dt);
     void calculateSourceEvolution(double dt);

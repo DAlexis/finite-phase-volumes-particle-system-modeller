@@ -20,7 +20,7 @@ public:
     void swapBuffers()
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].data->swapBuffers();
+            static_cast<typename GridInstanceType::CurrentGridElementType*>( &(this->elements[i]))->swapBuffers();
     }
 
 protected:
