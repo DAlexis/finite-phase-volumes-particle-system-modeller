@@ -33,9 +33,9 @@ public:
         void* parentGrid;
         size_t elementIndex;
         
-        AssociatedData data;
+        AssociatedData* data;
         
-        GridElement() : parentGrid(0), elementIndex(0)
+        GridElement() : parentGrid(0), elementIndex(0), data(0)
         {
             for (unsigned int i=0; i<AxisCount; i++)
             {
@@ -43,13 +43,19 @@ public:
             }
             volume = 1.0;
             // Tell associated data where it associated to
-            data.init(this);
+        }
+        
+        ~GridElement()
+        {
+            if (data) delete data;
         }
         
         void init(void* parent, size_t index)
         {
             parentGrid = parent;
             elementIndex = index;
+            data = new AssociatedData;
+            data->init(this);
         }
     };
     

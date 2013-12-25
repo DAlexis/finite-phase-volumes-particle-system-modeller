@@ -25,13 +25,13 @@ void Fraction1ConcentrationVsCoordsOutput::printToFile(double time)
     {
         spacePoint[SPACE_COORDS_X] = minVal + (maxVal-minVal) * sapceIndex / m_pointsCount;
         
-        FractionsPool &spaceCell = space.accessElement_d(spacePoint)->data;
+        FractionsPool &spaceCell = *(space.accessElement_d(spacePoint)->data);
         
         // Convolution in fraction1 space cell
         double result = 0;
         for (unsigned int particleIndex=0; particleIndex<spaceCell.fraction1.elementsCount; particleIndex++)
         {
-            result += spaceCell.fraction1.elements[particleIndex].data.quantities[FRACTION1_QUANTITY_COUNT];
+            result += spaceCell.fraction1.elements[particleIndex].data->quantities[FRACTION1_QUANTITY_COUNT];
         }
         (*m_file) << time << " " << spacePoint[SPACE_COORDS_X] << " " << result << std::endl;
     }
@@ -60,7 +60,7 @@ void Fraction1ConcentrationVsVelocityOutput::printToFile(double time)
     // Here we will get a distribution
     double spacePoint[SPACE_COORDS_COUNT] = { 0 };
     
-    Fraction1Space &fractionSpace = space.accessElement_d(spacePoint)->data.fraction1;
+    Fraction1Space &fractionSpace = space.accessElement_d(spacePoint)->data->fraction1;
     
     double maxVal = fractionSpace.gridDescription->axis[FRACTION1_COORDS_VX].getMaxValue();
     double minVal = fractionSpace.gridDescription->axis[FRACTION1_COORDS_VX].getMinValue();
@@ -71,7 +71,7 @@ void Fraction1ConcentrationVsVelocityOutput::printToFile(double time)
     {
         fractionSubspacePoint[FRACTION1_COORDS_VX] = minVal + (maxVal-minVal) * fractionSapceIndex / m_pointsCount;
         
-        Fraction1Cell &fractionCell = fractionSpace.accessElement_d(fractionSubspacePoint)->data;
+        Fraction1Cell &fractionCell = *(fractionSpace.accessElement_d(fractionSubspacePoint)->data);
         // Convolution in fraction1 space cell
         double result = fractionCell.quantities[FRACTION1_QUANTITY_COUNT];
         (*m_file) << time << " " << fractionSubspacePoint[FRACTION1_COORDS_VX] << " " << result << std::endl;

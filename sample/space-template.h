@@ -16,19 +16,19 @@ public:
     void swapBuffers()
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].data.swapBuffers();
+            this->elements[i].data->swapBuffers();
     }
     
     void calculateFlowsEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].data.calculateFlowsEvolution(dt);
+            this->elements[i].data->calculateFlowsEvolution(dt);
     }
     
     void calculateSourceEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].data.calculateSourceEvolution(dt);
+            this->elements[i].data->calculateSourceEvolution(dt);
     }
     
     void* parent;

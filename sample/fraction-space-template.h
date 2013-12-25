@@ -20,7 +20,7 @@ public:
     void swapBuffers()
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].data.swapBuffers();
+            this->elements[i].data->swapBuffers();
     }
 
 protected:

@@ -22,38 +22,6 @@ void Fraction1Cell::calculateDerivatives()
     fractionCoordsDerivatives[FRACTION1_COORDS_VX] = 0;// -9.8;
 }
 
-Fraction1Cell* Fraction1Cell::nextInSpace(unsigned int coordinate)
-{
-    SpaceGridType::GridElement* spaceCell = getSpaceCell();
-    if (spaceCell->next[coordinate] == NULL)
-        return NULL;
-    
-    return &(spaceCell->next[coordinate]->data.fraction1.elements[parent->elementIndex].data);
-}
-
-Fraction1Cell* Fraction1Cell::nextInFractionSpace(unsigned int coordinate)
-{
-    if (parent->next[coordinate] == NULL)
-        return NULL;
-    return &(parent->next[coordinate]->data);
-}
-
-Fraction1Cell* Fraction1Cell::prevInSpace(unsigned int coordinate)
-{
-    SpaceGridType::GridElement* spaceCell = getSpaceCell();
-    if (spaceCell->prev[coordinate] == NULL)
-        return NULL;
-    
-    return &(spaceCell->prev[coordinate]->data.fraction1.elements[parent->elementIndex].data);
-}
-
-Fraction1Cell* Fraction1Cell::prevInFractionSpace(unsigned int coordinate)
-{
-    if (parent->prev[coordinate] == NULL)
-        return NULL;
-    return &(parent->prev[coordinate]->data);
-}
-
 double Fraction1Cell::getFlowInSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor)
 {
     SpaceGridType::GridElement* thisSpaceCell = getSpaceCell();
@@ -105,8 +73,8 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
     // Flows in fraction space
     for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
     {
-        Fraction1Cell* next = nextInFractionSpace(coord);
-        Fraction1Cell* prev = prevInFractionSpace(coord);
+        Fraction1Cell* next = static_cast<Fraction1Cell*>(nextInFractionSpace(coord));
+        Fraction1Cell* prev = static_cast<Fraction1Cell*>(prevInFractionSpace(coord));
         if (next)
         {
             /// @todo Interpolation should be added here
@@ -134,8 +102,8 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
     // Flows in coordinate space
     for (uint coord=0; coord<SPACE_COORDS_COUNT; coord++)
     {
-        Fraction1Cell* next = nextInSpace(coord);
-        Fraction1Cell* prev = prevInSpace(coord);
+        Fraction1Cell* next = static_cast<Fraction1Cell*>(nextInSpace(coord));
+        Fraction1Cell* prev = static_cast<Fraction1Cell*>(prevInSpace(coord));
         if (next)
         {
             double transfer = getFlowInSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, TD_UP, next) * dt;
@@ -186,19 +154,19 @@ void Fraction1Cell::calculateFlowsEvolution(double dt)
         // In fraction space
         for (uint coord=0; coord<FRACTION1_COORDS_COUNT; coord++)
         {
-            Fraction1Cell *next = nextInFractionSpace(coord);
+            Fraction1Cell *next = static_cast<Fraction1Cell*>(nextInFractionSpace(coord));
             if (next) next->nextStepQuantities[quantity] += flowOutUp[coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
             
-            Fraction1Cell *prev = prevInFractionSpace(coord);
+            Fraction1Cell *prev = static_cast<Fraction1Cell*>(prevInFractionSpace(coord));
             if (prev) prev->nextStepQuantities[quantity] += flowOutDown[coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
         }
         // In coordinate space
         for (uint coord=0; coord<SPACE_COORDS_COUNT; coord++)
         {
-            Fraction1Cell *next = nextInSpace(coord);
+            Fraction1Cell *next = static_cast<Fraction1Cell*>(nextInSpace(coord));
             if (next) next->nextStepQuantities[quantity] += flowOutUp[FRACTION1_COORDS_COUNT+coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
             
-            Fraction1Cell *prev = prevInSpace(coord);
+            Fraction1Cell *prev = static_cast<Fraction1Cell*>(prevInSpace(coord));
             if (prev) prev->nextStepQuantities[quantity] += flowOutDown[FRACTION1_COORDS_COUNT+coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
         }
     }
@@ -234,14 +202,14 @@ Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
 void Fraction1Space::calculateFlowsEvolution(double dt)
 {
     for (size_t i=0; i<elementsCount; i++)
-        elements[i].data.calculateDerivatives();
+        elements[i].data->calculateDerivatives();
     
     for (size_t i=0; i<elementsCount; i++)
-        elements[i].data.calculateFlowsEvolution(dt);
+        elements[i].data->calculateFlowsEvolution(dt);
 }
 
 void Fraction1Space::calculateSourceEvolution(double dt)
 {
      for (size_t i=0; i<elementsCount; i++)
-        elements[i].data.calculateSourceEvolution(dt);
+        elements[i].data->calculateSourceEvolution(dt);
 }

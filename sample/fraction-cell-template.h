@@ -60,16 +60,43 @@ public:
         SpaceGridType::GridElement* pSpaceGridElement = static_cast<SpaceGridType::GridElement*>(pFractionsPool->parent);
         return pSpaceGridElement;
     }
-    
-    Fraction1Cell* nextInSpaceTMP(unsigned int coordinate)
+    ///////////////////////////
+    // Next/Prev cells getting
+    FractionCell* nextInSpace(unsigned int coordinate)
     {
-        /*
+        
         SpaceGridType::GridElement* spaceCell = getSpaceCell();
         if (spaceCell->next[coordinate] == NULL)
             return NULL;
         
-        return &(spaceCell->next[coordinate]->data.fraction1.elements[parent->elementIndex].data);*/
-        return NULL;
+        void *fraction = static_cast<FractionsPoolTemplate*>(spaceCell->next[coordinate]->data)->fractions[FractionIndex];
+        return static_cast<GridInstanceType*>(fraction)->elements[parent->elementIndex].data;
+    }
+    
+    FractionCell* prevInSpace(unsigned int coordinate)
+    {
+        SpaceGridType::GridElement* spaceCell = getSpaceCell();
+        if (spaceCell->prev[coordinate] == NULL)
+            return NULL;
+        
+        void *fraction = static_cast<FractionsPoolTemplate*>(spaceCell->prev[coordinate]->data)->fractions[FractionIndex];
+        return static_cast<GridInstanceType*>(fraction)->elements[parent->elementIndex].data;
+    }
+    
+    FractionCell* nextInFractionSpace(unsigned int coordinate)
+    {
+        /// @todo simplify this function
+        if (parent->next[coordinate] == NULL)
+            return NULL;
+        return parent->next[coordinate]->data;
+    }
+    
+    FractionCell* prevInFractionSpace(unsigned int coordinate)
+    {
+        /// @todo simplify this function also
+        if (parent->prev[coordinate] == NULL)
+            return NULL;
+        return parent->prev[coordinate]->data;
     }
     
     void init(typename GridInstanceType::GridElement* parentGridElement) { parent = parentGridElement; }
