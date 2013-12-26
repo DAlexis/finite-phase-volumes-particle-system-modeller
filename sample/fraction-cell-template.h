@@ -20,8 +20,8 @@ public:
     FractionCell()
     {
         for (unsigned int i=0; i<QuantitiesCount; i++) {
-            quantitiesBuffer0[i] = 0;
-            quantitiesBuffer1[i] = 0;
+            quantitiesBuffer0[i] = 123.45;
+            quantitiesBuffer1[i] = 123.45;
         }
         quantities = quantitiesBuffer0;
         nextStepQuantities = quantitiesBuffer1;

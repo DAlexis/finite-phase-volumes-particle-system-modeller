@@ -193,10 +193,13 @@ Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
 {
     // Setting up x coordinate
     Axis& xSpeed = frtactionGridDescription.axis[0];
-    xSpeed.uniformInit(-10.0, 10.0, 100);
+    xSpeed.uniformInit(-10.0, 10.0, 2);
     xSpeed.setName("Horisontal speed, m");
     
     constructGrid(frtactionGridDescription);
+    
+    double test = static_cast<Fraction1Cell*> ( &(elements[0]) ) ->quantities[0];
+    double tmp=test+1;
 }
 
 void Fraction1Space::calculateFlowsEvolution(double dt)

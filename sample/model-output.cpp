@@ -31,7 +31,12 @@ void Fraction1ConcentrationVsCoordsOutput::printToFile(double time)
         double result = 0;
         for (unsigned int particleIndex=0; particleIndex<spaceCell.fraction1.elementsCount; particleIndex++)
         {
-            result += static_cast<Fraction1Cell*>( &(spaceCell.fraction1.elements[particleIndex]) )->quantities[FRACTION1_QUANTITY_COUNT];
+            Fraction1Space* fr1 = &(spaceCell.fraction1);
+            
+            Fraction1SpaceGridType* sp1 = static_cast<Fraction1SpaceGridType*>(fr1);
+            
+            Fraction1Cell* cell = static_cast<Fraction1Cell*>( &(spaceCell.fraction1.elements[particleIndex]) );
+            result += cell->quantities[FRACTION1_QUANTITY_COUNT];
         }
         (*m_file) << time << " " << spacePoint[SPACE_COORDS_X] << " " << result << std::endl;
     }
