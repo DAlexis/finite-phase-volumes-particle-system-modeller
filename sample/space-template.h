@@ -5,6 +5,29 @@
 #ifndef SPACE_TEMPLATE_H_INCLUDED
 #define SPACE_TEMPLATE_H_INCLUDED
 
+#include "global-defines.h"
+#include "fractions-pool-template.h"
+
+class SpaceBase : public SpaceGridType
+{
+public:
+    SpaceBase(void* model) :
+        parent(model)
+    {}
+    
+    virtual ~SpaceBase() {}
+    
+    void calculateFlowsEvolution(double dt);
+    void calculateSourceEvolution(double dt);
+    void swapBuffers();
+    
+    void* parent;
+
+protected:
+    typename SpaceGridType::GridDescription spaceGridDescription;
+};
+
+/*
 template<class GridType>
 class SpaceBase : public GridType
 {
@@ -33,5 +56,5 @@ public:
     
     void* parent;
 };
-
+*/
 #endif // SPACE_TEMPLATE_H_INCLUDED

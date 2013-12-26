@@ -4,6 +4,15 @@
 #include "fraction-1.h"
 #include "fractions-pool-template.h"
 
+class FractionsPool : public FractionsPoolBase
+{
+public:
+    FractionsPool();
+    virtual ~FractionsPool();
+    virtual void createFractions();
+};
+
+/*
 class FractionsPool : public FractionsPoolTemplate
 {
 public:
@@ -18,5 +27,5 @@ public:
 private:
 
 };
-
+*/
 #endif // FRACTIONS_POOL_H_INCLUDED

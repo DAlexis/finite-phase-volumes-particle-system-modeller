@@ -132,6 +132,7 @@ double Axis::getMaxSegmentCenter() const
 
 void Axis::setName(const std::string& name)
 {
+    m_name = name;
 }
 
 void Axis::sortPoints()

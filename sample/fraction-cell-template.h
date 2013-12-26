@@ -7,27 +7,50 @@
 
 #include "global-defines.h"
 #include "fractions-pool-template.h"
-#include "fraction-space-template.h"
+#include "fraction-cell-interface.h"
+
+#include <iostream>
+using namespace std;
+
+template <int AxisCount>
+class FractionSpace : public Grid<AxisCount>
+{
+public:
+    
+    FractionSpace(FractionsPool* parentFractionsPool) :
+        parent(parentFractionsPool)
+    {}
+    
+    virtual ~FractionSpace() {  cout << "FractionSpace destructor" << endl;  }
+    
+    FractionsPool* parent;
+
+protected:
+    typename Grid<AxisCount>::GridDescription fractionGridDescription;
+};
 
 template <int FractionIndex,
           int SpaceDimension,
           int FractionSpaceDimension,
-          int QuantitiesCount,
-          class GridInstanceType>
-class FractionCell : public GridInstanceType::GridElement
+          int QuantitiesCount>
+class FractionCell : public Grid<SpaceDimension>::GridElement, public IFractionCell
 {
-public: 
+public:
+    typedef Grid<SpaceDimension> GridInstance;
+    
     FractionCell()
     {
         for (unsigned int i=0; i<QuantitiesCount; i++) {
-            quantitiesBuffer0[i] = 123.45;
-            quantitiesBuffer1[i] = 123.45;
+            quantitiesBuffer0[i] = 0;
+            quantitiesBuffer1[i] = 0;
         }
         quantities = quantitiesBuffer0;
         nextStepQuantities = quantitiesBuffer1;
     }
     
-    void swapBuffers()
+    virtual ~FractionCell() {  cout << "FractionCell destructor" << endl;  }
+    
+    virtual void swapBuffers()
     {
         if (quantities == quantitiesBuffer0)
         {
@@ -42,6 +65,40 @@ public:
             nextStepQuantities[i] = quantities[i];
         }
     }
+    
+    virtual void calculateFlowsEvolution(double dt)
+    {
+    }
+    
+    double* quantities;
+    double* nextStepQuantities;
+    
+     /// Space coordinates derivatives
+    double spaceCoordsDerivatives[SpaceDimension];
+    /// Fraction coordinates derivatives
+    double fractionCoordsDerivatives[FractionSpaceDimension];
+    
+protected:
+    enum TransferDirection
+    {
+        TD_UP = 0,
+        TD_DOWN
+    };
+    
+private:
+    double quantitiesBuffer0[QuantitiesCount];
+    double quantitiesBuffer1[QuantitiesCount];
+};
+
+/*
+template <int FractionIndex,
+          int SpaceDimension,
+          int FractionSpaceDimension,
+          int QuantitiesCount,
+          class GridInstanceType>
+class FractionCell : public GridInstanceType::GridElement
+{
+public:
     
     FractionsPoolTemplate* getFractionPool()
     {
@@ -76,33 +133,15 @@ public:
     
     FractionCell* nextInFractionSpace(unsigned int coordinate)
     {
-        return  static_cast<typename GridInstanceType::GridElement*>(this)->next[coordinate];
+        return  static_cast<FractionCell*>(static_cast<typename GridInstanceType::GridElement*>(this)->next[coordinate]);
     }
     
     FractionCell* prevInFractionSpace(unsigned int coordinate)
     {
-        return  static_cast<typename GridInstanceType::GridElement*>(this)->prev[coordinate];
+        return  static_cast<FractionCell*>(static_cast<typename GridInstanceType::GridElement*>(this)->prev[coordinate]);
     }
     
-    double* quantities;
-    double* nextStepQuantities;
     
-     /// Space coordinates derivatives
-    double spaceCoordsDerivatives[SpaceDimension];
-    /// Fraction coordinates derivatives
-    double fractionCoordsDerivatives[FractionSpaceDimension];
-    
-protected:
-    
-    enum TransferDirection
-    {
-        TD_UP = 0,
-        TD_DOWN
-    };
-    
-private:
-    double quantitiesBuffer0[QuantitiesCount];
-    double quantitiesBuffer1[QuantitiesCount];
 };
-
+*/
 #endif // FRACTION_CELL_TEMPLATE

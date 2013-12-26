@@ -1,11 +1,20 @@
 #ifndef LOCATION_SPACE_H_INCLUDED
 #define LOCATION_SPACE_H_INCLUDED
 
-#include "fractions-pool.h"
-#include "grid-template.h"
 #include "global-defines.h"
 #include "space-template.h"
 
+class Space : public SpaceBase
+{
+public:
+    Space(void* model);
+    virtual ~Space() {}
+    
+private:
+    virtual GridInstance::GridElement* createGridElements(size_t count);
+};
+
+/*
 class Space : public SpaceBase<SpaceGridType>
 {
 public:
@@ -14,5 +23,5 @@ public:
 private:
     SpaceGridType::GridDescription spaceGridDescription;
 };
-
+*/
 #endif // LOCATION_SPACE_H_INCLUDED

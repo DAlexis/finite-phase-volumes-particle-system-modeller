@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <limits>
 #include <string.h>
-
+/*
 //////////////////////
 // OutputInstanceBase
 OutputInstanceBase::OutputInstanceBase(int quantity, double period, unsigned int pointsCount, const std::string& fileName) :
@@ -83,3 +83,4 @@ void OutputMaker::output(double time)
         (*it)->output(time);
     }
 }
+*/

@@ -1,18 +1,42 @@
 #ifndef FRACTION_1_H_INCLUDED
 #define FRACTION_1_H_INCLUDED
 
-#include "grid-template.h"
-#include "fraction-cell-template.h"
-#include "fraction-space-template.h"
-// This fraction cell, this fraction space and fractions pool to use pointer to it 
-
 #include "global-defines.h"
+#include "fraction-cell-template.h"
+
+#include <iostream>
+using namespace std;
 
 typedef FractionCell<FRACTION_FRACTION1,
                      SPACE_COORDS_COUNT,
                      FRACTION1_COORDS_COUNT,
-                     FRACTION1_QUANTITIES_COUNT,
-                     Fraction1SpaceGridType>       Fraction1CellBase;
+                     FRACTION1_QUANTITIES_COUNT>       Fraction1CellBase;
+
+typedef FractionSpace<FRACTION1_COORDS_COUNT> Fraction1SpaceBase;
+
+class Fraction1Cell : public Fraction1CellBase
+{
+public:
+    virtual ~Fraction1Cell() { cout << "Fraction1Cell destructor" << endl; }
+    virtual void calculateDerivatives();
+    virtual void calculateSourceEvolution(double dt);
+    
+private:
+    void* getModel();
+};
+
+class Fraction1Space : public Fraction1SpaceBase
+{
+public:
+    Fraction1Space(FractionsPool* parentFractionsPool);
+    virtual ~Fraction1Space() { cout << "Fraction1Space destructor" << endl; }
+    
+private:
+    virtual GridInstance::GridElement* createGridElements(size_t count);
+};
+
+
+/*
 
 class Fraction1Cell : public Fraction1CellBase
 {
@@ -45,5 +69,5 @@ public:
 private:
     
 };
-
+*/
 #endif // FRACTION_1_H_INCLUDED

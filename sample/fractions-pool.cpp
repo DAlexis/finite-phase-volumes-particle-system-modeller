@@ -1,5 +1,21 @@
+#include "model.h"
 #include "fractions-pool.h"
 
+FractionsPool::FractionsPool()
+{
+    initFractionsPoolBase();
+}
+
+FractionsPool::~FractionsPool()
+{
+}
+
+void FractionsPool::createFractions()
+{
+    fractions[FRACTION_FRACTION1] = new Fraction1Space(this);
+}
+
+/*
 FractionsPool::FractionsPool() :
     fraction1(this)
 {
@@ -20,3 +36,4 @@ void FractionsPool::swapBuffers()
 {
     fraction1.swapBuffers();
 }
+*/

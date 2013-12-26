@@ -6,20 +6,30 @@
 #define GRID_TEMPLATE_H_INCLUDED
 
 #include "axis.h"
+#include <iostream>
+using namespace std;
 
-
-template <int AxisCount, class GridElementType>
-class Grid
+class IObjectWithVirtualDestructor
 {
 public:
-    typedef GridElementType CurrentGridElementType;
+    virtual ~IObjectWithVirtualDestructor() { cout << "IObjectWithVirtualDestructor destructor" << endl; };
+};
+
+/** @brief This is a grid contains elements that are inherited from GridElementType
+ */ 
+template <int AxisCount>
+class Grid : public IObjectWithVirtualDestructor
+{
+public:
+    typedef Grid<AxisCount> GridInstance;
+    
     class GridDescription
     {
     public:
         Axis axis[AxisCount];
     };
     
-    class GridElement
+    class GridElement : public IObjectWithVirtualDestructor
     {
     public:
         /// Fraction coordinates
@@ -28,8 +38,8 @@ public:
         double volume;
         
         /// Neighbors pointers
-        GridElementType* prev[AxisCount];
-        GridElementType* next[AxisCount];
+        GridElement* prev[AxisCount];
+        GridElement* next[AxisCount];
         
         Grid* parentGrid;
         size_t elementIndex;
@@ -44,7 +54,10 @@ public:
             // Tell associated data where it associated to
         }
         
-        virtual ~GridElement() { }
+        virtual ~GridElement()
+        {
+            cout << "Grid <" << AxisCount << ">::GridElement destructor" << endl;
+        }
         
         void init(Grid* parent, size_t index)
         {
@@ -66,7 +79,7 @@ public:
             currentCoords_d[i] = 0.0;
         }
         // Allocating memory
-        elements = new GridElementType[elementsCount];
+        elements = createGridElements(elementsCount);
         
         // Initialising size, neighbor pointers, etc.
         recursiveInitGridElements(0);
@@ -76,27 +89,37 @@ public:
             elements[i].init(this, i);
     }
     
-    Grid() : elements(0), elementsCount(0) {}
-    ~Grid() { if (elements) delete[] elements; }
+    /// This function should be reimplemented in child classes
+    virtual GridElement* createGridElements(size_t count)
+    {
+        return new GridElement[count];
+    }
     
-    GridElementType* accessElement_ui(const uint* coords)
+    Grid() : elements(0), elementsCount(0) {}
+    virtual ~Grid()
+    {
+        cout << "Grid <" << AxisCount << "> destructor" << endl;
+        if (elements) delete[] elements;
+    }
+    
+    GridElement* accessElement_ui(const uint* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
         {
             resInd += offsets[i]*coords[i];
         }
-        return static_cast<GridElementType*> ( &(elements[resInd]) );
+        return &(elements[resInd]);
     }
 
-    GridElementType* accessElement_d(const double* coords)
+    GridElement* accessElement_d(const double* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
         {
             resInd += offsets[i]*gridDescription->axis[i].getIndex(coords[i]);
         }
-        return static_cast<GridElementType*> ( &(elements[resInd]) );
+        return &(elements[resInd]);
     }
 
     GridElement* elements;

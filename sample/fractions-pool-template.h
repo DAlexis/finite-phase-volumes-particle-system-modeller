@@ -6,14 +6,24 @@
 #define FRACTIONS_POOL_TEMPLATE
 
 #include "global-defines.h"
+#include "fraction-cell-interface.h"
 
-class FractionsPoolTemplate : public SpaceGridType::GridElement
+class FractionsPoolBase : public SpaceGridType::GridElement
 {
 public:
-    virtual ~FractionsPoolTemplate() {}
+    FractionsPoolBase();
+    virtual ~FractionsPoolBase();
     
-    // To get fraction by index
-    void* fractions[FRACTIONS_COUNT];
+    void calculateSourceEvolution(double dt);
+    void calculateFlowsEvolution(double dt);
+    void swapBuffers();
+    
+    virtual void createFractions() = 0;
+
+    void *fractions[FRACTIONS_COUNT];
+
+protected:
+    void initFractionsPoolBase();
 };
 
 #endif // FRACTIONS_POOL_TEMPLATE

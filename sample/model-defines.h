@@ -35,6 +35,6 @@ enum Fraction1Quantity
 class Fraction1Cell;
 class Fraction1Space;
 
-typedef Grid<FRACTION1_COORDS_COUNT, Fraction1Cell> Fraction1SpaceGridType;
+//typedef Grid<FRACTION1_COORDS_COUNT, Fraction1Cell> Fraction1SpaceGridType;
 
 #endif // MODEL_DEFINES_H_INCLUDED

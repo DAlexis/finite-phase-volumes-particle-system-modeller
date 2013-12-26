@@ -5,6 +5,8 @@
 #ifndef FRACTION_SPACE_TEMPLATE_H_INCLUDED
 #define FRACTION_SPACE_TEMPLATE_H_INCLUDED
 
+
+/*
 class FractionsPool;
 
 template<class GridInstanceType>
@@ -26,5 +28,5 @@ public:
 protected:
     typename GridInstanceType::GridDescription frtactionGridDescription;
 };
-
+*/
 #endif

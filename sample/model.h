@@ -11,14 +11,14 @@ public:
     Space space;
     
     void iterate(double dt);
-    OutputMaker outputMaker;
+//    OutputMaker outputMaker;
     //void outputTimeSlice(const Fraction fraction, const int quantity, const int axis);
     
     double time;
 private:
     /// @todo This descriptions should be used to construct grids
-    Fraction1SpaceGridType::GridDescription fraction1GridDescription;
-    SpaceGridType::GridDescription spaceGridDescription;
+    //Fraction1SpaceGridType::GridDescription fraction1GridDescription;
+    //SpaceGridType::GridDescription spaceGridDescription;
 };
 
 #endif // MODEL_H_INCLUDED
