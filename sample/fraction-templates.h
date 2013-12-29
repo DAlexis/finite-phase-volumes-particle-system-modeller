@@ -10,9 +10,6 @@
 #include "fraction-cell-interface.h"
 #include "fraction-space-interface.h"
 
-#include <iostream>
-using namespace std;
-
 template <int AxisCount, class FractionCellType>
 class FractionSpaceBase : public Grid<AxisCount, FractionCellType>, public IFractionSpace
 {
@@ -22,7 +19,7 @@ public:
         parent(parentFractionsPool)
     {}
     
-    virtual ~FractionSpaceBase() {  cout << "FractionSpaceBase destructor" << endl;  }
+    virtual ~FractionSpaceBase() { }
     
     virtual void calculateFlowsEvolution(double dt)
     {
@@ -71,7 +68,7 @@ public:
         nextStepQuantities = quantitiesBuffer1;
     }
     
-    virtual ~FractionCellBase() {  cout << "FractionCellBase destructor" << endl;  }
+    virtual ~FractionCellBase() { }
     
     virtual void swapBuffers()
     {

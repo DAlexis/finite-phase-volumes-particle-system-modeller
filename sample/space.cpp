@@ -16,18 +16,18 @@ Space::Space(void* model) :
 void Space::calculateFlowsEvolution(double dt)
 {
     for (size_t i=0; i<elementsCount; i++)
-        static_cast<FractionsPoolBase*> ( &(elements[i]) )->calculateFlowsEvolution(dt);
+         elements[i].calculateFlowsEvolution(dt);
 }
 
 void Space::calculateSourceEvolution(double dt)
 {
     for (size_t i=0; i<elementsCount; i++)
-        static_cast<FractionsPoolBase*> ( &(elements[i]) )->calculateSourceEvolution(dt);
+        elements[i].calculateSourceEvolution(dt);
 }
 
 void Space::swapBuffers()
 {
     for (size_t i=0; i<elementsCount; i++)
-        static_cast<FractionsPoolBase*> ( &(elements[i]) )->swapBuffers();
+        elements[i].swapBuffers();
 }
 

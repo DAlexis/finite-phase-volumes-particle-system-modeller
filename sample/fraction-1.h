@@ -4,9 +4,6 @@
 #include "global-defines.h"
 #include "fraction-templates.h"
 
-#include <iostream>
-using namespace std;
-
 class Fraction1Cell;
 
 typedef FractionCellBase<FRACTION_FRACTION1,
@@ -20,7 +17,7 @@ typedef FractionSpaceBase<FRACTION1_COORDS_COUNT, Fraction1Cell> Fraction1SpaceB
 class Fraction1Cell : public Fraction1CellBase
 {
 public:
-    virtual ~Fraction1Cell() { cout << "Fraction1Cell destructor" << endl; }
+    virtual ~Fraction1Cell() { }
     virtual void calculateDerivatives();
     virtual void calculateSourceEvolution(double dt);
     
@@ -32,7 +29,7 @@ class Fraction1Space : public Fraction1SpaceBase
 {
 public:
     Fraction1Space(FractionsPool* parentFractionsPool);
-    virtual ~Fraction1Space() { cout << "Fraction1Space destructor" << endl; }
+    virtual ~Fraction1Space() { }
     
 private:
 };

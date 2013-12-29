@@ -6,13 +6,12 @@
 #define GRID_TEMPLATE_H_INCLUDED
 
 #include "axis.h"
-#include <iostream>
-using namespace std;
+
 /*
 class IObjectWithVirtualDestructor
 {
 public:
-    virtual ~IObjectWithVirtualDestructor() { cout << "IObjectWithVirtualDestructor destructor" << endl; };
+    virtual ~IObjectWithVirtualDestructor() { };
 };*/
 
 /** @brief This is a grid contains elements that are inherited from GridElementType
@@ -55,9 +54,7 @@ public:
         }
         
         virtual ~GridElementBase()
-        {
-            cout << "Grid <" << AxisCount << ">::GridElement destructor" << endl;
-        }
+        {}
         
         void init(Grid* parent, size_t index)
         {
@@ -92,7 +89,6 @@ public:
     Grid() : elements(0), elementsCount(0) {}
     virtual ~Grid()
     {
-        //cout << "Grid <" << AxisCount << "> destructor" << endl;
         if (elements) delete[] elements;
     }
     
