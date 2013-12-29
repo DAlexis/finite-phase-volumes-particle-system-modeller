@@ -6,9 +6,9 @@
 #define FRACTIONS_POOL_TEMPLATE
 
 #include "global-defines.h"
-#include "fraction-cell-interface.h"
+#include "fraction-space-interface.h"
 
-class FractionsPoolBase : public SpaceGridType::GridElement
+class FractionsPoolBase : public SpaceGridType::GridElementBase
 {
 public:
     FractionsPoolBase();
@@ -20,7 +20,7 @@ public:
     
     virtual void createFractions() = 0;
 
-    void *fractions[FRACTIONS_COUNT];
+    IFractionSpace *fractions[FRACTIONS_COUNT];
 
 protected:
     void initFractionsPoolBase();

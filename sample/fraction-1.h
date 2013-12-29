@@ -2,17 +2,20 @@
 #define FRACTION_1_H_INCLUDED
 
 #include "global-defines.h"
-#include "fraction-cell-template.h"
+#include "fraction-templates.h"
 
 #include <iostream>
 using namespace std;
 
-typedef FractionCell<FRACTION_FRACTION1,
+class Fraction1Cell;
+
+typedef FractionCellBase<FRACTION_FRACTION1,
                      SPACE_COORDS_COUNT,
                      FRACTION1_COORDS_COUNT,
-                     FRACTION1_QUANTITIES_COUNT>       Fraction1CellBase;
+                     FRACTION1_QUANTITIES_COUNT,
+                     Fraction1Cell>       Fraction1CellBase;
 
-typedef FractionSpace<FRACTION1_COORDS_COUNT> Fraction1SpaceBase;
+typedef FractionSpaceBase<FRACTION1_COORDS_COUNT, Fraction1Cell> Fraction1SpaceBase;
 
 class Fraction1Cell : public Fraction1CellBase
 {
@@ -32,7 +35,6 @@ public:
     virtual ~Fraction1Space() { cout << "Fraction1Space destructor" << endl; }
     
 private:
-    virtual GridInstance::GridElement* createGridElements(size_t count);
 };
 
 

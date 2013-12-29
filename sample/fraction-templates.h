@@ -8,37 +8,60 @@
 #include "global-defines.h"
 #include "fractions-pool-template.h"
 #include "fraction-cell-interface.h"
+#include "fraction-space-interface.h"
 
 #include <iostream>
 using namespace std;
 
-template <int AxisCount>
-class FractionSpace : public Grid<AxisCount>
+template <int AxisCount, class FractionCellType>
+class FractionSpaceBase : public Grid<AxisCount, FractionCellType>, public IFractionSpace
 {
 public:
     
-    FractionSpace(FractionsPool* parentFractionsPool) :
+    FractionSpaceBase(FractionsPoolBase* parentFractionsPool) :
         parent(parentFractionsPool)
     {}
     
-    virtual ~FractionSpace() {  cout << "FractionSpace destructor" << endl;  }
+    virtual ~FractionSpaceBase() {  cout << "FractionSpaceBase destructor" << endl;  }
     
-    FractionsPool* parent;
+    virtual void calculateFlowsEvolution(double dt)
+    {
+        for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateDerivatives();
+        
+        for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateFlowsEvolution(dt);
+    }
+    
+    virtual void calculateSourceEvolution(double dt)
+    {
+        for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateSourceEvolution(dt);
+    }
+    
+    virtual void swapBuffers()
+    {
+        for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->swapBuffers();
+    }
+    
+    FractionsPoolBase* parent;
 
 protected:
-    typename Grid<AxisCount>::GridDescription fractionGridDescription;
+    typename Grid<AxisCount, FractionCellType>::GridDescription fractionGridDescription;
 };
 
 template <int FractionIndex,
           int SpaceDimension,
           int FractionSpaceDimension,
-          int QuantitiesCount>
-class FractionCell : public Grid<SpaceDimension>::GridElement, public IFractionCell
+          int QuantitiesCount,
+          class FractionCellType>
+class FractionCellBase : public Grid<SpaceDimension, FractionCellType>::GridElementBase, public IFractionCell
 {
 public:
-    typedef Grid<SpaceDimension> GridInstance;
+    typedef Grid<SpaceDimension, FractionCellType> GridInstance;
     
-    FractionCell()
+    FractionCellBase()
     {
         for (unsigned int i=0; i<QuantitiesCount; i++) {
             quantitiesBuffer0[i] = 0;
@@ -48,7 +71,7 @@ public:
         nextStepQuantities = quantitiesBuffer1;
     }
     
-    virtual ~FractionCell() {  cout << "FractionCell destructor" << endl;  }
+    virtual ~FractionCellBase() {  cout << "FractionCellBase destructor" << endl;  }
     
     virtual void swapBuffers()
     {

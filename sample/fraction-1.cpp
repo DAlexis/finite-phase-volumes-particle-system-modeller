@@ -4,10 +4,6 @@
 #include <string.h>
 #include <algorithm>
 
-Fraction1Space::GridInstance::GridElement* Fraction1Space::createGridElements(size_t count)
-{
-    return new Fraction1Cell[count];
-}
 
 Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
     Fraction1SpaceBase(parentFractionsPool)

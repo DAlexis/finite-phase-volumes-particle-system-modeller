@@ -12,6 +12,8 @@ public:
     virtual void calculateSourceEvolution(double dt) = 0;
     virtual void calculateFlowsEvolution(double dt) = 0;
     virtual void swapBuffers() = 0;
+    
+    virtual ~IFractionCell() {}
 };
 
 #endif // FRACTION_CELL_INTERFACE_H_INCLUDED

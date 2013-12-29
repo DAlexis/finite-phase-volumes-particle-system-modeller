@@ -3,7 +3,7 @@
 #include "fractions-pool.h"
 
 Space::Space(void* model) :
-    SpaceBase(model)
+    parent(model)
 {
     // Setting up x coordinate
     Axis& xCoord = spaceGridDescription.axis[0];
@@ -13,20 +13,21 @@ Space::Space(void* model) :
     constructGrid(spaceGridDescription);
 }
 
-Space::GridInstance::GridElement* Space::createGridElements(size_t count)
+void Space::calculateFlowsEvolution(double dt)
 {
-    return new FractionsPool[count];
+    for (size_t i=0; i<elementsCount; i++)
+        static_cast<FractionsPoolBase*> ( &(elements[i]) )->calculateFlowsEvolution(dt);
 }
 
-/*
-Space::Space(void* model) :
-    SpaceBase(model)
+void Space::calculateSourceEvolution(double dt)
 {
-    // Setting up x coordinate
-    Axis& xCoord = spaceGridDescription.axis[0];
-    xCoord.uniformInit(-10.0, 10.0, 2);
-    xCoord.setName("Horisontal coordinate, m");
-    
-    constructGrid(spaceGridDescription);
+    for (size_t i=0; i<elementsCount; i++)
+        static_cast<FractionsPoolBase*> ( &(elements[i]) )->calculateSourceEvolution(dt);
 }
-*/
+
+void Space::swapBuffers()
+{
+    for (size_t i=0; i<elementsCount; i++)
+        static_cast<FractionsPoolBase*> ( &(elements[i]) )->swapBuffers();
+}
+

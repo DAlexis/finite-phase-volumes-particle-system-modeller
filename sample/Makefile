@@ -7,7 +7,6 @@ cpp_sources =   main.cpp \
                 fractions-pool.cpp \
                 fractions-pool-template.cpp \
                 space.cpp \
-                space-template.cpp \
                 model.cpp \
                 axis.cpp \
                 fraction-1.cpp \

@@ -18,7 +18,7 @@ class FractionsPool;
 #include "model-defines.h"
 
 // Grid instance type for coordinate space
-typedef Grid<SPACE_COORDS_COUNT> SpaceGridType;
+typedef Grid<SPACE_COORDS_COUNT, FractionsPool> SpaceGridType;
 
 inline bool isNotNull(double x)
 {

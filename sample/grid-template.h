@@ -8,20 +8,20 @@
 #include "axis.h"
 #include <iostream>
 using namespace std;
-
+/*
 class IObjectWithVirtualDestructor
 {
 public:
     virtual ~IObjectWithVirtualDestructor() { cout << "IObjectWithVirtualDestructor destructor" << endl; };
-};
+};*/
 
 /** @brief This is a grid contains elements that are inherited from GridElementType
  */ 
-template <int AxisCount>
-class Grid : public IObjectWithVirtualDestructor
+template <int AxisCount, class ElementType>
+class Grid //: public IObjectWithVirtualDestructor
 {
 public:
-    typedef Grid<AxisCount> GridInstance;
+    typedef Grid<AxisCount, ElementType> GridInstance;
     
     class GridDescription
     {
@@ -29,7 +29,7 @@ public:
         Axis axis[AxisCount];
     };
     
-    class GridElement : public IObjectWithVirtualDestructor
+    class GridElementBase //: public IObjectWithVirtualDestructor
     {
     public:
         /// Fraction coordinates
@@ -38,13 +38,13 @@ public:
         double volume;
         
         /// Neighbors pointers
-        GridElement* prev[AxisCount];
-        GridElement* next[AxisCount];
+        GridElementBase* prev[AxisCount];
+        GridElementBase* next[AxisCount];
         
         Grid* parentGrid;
         size_t elementIndex;
         
-        GridElement() : parentGrid(0), elementIndex(0)
+        GridElementBase() : parentGrid(0), elementIndex(0)
         {
             for (unsigned int i=0; i<AxisCount; i++)
             {
@@ -54,7 +54,7 @@ public:
             // Tell associated data where it associated to
         }
         
-        virtual ~GridElement()
+        virtual ~GridElementBase()
         {
             cout << "Grid <" << AxisCount << ">::GridElement destructor" << endl;
         }
@@ -79,7 +79,7 @@ public:
             currentCoords_d[i] = 0.0;
         }
         // Allocating memory
-        elements = createGridElements(elementsCount);
+        elements = new ElementType[elementsCount];
         
         // Initialising size, neighbor pointers, etc.
         recursiveInitGridElements(0);
@@ -89,20 +89,14 @@ public:
             elements[i].init(this, i);
     }
     
-    /// This function should be reimplemented in child classes
-    virtual GridElement* createGridElements(size_t count)
-    {
-        return new GridElement[count];
-    }
-    
     Grid() : elements(0), elementsCount(0) {}
     virtual ~Grid()
     {
-        cout << "Grid <" << AxisCount << "> destructor" << endl;
+        //cout << "Grid <" << AxisCount << "> destructor" << endl;
         if (elements) delete[] elements;
     }
     
-    GridElement* accessElement_ui(const uint* coords)
+    ElementType* accessElement_ui(const uint* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
@@ -112,7 +106,7 @@ public:
         return &(elements[resInd]);
     }
 
-    GridElement* accessElement_d(const double* coords)
+    ElementType* accessElement_d(const double* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
@@ -122,7 +116,7 @@ public:
         return &(elements[resInd]);
     }
 
-    GridElement* elements;
+    ElementType* elements;
     const GridDescription* gridDescription;
     uint elementsCount;
     
@@ -146,7 +140,7 @@ protected:
             }
         } else {
             // Initialising GridElement
-            GridElement *currentElement = accessElement_ui(currentCoords_ui);
+            GridElementBase *currentElement = accessElement_ui(currentCoords_ui);
             currentElement->volume = 1;
             for (uint i=0; i!=AxisCount; i++)
             {
