@@ -1,6 +1,6 @@
 #include "model-output.h"
 #include <iostream>
-/*
+
 Fraction1ConcentrationVsCoordsOutput::Fraction1ConcentrationVsCoordsOutput() :
     OutputInstanceBase(FRACTION1_QUANTITY_COUNT,
         0.01,
@@ -25,18 +25,14 @@ void Fraction1ConcentrationVsCoordsOutput::printToFile(double time)
     {
         spacePoint[SPACE_COORDS_X] = minVal + (maxVal-minVal) * sapceIndex / m_pointsCount;
         
-        FractionsPool *spaceCell = static_cast<FractionsPool *> (space.accessElement_d(spacePoint));
-        
+        FractionsPool *spaceCell = space.accessElement_d(spacePoint);
+        Fraction1Space *fractionSpace = static_cast<Fraction1Space*> (spaceCell->fractions[FRACTION_FRACTION1]);
         // Convolution in fraction1 space cell
         double result = 0;
-        for (unsigned int particleIndex=0; particleIndex<spaceCell->fraction1.elementsCount; particleIndex++)
+        for (unsigned int particleIndex=0; particleIndex < fractionSpace->elementsCount; particleIndex++)
         {
-            Fraction1Space* fr1 = &(spaceCell->fraction1);
-            
-            Fraction1SpaceGridType* sp1 = static_cast<Fraction1SpaceGridType*>(fr1);
-            
-            Fraction1Cell* cell = static_cast<Fraction1Cell*>( &(spaceCell->fraction1.elements[particleIndex]) );
-            result += cell->quantities[FRACTION1_QUANTITY_COUNT];
+            Fraction1Cell& cell = fractionSpace->elements[particleIndex];
+            result += cell.quantities[FRACTION1_QUANTITY_COUNT];
         }
         (*m_file) << time << " " << spacePoint[SPACE_COORDS_X] << " " << result << std::endl;
     }
@@ -65,10 +61,10 @@ void Fraction1ConcentrationVsVelocityOutput::printToFile(double time)
     // Here we will get a distribution
     double spacePoint[SPACE_COORDS_COUNT] = { 0 };
     
-    Fraction1Space &fractionSpace = static_cast<FractionsPool*>( space.accessElement_d(spacePoint) )->fraction1;
+    Fraction1Space *fractionSpace = static_cast<Fraction1Space*> ( space.accessElement_d(spacePoint)->fractions[FRACTION_FRACTION1] );
     
-    double maxVal = fractionSpace.gridDescription->axis[FRACTION1_COORDS_VX].getMaxValue();
-    double minVal = fractionSpace.gridDescription->axis[FRACTION1_COORDS_VX].getMinValue();
+    double maxVal = fractionSpace->gridDescription->axis[FRACTION1_COORDS_VX].getMaxValue();
+    double minVal = fractionSpace->gridDescription->axis[FRACTION1_COORDS_VX].getMinValue();
     
     double fractionSubspacePoint[FRACTION1_COORDS_COUNT] = { 0 };
     
@@ -76,10 +72,10 @@ void Fraction1ConcentrationVsVelocityOutput::printToFile(double time)
     {
         fractionSubspacePoint[FRACTION1_COORDS_VX] = minVal + (maxVal-minVal) * fractionSapceIndex / m_pointsCount;
         
-        Fraction1Cell *fractionCell = static_cast<Fraction1Cell *>(fractionSpace.accessElement_d(fractionSubspacePoint));
+        Fraction1Cell *fractionCell = static_cast<Fraction1Cell *>(fractionSpace->accessElement_d(fractionSubspacePoint));
         // Convolution in fraction1 space cell
         double result = fractionCell->quantities[FRACTION1_QUANTITY_COUNT];
         (*m_file) << time << " " << fractionSubspacePoint[FRACTION1_COORDS_VX] << " " << result << std::endl;
     }
 }
-*/
+

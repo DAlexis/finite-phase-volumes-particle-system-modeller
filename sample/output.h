@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
-/*
+
 class OutputMaker;
 
 class OutputInstanceBase
@@ -56,5 +56,5 @@ public:
 private:
     std::vector<OutputInstanceBase*> m_instances;
 };
-*/
+
 #endif //OUTPUT_H_INCLUDED

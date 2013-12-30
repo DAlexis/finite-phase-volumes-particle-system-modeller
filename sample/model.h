@@ -11,8 +11,7 @@ public:
     Space space;
     
     void iterate(double dt);
-//    OutputMaker outputMaker;
-    //void outputTimeSlice(const Fraction fraction, const int quantity, const int axis);
+    OutputMaker outputMaker;
     
     double time;
 private:

@@ -48,6 +48,9 @@ protected:
     typename Grid<AxisCount, FractionCellType>::GridDescription fractionGridDescription;
 };
 
+
+
+
 template <int FractionIndex,
           int SpaceDimension,
           int FractionSpaceDimension,
@@ -56,6 +59,8 @@ template <int FractionIndex,
 class FractionCellBase : public Grid<SpaceDimension, FractionCellType>::GridElementBase, public IFractionCell
 {
 public:
+    typedef FractionCellBase FractionCellBaseInstance;
+    typedef FractionSpaceBase<FractionSpaceDimension, FractionCellType> FractionSpaceBaseInstance;
     typedef Grid<SpaceDimension, FractionCellType> GridInstance;
     
     FractionCellBase()
@@ -105,63 +110,33 @@ protected:
         TD_DOWN
     };
     
+    ////////////////////////
+    // Get next/prev/parent functions
+    inline FractionsPoolBase* getSpaceCell()
+    {
+        return static_cast< FractionSpaceBaseInstance* > (this->parentGrid)->parent;
+    }
+    
+    inline FractionCellBase* nextInSpace(unsigned int coordinate)
+    {
+        FractionsPoolBase *nextCellInSpace = static_cast<FractionsPoolBase*>(getSpaceCell()->next[coordinate]);
+        if (!nextCellInSpace) return NULL;
+        return &( static_cast<FractionSpaceBaseInstance*> (nextCellInSpace->fractions[FractionIndex])->elements[this->elementIndex] );
+    }
+    
+    inline FractionCellBase* prevInSpace(unsigned int coordinate)
+    {
+        FractionsPoolBase *nextCellInSpace = static_cast<FractionsPoolBase*>(getSpaceCell()->prev[coordinate]);
+        if (!nextCellInSpace) return NULL;
+        return &( static_cast<FractionSpaceBaseInstance*> (nextCellInSpace->fractions[FractionIndex])->elements[this->elementIndex] );
+    }
+    
+    inline FractionCellBase* nextInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->next[coordinate]); }
+    inline FractionCellBase* prevInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->prev[coordinate]); }
+    
 private:
     double quantitiesBuffer0[QuantitiesCount];
     double quantitiesBuffer1[QuantitiesCount];
 };
 
-/*
-template <int FractionIndex,
-          int SpaceDimension,
-          int FractionSpaceDimension,
-          int QuantitiesCount,
-          class GridInstanceType>
-class FractionCell : public GridInstanceType::GridElement
-{
-public:
-    
-    FractionsPoolTemplate* getFractionPool()
-    {
-        /// @todo Remove this temporary pointers and write 1-line optimal code
-        // Why needed static cast???
-        FractionSpace<GridInstanceType>* pFractionSpace = static_cast< FractionSpace<GridInstanceType>* > (this->parentGrid);
-        FractionsPoolTemplate* pFractionsPool = pFractionSpace->parent;
-        return pFractionsPool;
-    }
-
-    ///////////////////////////
-    // Next/Prev cells getting
-    FractionCell* nextInSpace(unsigned int coordinate)
-    {
-        FractionsPoolTemplate* fractionsPool = getFractionPool();
-        if (fractionsPool->next[coordinate] == NULL)
-            return NULL;
-        
-        void *fraction = static_cast<FractionsPoolTemplate*>(fractionsPool->next[coordinate])->fractions[FractionIndex];
-        return static_cast<FractionCell*> ( &( static_cast<GridInstanceType*>(fraction)->elements[this->elementIndex] ));
-    }
-    
-    FractionCell* prevInSpace(unsigned int coordinate)
-    {
-        FractionsPoolTemplate* fractionsPool = getFractionPool();
-        if (fractionsPool->prev[coordinate] == NULL)
-            return NULL;
-        
-        void *fraction = static_cast<FractionsPoolTemplate*>(fractionsPool->prev[coordinate])->fractions[FractionIndex];
-        return static_cast<FractionCell*> ( &( static_cast<GridInstanceType*>(fraction)->elements[this->elementIndex] ));
-    }
-    
-    FractionCell* nextInFractionSpace(unsigned int coordinate)
-    {
-        return  static_cast<FractionCell*>(static_cast<typename GridInstanceType::GridElement*>(this)->next[coordinate]);
-    }
-    
-    FractionCell* prevInFractionSpace(unsigned int coordinate)
-    {
-        return  static_cast<FractionCell*>(static_cast<typename GridInstanceType::GridElement*>(this)->prev[coordinate]);
-    }
-    
-    
-};
-*/
 #endif // FRACTION_CELL_TEMPLATE

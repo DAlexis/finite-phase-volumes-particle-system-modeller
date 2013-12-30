@@ -2,19 +2,18 @@
 
 Model::Model() :
     space(this),
-//    outputMaker(&space),
+    outputMaker(&space),
     time(0)
 {
-//    outputMaker.addInstance(new Fraction1ConcentrationVsCoordsOutput);
-//    outputMaker.addInstance(new Fraction1ConcentrationVsVelocityOutput);
+    outputMaker.addInstance(new Fraction1ConcentrationVsCoordsOutput);
+    outputMaker.addInstance(new Fraction1ConcentrationVsVelocityOutput);
 }
 
 void Model::iterate(double dt)
 {
-//    outputMaker.output(time);
+    outputMaker.output(time);
     space.calculateFlowsEvolution(dt);
     space.calculateSourceEvolution(dt);
     space.swapBuffers();
     time += dt;
 }
-

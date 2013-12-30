@@ -15,8 +15,9 @@ public:
     void calculateSourceEvolution(double dt);
     void swapBuffers();
     
-private:
     void* parent;
+    
+private:
     typename SpaceGridType::GridDescription spaceGridDescription;
 };
 

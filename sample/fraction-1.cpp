@@ -17,7 +17,8 @@ Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
 
 void Fraction1Cell::calculateDerivatives()
 {
-    
+    spaceCoordsDerivatives[SPACE_COORDS_X] = this->coordinates[FRACTION1_COORDS_VX];
+    fractionCoordsDerivatives[FRACTION1_COORDS_VX] = 0;// -9.8;
 }
 
 void Fraction1Cell::calculateSourceEvolution(double dt)
@@ -25,19 +26,12 @@ void Fraction1Cell::calculateSourceEvolution(double dt)
     
 }
 
-/*
-Fraction1Cell::Fraction1Cell()
-{
-    
-}
-
 void* Fraction1Cell::getModel()
 {
-    SpaceGridType::GridElement* spaceCell = this->getFractionPool();
-    Space* space = static_cast<Space*>(spaceCell->parentGrid);
-    return space->parent;
+    return static_cast<Space*>(getSpaceCell()->parentGrid)->parent;
 }
 
+/*
 void Fraction1Cell::calculateDerivatives()
 {
     spaceCoordsDerivatives[SPACE_COORDS_X] = this->coordinates[FRACTION1_COORDS_VX];
