@@ -5,7 +5,7 @@ project = hand-written-sample
 exe_name = sample
 cpp_sources =   main.cpp \
                 fractions-pool.cpp \
-                fractions-pool-template.cpp \
+                fractions-pool-base.cpp \
                 space.cpp \
                 model.cpp \
                 axis.cpp \

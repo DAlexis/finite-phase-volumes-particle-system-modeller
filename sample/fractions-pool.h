@@ -2,7 +2,7 @@
 #define FRACTIONS_POOL_H_INCLUDED
 
 #include "fraction-1.h"
-#include "fractions-pool-template.h"
+#include "fractions-pool-base.h"
 
 class FractionsPool : public FractionsPoolBase
 {

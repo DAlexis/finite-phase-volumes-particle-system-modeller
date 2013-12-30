@@ -2,7 +2,7 @@
 #define FRACTION_1_H_INCLUDED
 
 #include "global-defines.h"
-#include "fraction-templates.h"
+#include "fraction-base.h"
 
 class Fraction1Cell;
 

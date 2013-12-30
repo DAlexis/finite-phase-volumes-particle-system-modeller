@@ -1,4 +1,4 @@
-#include "fractions-pool-template.h"
+#include "fractions-pool-base.h"
 
 FractionsPoolBase::FractionsPoolBase()
 {

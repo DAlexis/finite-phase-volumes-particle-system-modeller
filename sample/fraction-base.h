@@ -6,7 +6,7 @@
 #define FRACTION_CELL_TEMPLATE
 
 #include "global-defines.h"
-#include "fractions-pool-template.h"
+#include "fractions-pool-base.h"
 #include "fraction-cell-interface.h"
 #include "fraction-space-interface.h"
 
