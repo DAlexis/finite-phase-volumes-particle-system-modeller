@@ -7,17 +7,10 @@
 
 #include "axis.h"
 
-/*
-class IObjectWithVirtualDestructor
-{
-public:
-    virtual ~IObjectWithVirtualDestructor() { };
-};*/
-
 /** @brief This is a grid contains elements that are inherited from GridElementType
  */ 
 template <int AxisCount, class ElementType>
-class Grid //: public IObjectWithVirtualDestructor
+class Grid
 {
 public:
     typedef Grid<AxisCount, ElementType> GridInstance;
@@ -28,7 +21,7 @@ public:
         Axis axis[AxisCount];
     };
     
-    class GridElementBase //: public IObjectWithVirtualDestructor
+    class GridElementBase
     {
     public:
         /// Fraction coordinates
