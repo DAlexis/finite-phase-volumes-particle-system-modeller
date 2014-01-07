@@ -147,7 +147,7 @@ public:
             }
             if (prev)
             {
-                double transfer = getFlowInSpace(coord, prev) * dt;
+                double transfer = -getFlowInSpace(coord, prev) * dt;
                 if (transfer > 0)
                 {
                     // Flow out from this cell in negative coordinate direction
