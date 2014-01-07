@@ -19,3 +19,8 @@ model:
                 min: -10
                 max: 10
                 segments_count: 100
+        sources:
+        space_coords_derivatives:
+            $x_coord.derivative$: "$fract1.x_speed$"
+        fraction_coords_derivatives:
+            $x_speed.derivative$: "0"

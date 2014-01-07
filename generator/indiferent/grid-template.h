@@ -6,19 +6,22 @@
 #define GRID_TEMPLATE_H_INCLUDED
 
 #include "axis.h"
-#include "global-defines.h"
 
-template <int AxisCount, class AssociatedData>
+/** @brief This is a grid contains elements that are inherited from GridElementType
+ */ 
+template <int AxisCount, class ElementType>
 class Grid
 {
 public:
+    typedef Grid<AxisCount, ElementType> GridInstance;
+    
     class GridDescription
     {
     public:
         Axis axis[AxisCount];
     };
     
-    class GridElement
+    class GridElementBase
     {
     public:
         /// Fraction coordinates
@@ -27,15 +30,13 @@ public:
         double volume;
         
         /// Neighbors pointers
-        GridElement* prev[AxisCount];
-        GridElement* next[AxisCount];
+        GridElementBase* prev[AxisCount];
+        GridElementBase* next[AxisCount];
         
-        void* parentGrid;
+        Grid* parentGrid;
         size_t elementIndex;
         
-        AssociatedData data;
-        
-        GridElement() : parentGrid(0), elementIndex(0)
+        GridElementBase() : parentGrid(0), elementIndex(0)
         {
             for (unsigned int i=0; i<AxisCount; i++)
             {
@@ -43,10 +44,12 @@ public:
             }
             volume = 1.0;
             // Tell associated data where it associated to
-            data.init(this);
         }
         
-        void init(void* parent, size_t index)
+        virtual ~GridElementBase()
+        {}
+        
+        void init(Grid* parent, size_t index)
         {
             parentGrid = parent;
             elementIndex = index;
@@ -66,7 +69,7 @@ public:
             currentCoords_d[i] = 0.0;
         }
         // Allocating memory
-        elements = new GridElement[elementsCount];
+        elements = new ElementType[elementsCount];
         
         // Initialising size, neighbor pointers, etc.
         recursiveInitGridElements(0);
@@ -77,9 +80,12 @@ public:
     }
     
     Grid() : elements(0), elementsCount(0) {}
-    ~Grid() { if (elements) delete[] elements; }
+    virtual ~Grid()
+    {
+        if (elements) delete[] elements;
+    }
     
-    GridElement* accessElement_ui(const uint* coords)
+    ElementType* accessElement_ui(const uint* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
@@ -89,7 +95,7 @@ public:
         return &(elements[resInd]);
     }
 
-    GridElement* accessElement_d(const double* coords)
+    ElementType* accessElement_d(const double* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
@@ -99,7 +105,7 @@ public:
         return &(elements[resInd]);
     }
 
-    GridElement* elements;
+    ElementType* elements;
     const GridDescription* gridDescription;
     uint elementsCount;
     
@@ -123,7 +129,7 @@ protected:
             }
         } else {
             // Initialising GridElement
-            GridElement *currentElement = accessElement_ui(currentCoords_ui);
+            GridElementBase *currentElement = accessElement_ui(currentCoords_ui);
             currentElement->volume = 1;
             for (uint i=0; i!=AxisCount; i++)
             {
