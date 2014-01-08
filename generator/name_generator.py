@@ -10,7 +10,7 @@ class NamesGenerator:
             namesDict ['name'] = fraction['name']
             namesDict ['fractions_enum_element'] = 'FRACTION_' + fraction['id'].upper()
             namesDict ['coordinates_enum_prefix'] = fraction['id'].upper() + '_COORDS_'
-            namesDict ['quantities_enum_prefix'] = fraction['id'].upper() + '_COORDS_'
+            namesDict ['quantities_enum_prefix'] = fraction['id'].upper() + '_QUANTITIES_'
             namesDict ['fraction_cell_classname'] = fraction['id'].title() + 'Cell'
             namesDict ['fraction_space_classname'] = fraction['id'].title() + 'Space'
             namesDict ['fraction_coordinate_enum'] = fraction['id'].title() + 'Coordinate'

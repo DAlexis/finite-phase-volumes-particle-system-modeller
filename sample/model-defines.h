@@ -1,8 +1,6 @@
 #ifndef MODEL_DEFINES_H_INCLUDED
 #define MODEL_DEFINES_H_INCLUDED
 
-#include "grid-template.h"
-
 //////////////////////////
 // General
 enum Fraction
@@ -13,22 +11,23 @@ enum Fraction
 
 //////////////////////////
 // Space defines
-enum SpaceCoordinate {
-    SPACE_COORDS_X = 0,
+enum SpaceCoordinate
+{
+    SPACE_COORDS_X_COORD = 0,
     SPACE_COORDS_COUNT
 };
 
 //////////////////////////
-// Fraction 1 defines
+// Test Fraction One defines
 enum Fraction1Coordinate
 {
-    FRACTION1_COORDS_VX = 0,
+    FRACTION1_COORDS_X_SPEED = 0,
     FRACTION1_COORDS_COUNT
 };
 
 enum Fraction1Quantity
 {
-    FRACTION1_QUANTITY_COUNT = 0,
+    FRACTION1_QUANTITIES_PARTICLES_COUNT = 0,
     FRACTION1_QUANTITIES_COUNT
 };
 

@@ -16,8 +16,8 @@ Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
 
 void Fraction1Cell::calculateDerivatives()
 {
-    spaceCoordsDerivatives[SPACE_COORDS_X] = this->coordinates[FRACTION1_COORDS_VX];
-    fractionCoordsDerivatives[FRACTION1_COORDS_VX] = 0;// -9.8;
+    spaceCoordsDerivatives[SPACE_COORDS_X_COORD] = this->coordinates[FRACTION1_COORDS_X_SPEED];
+    fractionCoordsDerivatives[FRACTION1_COORDS_X_SPEED] = 0;// -9.8;
 }
 
 void Fraction1Cell::calculateSourceEvolution(double dt)
@@ -27,10 +27,10 @@ void Fraction1Cell::calculateSourceEvolution(double dt)
     // Generating initial state of particles
     
     if (static_cast<Model*>(getModel())->time < 0.02)
-    if (fabs(coordinates[FRACTION1_COORDS_VX]+3) < 0.5)
-    if (fabs(spaceCell->coordinates[SPACE_COORDS_X]-8) < 1)
+    if (fabs(coordinates[FRACTION1_COORDS_X_SPEED]+3) < 0.5)
+    if (fabs(spaceCell->coordinates[SPACE_COORDS_X_COORD]-8) < 1)
     //    nextStepQuantities[FRACTION1_QUANTITY_COUNT] += 0.1*spaceCell->volume*dt;
-    nextStepQuantities[FRACTION1_QUANTITY_COUNT] = 1;//spaceCell->coordinates[SPACE_COORDS_X]/30;
+    nextStepQuantities[FRACTION1_QUANTITIES_PARTICLES_COUNT] = 1;//spaceCell->coordinates[SPACE_COORDS_X]/30;
 }
 
 void* Fraction1Cell::getModel()

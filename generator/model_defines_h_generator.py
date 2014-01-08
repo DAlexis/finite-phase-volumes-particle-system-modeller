@@ -9,7 +9,7 @@ def generate(destinationDir, fractionNameGen, generatedFileHeadComment):
     print "Generating model-defines.h"
     modDef_h = open(modDef_h_filename, 'w')
     modDef_h.write(generatedFileHeadComment)
-    modDef_h.write(code_utils.headerGuardTop("MODEL_DEFINES_H_INCLUDED"))
+    modDef_h.write(code_utils.headerGuardTop("model-defines.h"))
 
     modDef_h.write(code_utils.splitterComment + "\n// General\nenum Fraction\n{\n")
 
@@ -62,6 +62,6 @@ def generate(destinationDir, fractionNameGen, generatedFileHeadComment):
         
         modDef_h.write('};\n\n');
 
-    modDef_h.write(code_utils.headerGuardBottom("MODEL_DEFINES_H_INCLUDED"))
+    modDef_h.write(code_utils.headerGuardBottom("model-defines.h"))
 
     modDef_h.close()

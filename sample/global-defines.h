@@ -15,6 +15,8 @@ typedef unsigned int uint;
 
 class FractionsPool;
 
+#include "grid-template.h"
+
 #include "model-defines.h"
 
 // Grid instance type for coordinate space
