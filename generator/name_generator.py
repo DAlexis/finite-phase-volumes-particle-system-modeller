@@ -22,6 +22,9 @@ class NamesGenerator:
             namesDict ['cpp_name'] = fraction['id'].lower() + '.cpp'
             namesDict ['header_guard'] = code_utils.formHeaderGuard(namesDict ['header_name'])
             
+            # Link to config
+            namesDict ['config'] = fraction
+            
             dimensionsDict = {}
             for dimension in fraction['fraction_space_grid']:
                 dimensionDescription = {}
@@ -49,4 +52,4 @@ class NamesGenerator:
             namesDict ['name'] = dimension['name']
             namesDict ['space_dimension_enum_element'] = 'SPACE_COORDS_' + dimension['id'].upper()
             self.sapceDimensions[namesDict ['id']] = namesDict
-        print self.fractions
+        #print self.fractions

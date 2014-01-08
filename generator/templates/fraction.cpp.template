@@ -1,0 +1,28 @@
+#include "fraction-1.h"
+#include "model.h"
+
+${fraction_space_classname}::${fraction_space_classname}(FractionsPool* parentFractionsPool) :
+    ${fraction_space_base_classname}(parentFractionsPool)
+{
+    Axis& xSpeed = fractionGridDescription.axis[0];
+    xSpeed.uniformInit(-10.0, 10.0, 50);
+    xSpeed.setName("Horisontal speed, m");
+    
+    constructGrid(fractionGridDescription);
+}
+
+void ${fraction_cell_classname}::calculateDerivatives()
+{
+    ${space_coords_derivatives}
+    ${fraction_coords_derivatives}
+}
+
+void ${fraction_cell_classname}::calculateSourceEvolution(double dt)
+{
+    ${sources}
+}
+
+void* ${fraction_cell_classname}::getModel()
+{
+    return static_cast<Space*>(getSpaceCell()->parentGrid)->parent;
+}

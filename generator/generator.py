@@ -3,6 +3,7 @@ import code_utils
 import name_generator
 import model_defines_h_generator
 import fraction_header_generator
+import fraction_cpp_generator
 
 import yaml
 import argparse
@@ -67,10 +68,13 @@ print ""
 print "Generating model-defines.h"
 model_defines_h_generator.generate(destinationDir, fractionNameGen, generatedFileHeadComment)
 
-print ""
 print "Generating fraction headers"
 for fractionId in fractionNameGen.fractions:
     fraction_header_generator.generate(destinationDir, fractionNameGen, generatedFileHeadComment, fractionId)
+
+print "Generating fraction cpp sources"
+for fractionId in fractionNameGen.fractions:
+    fraction_cpp_generator.generate(destinationDir, fractionNameGen, generatedFileHeadComment, fractionId, config)
 
 
 print ""
