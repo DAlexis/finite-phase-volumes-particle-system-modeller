@@ -4,9 +4,10 @@
 Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
     Fraction1SpaceBase(parentFractionsPool)
 {
-    Axis& xSpeed = fractionGridDescription.axis[0];
-    xSpeed.uniformInit(-10.0, 10.0, 50);
-    xSpeed.setName("Horisontal speed, m");
+    Axis& x_speed = fractionGridDescription.axis[FRACTION1_COORDS_X_SPEED];
+    x_speed.uniformInit(-10.0, 10.0, 50);
+    x_speed.setName("Horisontal speed, m/s");
+    
     
     constructGrid(fractionGridDescription);
 }

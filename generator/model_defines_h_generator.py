@@ -3,7 +3,7 @@ import name_generator
 
 import os
 
-def generate(destinationDir, fractionNameGen, generatedFileHeadComment):
+def generate(destinationDir, config, generatedFileHeadComment):
     modDef_h_filename = os.path.join(destinationDir, 'model-defines.h')
     modDef_h = open(modDef_h_filename, 'w')
     modDef_h.write(generatedFileHeadComment)
@@ -12,8 +12,8 @@ def generate(destinationDir, fractionNameGen, generatedFileHeadComment):
     modDef_h.write(code_utils.splitterComment + "\n// General\nenum Fraction\n{\n")
 
     isFirst = True
-    for fraction in fractionNameGen.fractions:
-        modDef_h.write('    ' + fractionNameGen.fractions[fraction]['fractions_enum_element'])
+    for fractionId in config['model']['fractions']:
+        modDef_h.write('    ' + config['model']['fractions'][fractionId]['fractions_enum_element'])
         if isFirst:
             modDef_h.write(' = 0')
         modDef_h.write(',\n')
@@ -22,8 +22,8 @@ def generate(destinationDir, fractionNameGen, generatedFileHeadComment):
     modDef_h.write("};\n\n" + code_utils.splitterComment + "\n// Space defines\nenum SpaceCoordinate\n{\n")
 
     isFirst = True
-    for spaceDim in fractionNameGen.sapceDimensions:
-        modDef_h.write('    ' + fractionNameGen.sapceDimensions[spaceDim]['space_dimension_enum_element'])
+    for spaceDimId in config['model']['cordinate_space_grid']:
+        modDef_h.write('    ' + config['model']['cordinate_space_grid'][spaceDimId]['space_dimension_enum_element'])
         if isFirst:
             modDef_h.write(' = 0')
             isFirst = False
@@ -32,16 +32,16 @@ def generate(destinationDir, fractionNameGen, generatedFileHeadComment):
     modDef_h.write('    ' + 'SPACE_COORDS_COUNT\n')
     modDef_h.write("};\n\n")
 
-    for fractionId in fractionNameGen.fractions:
-        currentFraction = fractionNameGen.fractions[fractionId]
+    for fractionId in config['model']['fractions']:
+        currentFraction = config['model']['fractions'][fractionId]
         modDef_h.write(code_utils.splitterComment + '\n')
         modDef_h.write('// ' + currentFraction['name'] + ' defines\n')
         
         # Coordinates enum
         modDef_h.write('enum ' + currentFraction['fraction_coordinate_enum'] + '\n{\n')
         isFirst = True
-        for fractDimensionId in currentFraction['dimensions']:
-            currentFractionDimension = currentFraction['dimensions'][fractDimensionId]
+        for fractDimensionId in currentFraction['fraction_space_grid']:
+            currentFractionDimension = currentFraction['fraction_space_grid'][fractDimensionId]
             modDef_h.write('    ' + currentFractionDimension['fraction_coordinate_enum_element'])
             if isFirst:
                 modDef_h.write(' = 0')

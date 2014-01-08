@@ -58,24 +58,21 @@ for fileName in filesAsIs:
     print "Copying " + target + " to " + destinationDir
     shutil.copy(target, destinationDir)
 
-# Initialising name generator
-fractionNameGen = name_generator.NamesGenerator(config)
+name_generator.completeConfig(config)
 
 #
-# Generating model-defines.h
+# Generating code
 #
 print ""
 print "Generating model-defines.h"
-model_defines_h_generator.generate(destinationDir, fractionNameGen, generatedFileHeadComment)
+model_defines_h_generator.generate(destinationDir, config, generatedFileHeadComment)
 
-print "Generating fraction headers"
-for fractionId in fractionNameGen.fractions:
-    fraction_header_generator.generate(destinationDir, fractionNameGen, generatedFileHeadComment, fractionId)
-
-print "Generating fraction cpp sources"
-for fractionId in fractionNameGen.fractions:
-    fraction_cpp_generator.generate(destinationDir, fractionNameGen, generatedFileHeadComment, fractionId, config)
-
+print "Generating fraction-related headers and sources:"
+for fractionId in config['model']['fractions']:
+    print "   " + fractionId + " header..."
+    fraction_header_generator.generate(destinationDir, config, generatedFileHeadComment, fractionId)
+    print "   " + fractionId + " source..."
+    fraction_cpp_generator.generate(destinationDir, config, generatedFileHeadComment, fractionId)
 
 print ""
 print "Code generation done."

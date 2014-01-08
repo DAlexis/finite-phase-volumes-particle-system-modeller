@@ -1,55 +1,50 @@
 import code_utils
 
-class NamesGenerator:
-    fractions = {}
-    sapceDimensions = {}
+import string
+
+axisUniformConfigTemplate = string.Template("""Axis& ${axis_id} = fractionGridDescription.axis[${axis_index}];
+    ${axis_id}.uniformInit(${axis_min}, ${axis_max}, ${axis_segments_count});
+    ${axis_id}.setName("${axis_name}");
     
-    def __init__(self, configTree):
-        for fraction in configTree['model']['fractions']:
-            namesDict = {}
-            namesDict ['id'] = fraction['id']
-            namesDict ['name'] = fraction['name']
-            namesDict ['fractions_enum_element'] = 'FRACTION_' + fraction['id'].upper()
-            namesDict ['coordinates_enum_prefix'] = fraction['id'].upper() + '_COORDS_'
-            namesDict ['quantities_enum_prefix'] = fraction['id'].upper() + '_QUANTITIES_'
-            namesDict ['fraction_coordinate_enum'] = fraction['id'].title() + 'Coordinate'
-            namesDict ['fraction_quantity_enum'] = fraction['id'].title() + 'Quantity'
-            namesDict ['fraction_cell_classname'] = fraction['id'].title() + 'Cell'
-            namesDict ['fraction_cell_base_classname'] = fraction['id'].title() + 'CellBase'
-            namesDict ['fraction_space_classname'] = fraction['id'].title() + 'Space'
-            namesDict ['fraction_space_base_classname'] = fraction['id'].title() + 'SpaceBase'
-            namesDict ['header_name'] = fraction['id'].lower() + '.h'
-            namesDict ['cpp_name'] = fraction['id'].lower() + '.cpp'
-            namesDict ['header_guard'] = code_utils.formHeaderGuard(namesDict ['header_name'])
-            
-            # Link to config
-            namesDict ['config'] = fraction
-            
-            dimensionsDict = {}
-            for dimension in fraction['fraction_space_grid']:
-                dimensionDescription = {}
-                dimensionDescription['id'] = dimension['id']
-                dimensionDescription['name'] = dimension['name']
-                dimensionDescription['fraction_coordinate_enum_element'] = namesDict ['coordinates_enum_prefix'] + dimension['id'].upper()
-                dimensionsDict[ dimensionDescription['id'] ] = dimensionDescription
-            namesDict['dimensions'] = dimensionsDict
-            
-            quantitiesDict = {}
-            if fraction['quantities']:
-                for quantity in fraction['quantities']:
-                    quantityDescription = {}
-                    quantityDescription['id'] = quantity['id']
-                    quantityDescription['name'] = quantity['name']
-                    quantityDescription['fraction_quantity_enum_element'] = namesDict ['quantities_enum_prefix'] + quantity['id'].upper()
-                    quantitiesDict[quantityDescription['id']] = quantityDescription
-            namesDict['quantities'] = quantitiesDict
-            
-            self.fractions[namesDict ['id']] = namesDict
-            
-        for dimension in configTree['model']['cordinate_space_grid']:
-            namesDict = {}
-            namesDict ['id'] = dimension['id']
-            namesDict ['name'] = dimension['name']
-            namesDict ['space_dimension_enum_element'] = 'SPACE_COORDS_' + dimension['id'].upper()
-            self.sapceDimensions[namesDict ['id']] = namesDict
-        #print self.fractions
+    """)
+
+def completeConfig(configTree):
+    for fractionId in configTree['model']['fractions']:
+        fraction = configTree['model']['fractions'][fractionId]
+        fraction['fractions_enum_element'] = 'FRACTION_' + fractionId.upper()
+        fraction['coordinates_enum_prefix'] = fractionId.upper() + '_COORDS_'
+        fraction['quantities_enum_prefix'] = fractionId.upper() + '_QUANTITIES_'
+        fraction['fraction_coordinate_enum'] = fractionId.title() + 'Coordinate'
+        fraction['fraction_quantity_enum'] = fractionId.title() + 'Quantity'
+        fraction['fraction_cell_classname'] = fractionId.title() + 'Cell'
+        fraction['fraction_cell_base_classname'] = fractionId.title() + 'CellBase'
+        fraction['fraction_space_classname'] = fractionId.title() + 'Space'
+        fraction['fraction_space_base_classname'] = fractionId.title() + 'SpaceBase'
+        fraction['header_name'] = fractionId.lower() + '.h'
+        fraction['cpp_name'] = fractionId.lower() + '.cpp'
+        fraction['header_guard'] = code_utils.formHeaderGuard(fraction ['header_name'])
+        
+        axisConfig = ""
+        
+        for dimensionId in fraction['fraction_space_grid']:
+            dimension = fraction['fraction_space_grid'][dimensionId]
+            dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
+            if dimension['division']['mode'] == 'uniform':
+                axisConfig = axisConfig + axisUniformConfigTemplate.substitute(
+                    axis_id     = dimensionId,
+                    axis_index  = dimension['fraction_coordinate_enum_element'],
+                    axis_name   = dimension['name'],
+                    axis_min    = dimension['division']['min'],
+                    axis_max    = dimension['division']['max'],
+                    axis_segments_count = dimension['division']['segments_count']
+                    )
+        fraction['axis_configuration'] = axisConfig
+        
+        if fraction['quantities']:
+            for quantityId in fraction['quantities']:
+                currentQuantity = fraction['quantities'][quantityId]
+                currentQuantity['fraction_quantity_enum_element'] = fraction['quantities_enum_prefix'] + quantityId
+    
+    for dimensionId in configTree['model']['cordinate_space_grid']:
+        dimension = configTree['model']['cordinate_space_grid'][dimensionId]
+        dimension ['space_dimension_enum_element'] = 'SPACE_COORDS_' + dimensionId.upper()

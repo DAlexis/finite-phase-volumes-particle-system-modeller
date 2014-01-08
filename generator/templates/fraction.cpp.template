@@ -1,13 +1,10 @@
-#include "fraction-1.h"
+#include "${header_name}"
 #include "model.h"
 
 ${fraction_space_classname}::${fraction_space_classname}(FractionsPool* parentFractionsPool) :
     ${fraction_space_base_classname}(parentFractionsPool)
 {
-    Axis& xSpeed = fractionGridDescription.axis[0];
-    xSpeed.uniformInit(-10.0, 10.0, 50);
-    xSpeed.setName("Horisontal speed, m");
-    
+    ${axis_configuration}
     constructGrid(fractionGridDescription);
 }
 
