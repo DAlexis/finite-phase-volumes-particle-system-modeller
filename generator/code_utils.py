@@ -1,12 +1,15 @@
 splitterComment = '//////////////////////////'
 
+def formHeaderGuard(headerName):
+    return headerName.upper().replace(".", "_").replace("-", "_") + '_INCLUDED'
+
 def headerGuardTop(key):
-    key = key.upper().replace(".", "_").replace("-", "_")
-    return "#ifndef "+key+"_INCLUDED\n#define "+key+"_INCLUDED\n\n"
+    guard = formHeaderGuard(key)
+    return "#ifndef "+guard+"_INCLUDED\n#define "+guard+"_INCLUDED\n\n"
 
 def headerGuardBottom(key):
-    key = key.upper().replace(".", "_").replace("-", "_")
-    return "#endif // "+key+"_INCLUDED\n"
+    guard = formHeaderGuard(key)
+    return "#endif // "+guard+"_INCLUDED\n"
 
 def include(header):
     return '#include "' + header + '"\n'

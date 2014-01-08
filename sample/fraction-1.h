@@ -1,5 +1,5 @@
-#ifndef FRACTION_1_H_INCLUDED
-#define FRACTION_1_H_INCLUDED
+#ifndef FRACTION1_H_INCLUDED
+#define FRACTION1_H_INCLUDED
 
 #include "global-defines.h"
 #include "fraction-base.h"
@@ -34,39 +34,4 @@ public:
 private:
 };
 
-
-/*
-
-class Fraction1Cell : public Fraction1CellBase
-{
-public:
-    /// Fraction-specific calculations
-    void calculateDerivatives();
-    
-    void calculateSourceEvolution(double dt);
-    void calculateFlowsEvolution(double dt);
-    /// Fraction-specific initialisation
-    Fraction1Cell();
-private:
-    
-    void* getModel();
-    
-    double getFlowInSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor);
-    double getFlowInFractionSpace(unsigned int coordinate, unsigned int quantity, TransferDirection direction, Fraction1Cell* neighbor);
-};
-
-class Fraction1Space : public FractionSpace<Fraction1SpaceGridType>
-{
-public:
-    /// Setting up axis
-    Fraction1Space(FractionsPool* parentFractionsPool);
-    
-    /// @todo Move this functions to template
-    void calculateFlowsEvolution(double dt);
-    void calculateSourceEvolution(double dt);
-    
-private:
-    
-};
-*/
-#endif // FRACTION_1_H_INCLUDED
+#endif // FRACTION1_H_INCLUDED

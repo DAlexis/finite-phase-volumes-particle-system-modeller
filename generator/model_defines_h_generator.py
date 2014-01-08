@@ -5,8 +5,6 @@ import os
 
 def generate(destinationDir, fractionNameGen, generatedFileHeadComment):
     modDef_h_filename = os.path.join(destinationDir, 'model-defines.h')
-    print ""
-    print "Generating model-defines.h"
     modDef_h = open(modDef_h_filename, 'w')
     modDef_h.write(generatedFileHeadComment)
     modDef_h.write(code_utils.headerGuardTop("model-defines.h"))

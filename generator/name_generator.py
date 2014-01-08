@@ -1,3 +1,4 @@
+import code_utils
 
 class NamesGenerator:
     fractions = {}
@@ -11,10 +12,16 @@ class NamesGenerator:
             namesDict ['fractions_enum_element'] = 'FRACTION_' + fraction['id'].upper()
             namesDict ['coordinates_enum_prefix'] = fraction['id'].upper() + '_COORDS_'
             namesDict ['quantities_enum_prefix'] = fraction['id'].upper() + '_QUANTITIES_'
-            namesDict ['fraction_cell_classname'] = fraction['id'].title() + 'Cell'
-            namesDict ['fraction_space_classname'] = fraction['id'].title() + 'Space'
             namesDict ['fraction_coordinate_enum'] = fraction['id'].title() + 'Coordinate'
             namesDict ['fraction_quantity_enum'] = fraction['id'].title() + 'Quantity'
+            namesDict ['fraction_cell_classname'] = fraction['id'].title() + 'Cell'
+            namesDict ['fraction_cell_base_classname'] = fraction['id'].title() + 'CellBase'
+            namesDict ['fraction_space_classname'] = fraction['id'].title() + 'Space'
+            namesDict ['fraction_space_base_classname'] = fraction['id'].title() + 'SpaceBase'
+            namesDict ['header_name'] = fraction['id'].lower() + '.h'
+            namesDict ['cpp_name'] = fraction['id'].lower() + '.cpp'
+            namesDict ['header_guard'] = code_utils.formHeaderGuard(namesDict ['header_name'])
+            
             dimensionsDict = {}
             for dimension in fraction['fraction_space_grid']:
                 dimensionDescription = {}
