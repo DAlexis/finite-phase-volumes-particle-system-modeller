@@ -1,6 +1,8 @@
+splitterComment = '//////////////////////////'
+
 def headerGuardTop(key):
     key = key.upper().replace(".", "_")
-    return "#ifndef "+key+"_INCLUDED\n#define "+key+"_INCLUDED\n"
+    return "#ifndef "+key+"_INCLUDED\n#define "+key+"_INCLUDED\n\n"
 
 def headerGuardBottom(key):
     key = key.upper().replace(".", "_")

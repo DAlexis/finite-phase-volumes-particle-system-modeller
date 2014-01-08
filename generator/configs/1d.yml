@@ -9,7 +9,7 @@ model:
             max: 10
             segments_count: 100
     fractions:
-      - id: fract1
+      - id: fraction1
         name: Test Fraction One
         fraction_space_grid:
           - id: x_speed
@@ -19,8 +19,11 @@ model:
                 min: -10
                 max: 10
                 segments_count: 100
+        quantities:
+          - id: testQuantity1
+            name: Test quantity 1
         sources:
-        space_coords_derivatives:
-            $x_coord.derivative$: "$fract1.x_speed$"
-        fraction_coords_derivatives:
-            $x_speed.derivative$: "0"
+        space_coords_derivatives: |
+            spaceCoordsDerivatives[SPACE_COORDS_X] = this->coordinates[FRACTION1_COORDS_VX];
+        fraction_coords_derivatives: |
+            fractionCoordsDerivatives[FRACTION1_COORDS_VX] = 0; // -9.8;
