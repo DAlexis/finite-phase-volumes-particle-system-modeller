@@ -32,7 +32,7 @@ void Fraction1ConcentrationVsCoordsOutput::printToFile(double time)
         for (unsigned int particleIndex=0; particleIndex < fractionSpace->elementsCount; particleIndex++)
         {
             Fraction1Cell& cell = fractionSpace->elements[particleIndex];
-            result += cell.quantities[FRACTION1_QUANTITIES_PARTICLES_COUNT];
+            result += cell.quantities[FRACTION1_QUANTITIES_PARTICLES_COUNT] / cell.volume;
         }
         (*m_file) << time << " " << spacePoint[SPACE_COORDS_X_COORD] << " " << result << std::endl;
     }

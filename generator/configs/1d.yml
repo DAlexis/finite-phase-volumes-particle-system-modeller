@@ -37,3 +37,6 @@ model:
 output:
     concentration_vs_x:
         name: Concentration vs X coordinate
+        mode: fraction_convolution
+        fraction: fraction1
+        output: 
