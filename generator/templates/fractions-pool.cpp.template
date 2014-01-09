@@ -12,6 +12,5 @@ FractionsPool::~FractionsPool()
 
 void FractionsPool::createFractions()
 {
-    fractions[FRACTION_FRACTION1] = new Fraction1Space(this);
-    
+    ${fractions_init_code}
 }

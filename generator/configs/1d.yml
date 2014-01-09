@@ -34,3 +34,6 @@ model:
                 spaceCoordsDerivatives[SPACE_COORDS_X_COORD] = this->coordinates[FRACTION1_COORDS_X_SPEED];
             fraction_coords_derivatives: |
                 fractionCoordsDerivatives[FRACTION1_COORDS_X_SPEED] = 0;// -9.8;
+output:
+    concentration_vs_x:
+        name: Concentration vs X coordinate

@@ -9,8 +9,8 @@ cpp_sources =   main.cpp \
                 space.cpp \
                 model.cpp \
                 axis.cpp \
-                fraction-1.cpp \
+                ${fraction_sources_list} \
                 output.cpp \
                 model-output.cpp
 
-include $(HOME_DIR)/Makefile.inc
+include $$(HOME_DIR)/Makefile.inc

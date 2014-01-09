@@ -5,10 +5,10 @@
 Space::Space(void* model) :
     parent(model)
 {
-    // Setting up x coordinate
-    Axis& xCoord = spaceGridDescription.axis[0];
-    xCoord.uniformInit(-10.0, 10.0, 50);
-    xCoord.setName("Horisontal coordinate, m");
+    Axis& x_coord = spaceGridDescription.axis[SPACE_COORDS_X_COORD];
+    x_coord.uniformInit(-10.0, 10.0, 100);
+    x_coord.setName("Horisontal coordinate, m");
+    
     
     constructGrid(spaceGridDescription);
 }
