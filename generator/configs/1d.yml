@@ -39,4 +39,5 @@ output:
         name: Concentration vs X coordinate
         mode: fraction_convolution
         fraction: fraction1
-        output: 
+        output: |
+            cell.quantities[FRACTION1_QUANTITIES_PARTICLES_COUNT] / cell.volume;
