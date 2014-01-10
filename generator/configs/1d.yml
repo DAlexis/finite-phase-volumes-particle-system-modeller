@@ -1,3 +1,7 @@
+#
+# This is a simple sample config
+#
+# Note: particles count quantity synonim is 'particles_count'
 model:
     name: One dimension test config
     cordinate_space_grid:
@@ -23,15 +27,19 @@ model:
                 testQuantity1:
                     name: Test quantity 1
             sources: |
-                SpaceGridType::GridElementBase* spaceCell = getSpaceCell();
-                    // Generating initial state of particles
-                    if (static_cast<Model*>(getModel())->time < 0.02)
-                    if (fabs(coordinates[FRACTION1_COORDS_X_SPEED]+3) < 0.5)
-                    if (fabs(spaceCell->coordinates[SPACE_COORDS_X_COORD]-8) < 1)
-                    //    nextStepQuantities[FRACTION1_QUANTITY_COUNT] += 0.1*spaceCell->volume*dt;
-                    nextStepQuantities[FRACTION1_QUANTITIES_PARTICLES_COUNT] = 1;//spaceCell->coordinates[SPACE_COORDS_X]/30;
+                // Generating initial state of particles
+                    if (model->time < 0.02)
+                        if (fabs(x_speed+3) < 0.5)
+                            if (fabs(x_coord-8) < 1)
+                                particles_count = 1;
+                    // fraction1qw 
+                    // fraction1 qw
+                    // fraction1.qw
+                    // testQuantity1, particles_count
+                    
+                    //x_speed xxspeed, .x_speed, =x_speed=
             space_coords_derivatives: |
-                spaceCoordsDerivatives[SPACE_COORDS_X_COORD] = this->coordinates[FRACTION1_COORDS_X_SPEED];
+                spaceCoordsDerivatives[SPACE_COORDS_X_COORD] = coordinates[FRACTION1_COORDS_X_SPEED];
             fraction_coords_derivatives: |
                 fractionCoordsDerivatives[FRACTION1_COORDS_X_SPEED] = 0;// -9.8;
 output:

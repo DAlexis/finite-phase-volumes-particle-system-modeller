@@ -1,6 +1,7 @@
 import code_utils
 
 import string
+import re
 
 axisUniformConfigTemplate = string.Template("""Axis& ${axis_id} = ${description_class}.axis[${axis_index}];
     ${axis_id}.uniformInit(${axis_min}, ${axis_max}, ${axis_segments_count});
@@ -65,6 +66,36 @@ void ${class_name}::printToFile(double time)
 
 fractionInitCodeTemplate = string.Template("fractions[${fractions_enum_element}] = new ${fraction_space_classname}(this);\n    ")
 
+def resolveSymbolsInFractionCode(code, configTree, thisFraction):
+    result = code
+    # Replacing simple words
+    result = re.sub(r'\bmodel\b', 'static_cast<Model*>(getModel())', result)
+    
+    # Replacing fractions id to its adresses
+    for fractionId in configTree['model']['fractions']:
+        fractionFullName = 'getSpaceCell()->fractions[' + configTree['model']['fractions'][fractionId]['fractions_enum_element'] + ']'
+        result = re.sub(r'\b' + fractionId + r'\b', fractionFullName, result)
+    
+    # Replacing this fraction's coords
+    for coordId in thisFraction['fraction_space_grid']:
+        coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
+        result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
+    
+    # Replacing this fraction's quantities
+    for quantityId in thisFraction['quantities']:
+        quantityFullName = 'quantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+        result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
+    
+    result = re.sub(r'\bparticles_count\b', 'quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]', result)
+    
+    # Replacing space coords
+    for coordId in configTree['model']['cordinate_space_grid']:
+        coordFullName = 'getSpaceCell()->coordinates[' + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] + ']'
+        result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
+    
+    return result
+
+
 def generateAxisConfig(asixDescriptionSubtree, axisId, axisIndex, axisType):
     descriptionClassName = "fractionGridDescription"
     if axisType=='space':
@@ -115,8 +146,9 @@ def completeConfig(configTree):
         if fraction['quantities']:
             for quantityId in fraction['quantities']:
                 currentQuantity = fraction['quantities'][quantityId]
-                currentQuantity['fraction_quantity_enum_element'] = fraction['quantities_enum_prefix'] + quantityId
-    
+                currentQuantity['fraction_quantity_enum_element'] = fraction['quantities_enum_prefix'] + quantityId.upper()
+        
+        
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
     configTree['model']['fraction_sources_list'] = fractionSourcesList
     configTree['model']['fractions_init_code'] = fractionsInitCode
@@ -159,3 +191,8 @@ def completeConfig(configTree):
     configTree['output']['header_code'] = outputHeaderCode
     configTree['output']['cpp_code'] = outputCppCode
     configTree['model']['outputs_init_code'] = outputsInitialisationCode
+    
+    for fractionId in configTree['model']['fractions']:
+        fraction = configTree['model']['fractions'][fractionId]
+        # Resolving id's in code
+        fraction['sources'] = resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction)
