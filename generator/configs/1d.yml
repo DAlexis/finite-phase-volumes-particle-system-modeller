@@ -37,7 +37,18 @@ model:
 output:
     concentration_vs_x:
         name: Concentration vs X coordinate
-        mode: fraction_convolution
+        mode: quantity_vs_space_coord
+        space_point:
+            x_coord: 0
+        iterating_coord: x_coord
         fraction: fraction1
-        output: |
-            cell.quantities[FRACTION1_QUANTITIES_PARTICLES_COUNT] / cell.volume;
+        output_code: |
+            cell.quantities[FRACTION1_QUANTITIES_PARTICLES_COUNT] / cell.volume
+        file_name: "Fraction1-concentration-x-slice-(t).txt"
+        points_count: 100
+        time_step: 0.01
+
+run_options:
+    start_time: 0
+    stop_time: 5
+    time_step: 0.01

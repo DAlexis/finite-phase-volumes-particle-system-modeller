@@ -8,6 +8,9 @@ import fractions_pool_h_generator
 import fractions_pool_cpp_generator
 import space_cpp_generator
 import model_cpp_generator
+import model_output_h_generator
+import model_output_cpp_generator
+import main_cpp_generator
 import Makefile_generator
 
 import yaml
@@ -94,6 +97,15 @@ space_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
 
 print "Generating model.cpp"
 model_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
+
+print "Generating model-output.h"
+model_output_h_generator.generate(destinationDir, config, generatedFileHeadComment)
+
+print "Generating model-output.cpp"
+model_output_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
+
+print "Generating main.cpp"
+main_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
 
 print "Generating Makefile"
 Makefile_generator.generate(destinationDir, config, generatedFileHeadCommentForMake)

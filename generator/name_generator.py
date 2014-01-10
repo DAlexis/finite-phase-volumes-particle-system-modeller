@@ -8,6 +8,61 @@ axisUniformConfigTemplate = string.Template("""Axis& ${axis_id} = ${description_
     
     """)
 
+outputInitCode = string.Template("outputMaker.addInstance(new ${class_name});\n    ")
+
+outputQvsSCHeaderTemplate = string.Template("""
+class ${class_name} : public OutputInstanceBase
+{
+public:
+    ${class_name}();
+    virtual ~${class_name}();
+    
+protected:
+    virtual void printToFile(double time);
+};
+""")
+
+outputQvsSCSourceTemplate = string.Template("""
+${class_name}::${class_name}() :
+    OutputInstanceBase(0, // This is because really quantity index is not used by OutputInstanceBase
+        ${time_step},
+        ${points_count},
+        "${file_name}")
+{
+}
+
+${class_name}::~${class_name}()
+{
+}
+
+void ${class_name}::printToFile(double time)
+{
+    Space& space = *(m_parent->m_space);
+    double maxVal = space.gridDescription->axis[${iterating_coord}].getMaxValue();
+    double minVal = space.gridDescription->axis[${iterating_coord}].getMinValue();
+    
+    double spacePoint[SPACE_COORDS_COUNT];
+    ${space_point_init}
+    
+    for (unsigned int sapceIndex=0; sapceIndex<m_pointsCount; sapceIndex++)
+    {
+        spacePoint[${iterating_coord}] = minVal + (maxVal-minVal) * sapceIndex / m_pointsCount;
+        
+        FractionsPool *spaceCell = space.accessElement_d(spacePoint);
+        ${fraction_space_classname} *fractionSpace = static_cast<${fraction_space_classname}*> (spaceCell->fractions[${fraction_index}]);
+        // Convolution in space cell
+        double result = 0;
+        for (unsigned int particleIndex=0; particleIndex < fractionSpace->elementsCount; particleIndex++)
+        {
+            ${fraction_cell_classname}& cell = fractionSpace->elements[particleIndex];
+            result += ${output_code}
+            ;
+        }
+        (*m_file) << time << " " << spacePoint[${iterating_coord}] << " " << result << std::endl;
+    }
+}
+""")
+
 fractionInitCodeTemplate = string.Template("fractions[${fractions_enum_element}] = new ${fraction_space_classname}(this);\n    ")
 
 def generateAxisConfig(asixDescriptionSubtree, axisId, axisIndex, axisType):
@@ -54,7 +109,7 @@ def completeConfig(configTree):
             dimension = fraction['fraction_space_grid'][dimensionId]
             dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
             axisConfig = axisConfig + generateAxisConfig(dimension, dimensionId, dimension['fraction_coordinate_enum_element'], 'fraction')
-           
+            
         fraction['axis_configuration'] = axisConfig
         
         if fraction['quantities']:
@@ -66,11 +121,41 @@ def completeConfig(configTree):
     configTree['model']['fraction_sources_list'] = fractionSourcesList
     configTree['model']['fractions_init_code'] = fractionsInitCode
     
-    
     spaceAxisConfiguration = ""
     
     for dimensionId in configTree['model']['cordinate_space_grid']:
         dimension = configTree['model']['cordinate_space_grid'][dimensionId]
         dimension ['space_dimension_enum_element'] = 'SPACE_COORDS_' + dimensionId.upper()
         spaceAxisConfiguration = spaceAxisConfiguration + generateAxisConfig(dimension, dimensionId, dimension ['space_dimension_enum_element'], 'space')
+    
     configTree['model']['space_axis_configuration'] = spaceAxisConfiguration
+    
+    outputHeaderCode = ""
+    outputCppCode = ""
+    outputsInitialisationCode = ""
+    for instanceId in configTree['output']:
+        instance = configTree['output'][instanceId]
+        instance['class_name'] = instanceId.title()
+        if instance['mode'] == 'quantity_vs_space_coord':
+            outputHeaderCode = outputHeaderCode + outputQvsSCHeaderTemplate.substitute(instance)
+            # Creating space point initialisation
+            spacePointInitStr = ""
+            for coordId in instance['space_point']:
+                spacePointInitStr += 'spacePoint[' + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] + '] = ' + str(instance['space_point'][coordId]) + ';\n    '
+            
+            outputCppCode = outputCppCode + outputQvsSCSourceTemplate.substitute(
+                class_name          = instance['class_name'],
+                iterating_coord     = configTree['model']['cordinate_space_grid'][instance['iterating_coord']]['space_dimension_enum_element'],
+                space_point_init    = spacePointInitStr,
+                fraction_cell_classname     = configTree['model']['fractions'][instance['fraction']]['fraction_cell_classname'],
+                fraction_space_classname    = configTree['model']['fractions'][instance['fraction']]['fraction_space_classname'],
+                output_code         = instance['output_code'],
+                fraction_index      = configTree['model']['fractions'][instance['fraction']]['fractions_enum_element'],
+                file_name       = str(instance['file_name']),
+                points_count    = str(instance['points_count']),
+                time_step       = str(instance['time_step'])
+                )
+            outputsInitialisationCode = outputsInitialisationCode + outputInitCode.substitute(instance)
+    configTree['output']['header_code'] = outputHeaderCode
+    configTree['output']['cpp_code'] = outputCppCode
+    configTree['model']['outputs_init_code'] = outputsInitialisationCode

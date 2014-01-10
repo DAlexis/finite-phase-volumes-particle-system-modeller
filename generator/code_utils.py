@@ -1,3 +1,5 @@
+import string
+
 splitterComment = '//////////////////////////'
 
 def formHeaderGuard(headerName):
@@ -16,3 +18,14 @@ def include(header):
 
 def includeStd(header):
     return '#include <' + header + '>\n'
+
+def genFileByTemplate(result, template, dictionary, headComment):
+    outputFile = open(result, 'w')
+    inputFile = open(template, 'r')
+    outputFile.write(headComment)
+    lines = inputFile.readlines()
+    for line in lines:
+        lineTemplate = string.Template(line)
+        outputFile.write(lineTemplate.substitute(dictionary))
+    inputFile.close()
+    outputFile.close()
