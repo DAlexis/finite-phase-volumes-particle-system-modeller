@@ -32,16 +32,10 @@ model:
                         if (fabs(x_speed+3) < 0.5)
                             if (fabs(x_coord-8) < 1)
                                 particles_count = 1;
-                    // fraction1qw 
-                    // fraction1 qw
-                    // fraction1.qw
-                    // testQuantity1, particles_count
-                    
-                    //x_speed xxspeed, .x_speed, =x_speed=
             space_coords_derivatives: |
-                spaceCoordsDerivatives[SPACE_COORDS_X_COORD] = coordinates[FRACTION1_COORDS_X_SPEED];
+                x_coord.DER = x_speed;
             fraction_coords_derivatives: |
-                fractionCoordsDerivatives[FRACTION1_COORDS_X_SPEED] = 0;// -9.8;
+                x_speed.DER = 0; // -9.8;
 output:
     concentration_vs_x:
         name: Concentration vs X coordinate

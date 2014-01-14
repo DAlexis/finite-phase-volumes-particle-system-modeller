@@ -73,11 +73,14 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     
     # Replacing fractions id to its adresses
     for fractionId in configTree['model']['fractions']:
-        fractionFullName = 'getSpaceCell()->fractions[' + configTree['model']['fractions'][fractionId]['fractions_enum_element'] + ']'
+        fraction = configTree['model']['fractions'][fractionId]
+        fractionFullName = 'getSpaceCell()->fractions[' + fraction['fractions_enum_element'] + ']'
         result = re.sub(r'\b' + fractionId + r'\b', fractionFullName, result)
     
     # Replacing this fraction's coords
     for coordId in thisFraction['fraction_space_grid']:
+        coordDerFullName = 'fractionCoordsDerivatives[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
+        result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)
         coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
         result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
@@ -88,8 +91,10 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     
     result = re.sub(r'\bparticles_count\b', 'quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]', result)
     
-    # Replacing space coords
+    # Replacing space coords and its derivatives
     for coordId in configTree['model']['cordinate_space_grid']:
+        coordDerFullName = 'spaceCoordsDerivatives[' + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] + ']'
+        result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)
         coordFullName = 'getSpaceCell()->coordinates[' + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] + ']'
         result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
@@ -187,7 +192,8 @@ def completeConfig(configTree):
                 points_count    = str(instance['points_count']),
                 time_step       = str(instance['time_step'])
                 )
-            outputsInitialisationCode = outputsInitialisationCode + outputInitCode.substitute(instance)
+            thisOutputCode = resolveSymbolsInFractionCode(outputInitCode.substitute(instance), configTree, configTree['model']['fractions'][instance['fraction']])
+            outputsInitialisationCode = outputsInitialisationCode + thisOutputCode
     configTree['output']['header_code'] = outputHeaderCode
     configTree['output']['cpp_code'] = outputCppCode
     configTree['model']['outputs_init_code'] = outputsInitialisationCode
@@ -196,3 +202,6 @@ def completeConfig(configTree):
         fraction = configTree['model']['fractions'][fractionId]
         # Resolving id's in code
         fraction['sources'] = resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction)
+        fraction['space_coords_derivatives'] = resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction)
+        fraction['fraction_coords_derivatives'] = resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction)
+        
