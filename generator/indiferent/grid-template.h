@@ -166,4 +166,74 @@ protected:
     }
 };
 
+template <class ElementType>
+class Grid<0, ElementType>
+{
+public:
+    typedef Grid<0, ElementType> GridInstance;
+    
+    class GridDescription {};
+    
+    class GridElementBase
+    {
+    public:
+        /// Fraction coordinates
+        double *coordinates;
+        double *size;
+        double volume;
+        
+        /// Neighbors pointers
+        GridElementBase** prev;
+        GridElementBase** next;
+        
+        Grid* parentGrid;
+        size_t elementIndex;
+        
+        GridElementBase() : coordinates(0), size(0), volume(1.0), prev(0), next(0), parentGrid(0), elementIndex(0) {}
+        virtual ~GridElementBase() {}
+        void init(Grid* parent, size_t index)
+        {
+            parentGrid = parent;
+            elementIndex = index;
+        }
+    };
+    
+    void constructGrid(const GridDescription& description)
+    {
+        gridDescription = &description;
+        // Allocating memory
+        elements = new ElementType;
+        elementsCount = 1;
+        // Setting grid pointer
+        elements->init(this, 0);
+    }
+    
+    Grid() : elements(0), elementsCount(0), offsets(0), currentCoords_d(0), currentCoords_ui(0) {}
+    virtual ~Grid()
+    {
+        if (elements) delete[] elements;
+    }
+    
+    ElementType* accessElement_ui(const uint* coords)
+    {
+        return elements;
+    }
+
+    ElementType* accessElement_d(const double* coords)
+    {
+        return elements;
+    }
+
+    ElementType* elements;
+    const GridDescription* gridDescription;
+    uint elementsCount;
+    
+protected:
+    uint *offsets;
+    /// Service buffer to save double coordinates inside class
+    double *currentCoords_d;
+    /// Service buffer to save unsigned int coordinates inside class
+    uint *currentCoords_ui;
+};
+
 #endif // GRID_TEMPLATE_H_INCLUDED

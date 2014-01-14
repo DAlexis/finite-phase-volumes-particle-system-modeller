@@ -78,17 +78,21 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
         result = re.sub(r'\b' + fractionId + r'\b', fractionFullName, result)
     
     # Replacing this fraction's coords
-    for coordId in thisFraction['fraction_space_grid']:
-        coordDerFullName = 'fractionCoordsDerivatives[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
-        result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)
-        coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
-        result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
+    if thisFraction['fraction_space_grid']:
+        for coordId in thisFraction['fraction_space_grid']:
+            coordDerFullName = 'fractionCoordsDerivatives[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
+            result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)
+            coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
+            result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
     # Replacing this fraction's quantities
     for quantityId in thisFraction['quantities']:
+        nextStepQuantityFullName = 'nextStepQuantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+        result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*NEXT\b', nextStepQuantityFullName, result)
         quantityFullName = 'quantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
         result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
     
+    result = re.sub(r'\bparticles_count[\s]*.[\s]*NEXT\b', 'nextStepQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]', result)
     result = re.sub(r'\bparticles_count\b', 'quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]', result)
     
     # Replacing space coords and its derivatives
@@ -141,10 +145,11 @@ def completeConfig(configTree):
         
         axisConfig = ""
         
-        for dimensionId in fraction['fraction_space_grid']:
-            dimension = fraction['fraction_space_grid'][dimensionId]
-            dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
-            axisConfig = axisConfig + generateAxisConfig(dimension, dimensionId, dimension['fraction_coordinate_enum_element'], 'fraction')
+        if fraction['fraction_space_grid']:
+            for dimensionId in fraction['fraction_space_grid']:
+                dimension = fraction['fraction_space_grid'][dimensionId]
+                dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
+                axisConfig = axisConfig + generateAxisConfig(dimension, dimensionId, dimension['fraction_coordinate_enum_element'], 'fraction')
             
         fraction['axis_configuration'] = axisConfig
         

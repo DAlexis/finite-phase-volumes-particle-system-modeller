@@ -14,25 +14,28 @@ import main_cpp_generator
 import Makefile_generator
 
 import yaml
-import argparse
+from  optparse import OptionParser
 import os
 import shutil
 import time
 
 # Parsing command line
-cmdLineParser = argparse.ArgumentParser(description='Input and output configuration:')
-cmdLineParser.add_argument('--config', help='XML configuration file to be parsed to generate code')
-cmdLineParser.add_argument('--output-dir', help='Directory where program should be created')
-cmdLineArgs = cmdLineParser.parse_args()
+
+cmdLineParser = OptionParser()
+cmdLineParser.add_option("-d", "--directory", dest="derectory", default="../test/",
+                  help="Directory whewre to put generated program", metavar="DIRECTORY")
+cmdLineParser.add_option("-c", "--config", dest="config", default="configs/1d.yml",
+                  help="Configuration file", metavar="CONFIG")
+
+(cmdLineOptions, cmdLineArgs) = cmdLineParser.parse_args()
+configFileName = cmdLineOptions.config
+destinationDir = cmdLineOptions.derectory
 
 # Beginning work
 print ""
 print "Code generation started"
 
-configFileName = 'configs/1d.yml'
-destinationDir = '../test/'
 config = yaml.load(open(configFileName))
-#print config
 indiferentDir = 'indiferent/'
 
 generatedFileHeadComment = """ /*

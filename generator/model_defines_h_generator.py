@@ -40,15 +40,18 @@ def generate(destinationDir, config, generatedFileHeadComment):
         # Coordinates enum
         modDef_h.write('enum ' + currentFraction['fraction_coordinate_enum'] + '\n{\n')
         isFirst = True
-        for fractDimensionId in currentFraction['fraction_space_grid']:
-            currentFractionDimension = currentFraction['fraction_space_grid'][fractDimensionId]
-            modDef_h.write('    ' + currentFractionDimension['fraction_coordinate_enum_element'])
-            if isFirst:
-                modDef_h.write(' = 0')
-                isFirst = False
-            modDef_h.write(',\n')
-        modDef_h.write('    ' + currentFraction['coordinates_enum_prefix'] + 'COUNT' + '\n')
-        modDef_h.write('};\n\n');
+        if currentFraction['fraction_space_grid']:
+            for fractDimensionId in currentFraction['fraction_space_grid']:
+                currentFractionDimension = currentFraction['fraction_space_grid'][fractDimensionId]
+                modDef_h.write('    ' + currentFractionDimension['fraction_coordinate_enum_element'])
+                if isFirst:
+                    modDef_h.write(' = 0')
+                    isFirst = False
+                modDef_h.write(',\n')
+        modDef_h.write('    ' + currentFraction['coordinates_enum_prefix'] + 'COUNT')
+        if isFirst:
+            modDef_h.write(' = 0')
+        modDef_h.write('\n};\n\n');
         
         # Quantities enum
         modDef_h.write('enum ' + currentFraction['fraction_quantity_enum'] + '\n{\n')

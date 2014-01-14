@@ -16,26 +16,18 @@ model:
         fraction1:
             name: Test Fraction One
             fraction_space_grid:
-                x_speed:
-                    name: Horisontal speed, m/s
-                    division:
-                        mode: uniform
-                        min: -10.0
-                        max: 10.0
-                        segments_count: 50
             quantities:
                 testQuantity1:
                     name: Test quantity 1
             sources: |
                 // Generating initial state of particles
                     if (model->time < 0.02)
-                        if (fabs(x_speed+3) < 0.5)
                             if (fabs(x_coord-8) < 1)
-                                particles_count.NEXT = 1;
+                                particles_count = 1;
             space_coords_derivatives: |
-                x_coord.DER = x_speed;
+                x_coord.DER = 1;
             fraction_coords_derivatives: |
-                x_speed.DER = 0; // -9.8;
+
 output:
     concentration_vs_x:
         name: Concentration vs X coordinate

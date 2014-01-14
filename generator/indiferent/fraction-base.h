@@ -55,7 +55,7 @@ template <int FractionIndex,
           int FractionSpaceDimension,
           int QuantitiesCount,
           class FractionCellType>
-class FractionCellBase : public Grid<SpaceDimension, FractionCellType>::GridElementBase, public IFractionCell
+class FractionCellBase : public Grid<FractionSpaceDimension, FractionCellType>::GridElementBase, public IFractionCell
 {
 public:
     typedef FractionCellBase FractionCellBaseInstance;
