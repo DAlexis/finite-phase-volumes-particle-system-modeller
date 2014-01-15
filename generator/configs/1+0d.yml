@@ -22,10 +22,10 @@ model:
             sources: |
                 // Generating initial state of particles
                     if (model->time < 0.02)
-                            if (fabs(x_coord-8) < 1)
-                                particles_count = 1;
+                            if (fabs(x_coord) < 2)
+                                particles_count.NEXT = 1;
             space_coords_derivatives: |
-                x_coord.DER = 1;
+                x_coord.DER = -1;
             fraction_coords_derivatives: |
 
 output:

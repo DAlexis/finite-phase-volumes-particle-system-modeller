@@ -249,27 +249,14 @@ protected:
     inline double getFlowInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
-        SpaceGridType::GridElementBase* neighborSpaceCell = neighbor->getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
-        double l2 = neighborSpaceCell->size[coordinate];
-        
-        double borderValue = (quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*l2/l1 + neighbor->quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*l1/l2)
-            / (l1 + l2);
-        double borderCoordDerivative = (spaceCoordsDerivatives[coordinate]*l2 + neighbor->spaceCoordsDerivatives[coordinate]*l1)
-            / (l1 + l2);
-        return borderValue*borderCoordDerivative;
+        return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
     }
     
     inline double getFlowInFractionSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         double l1 = this->size[coordinate];
-        double l2 = neighbor->size[coordinate];
-        
-        double borderValue = (quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*l2/l1 + neighbor->quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*l1/l2)
-            / (l1 + l2);
-        double borderCoordDerivative = (fractionCoordsDerivatives[coordinate]*l2 + neighbor->fractionCoordsDerivatives[coordinate]*l1)
-            / (l1 + l2);
-        return borderValue*borderCoordDerivative;
+        return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
     }
     
 private:
