@@ -46,8 +46,7 @@ output:
             x_coord: 0
         iterating_coord: x_coord
         fraction: fraction1
-        output_code: |
-            cell.quantities[FRACTION1_QUANTITIES_PARTICLES_COUNT] / cell.volume
+        quantity: particles_count
         file_name: "Fraction1-concentration-x-slice-(t).txt"
         points_count: 100
         time_step: 0.01
@@ -59,8 +58,7 @@ output:
             x_coord: 0
         iterating_coord: x_coord
         fraction: fraction1
-        output_code: |
-            cell.quantities[FRACTION1_QUANTITIES_TESTQUANTITY1] / cell.volume
+        quantity: testQuantity1
         file_name: "Fraction1-test-quantity-x-slice-(t).txt"
         points_count: 100
         time_step: 0.01

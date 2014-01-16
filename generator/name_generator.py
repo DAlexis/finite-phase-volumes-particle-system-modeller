@@ -159,7 +159,6 @@ def completeConfig(configTree):
                 currentQuantity = fraction['quantities'][quantityId]
                 currentQuantity['fraction_quantity_enum_element'] = fraction['quantities_enum_prefix'] + quantityId.upper()
         
-        
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
     configTree['model']['fraction_sources_list'] = fractionSourcesList
     configTree['model']['fractions_init_code'] = fractionsInitCode
@@ -185,6 +184,13 @@ def completeConfig(configTree):
             spacePointInitStr = ""
             for coordId in instance['space_point']:
                 spacePointInitStr += 'spacePoint[' + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] + '] = ' + str(instance['space_point'][coordId]) + ';\n    '
+            
+            quantityIndex = ""
+            if instance['quantity'] == 'particles_count':
+                quantityIndex = "EVERY_FRACTION_COUNT_QUANTITY_INDEX"
+            else:
+                quantityIndex = configTree['model']['fractions'][instance['fraction']]['quantities'][instance['quantity']]['fraction_quantity_enum_element']
+            instance['output_code'] = 'cell.quantities[' + quantityIndex + '] / cell.volume'
             
             outputCppCode = outputCppCode + outputQvsSCSourceTemplate.substitute(
                 class_name          = instance['class_name'],
