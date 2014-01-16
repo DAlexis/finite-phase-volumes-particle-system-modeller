@@ -86,11 +86,12 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
             result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
     # Replacing this fraction's quantities
-    for quantityId in thisFraction['quantities']:
-        nextStepQuantityFullName = 'nextStepQuantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
-        result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*NEXT\b', nextStepQuantityFullName, result)
-        quantityFullName = 'quantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
-        result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
+    if thisFraction['quantities']:
+        for quantityId in thisFraction['quantities']:
+            nextStepQuantityFullName = 'nextStepQuantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+            result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*NEXT\b', nextStepQuantityFullName, result)
+            quantityFullName = 'quantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+            result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
     
     result = re.sub(r'\bparticles_count[\s]*.[\s]*NEXT\b', 'nextStepQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]', result)
     result = re.sub(r'\bparticles_count\b', 'quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]', result)

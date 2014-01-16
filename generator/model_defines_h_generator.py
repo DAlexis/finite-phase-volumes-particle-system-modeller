@@ -56,9 +56,10 @@ def generate(destinationDir, config, generatedFileHeadComment):
         # Quantities enum
         modDef_h.write('enum ' + currentFraction['fraction_quantity_enum'] + '\n{\n')
         modDef_h.write('    ' + currentFraction['quantities_enum_prefix'] + 'PARTICLES_COUNT' + ' = 0,\n')
-        for quantityId in currentFraction['quantities']:
-            currentQuantity = currentFraction['quantities'][quantityId]
-            modDef_h.write('    ' + currentQuantity['fraction_quantity_enum_element'] + ',\n')
+        if currentFraction['quantities']:
+            for quantityId in currentFraction['quantities']:
+                currentQuantity = currentFraction['quantities'][quantityId]
+                modDef_h.write('    ' + currentQuantity['fraction_quantity_enum_element'] + ',\n')
         modDef_h.write('    ' + currentFraction['quantities_enum_prefix'] + 'COUNT' + '\n')
         
         modDef_h.write('};\n\n');
