@@ -47,7 +47,7 @@ void ${class_name}::printToFile(double time)
     
     for (unsigned int sapceIndex=0; sapceIndex<m_pointsCount; sapceIndex++)
     {
-        spacePoint[${iterating_coord}] = minVal + (maxVal-minVal) * sapceIndex / m_pointsCount;
+        spacePoint[${iterating_coord}] = minVal + (maxVal-minVal) * sapceIndex / (m_pointsCount-1);
         
         FractionsPool *spaceCell = space.accessElement_d(spacePoint);
         ${fraction_space_classname} *fractionSpace = static_cast<${fraction_space_classname}*> (spaceCell->fractions[${fraction_index}]);

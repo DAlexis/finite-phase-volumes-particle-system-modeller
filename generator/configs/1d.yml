@@ -29,8 +29,8 @@ model:
             sources: |
                 // Generating initial state of particles
                     if (model->time < 0.02)
-                        if (fabs(x_speed+3) < 0.5)
-                            if (fabs(x_coord-8) < 1)
+                        if (fabs(x_speed+3) < 0.5 || fabs(x_speed-3) < 0.5)
+                            if (fabs(x_coord) < 1)
                                 particles_count.NEXT = 1;
             space_coords_derivatives: |
                 x_coord.DER = x_speed;
