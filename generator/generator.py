@@ -2,16 +2,6 @@
 import code_utils
 import name_generator
 import model_defines_h_generator
-import fraction_header_generator
-import fraction_cpp_generator
-import fractions_pool_h_generator
-import fractions_pool_cpp_generator
-import space_cpp_generator
-import model_cpp_generator
-import model_output_h_generator
-import model_output_cpp_generator
-import main_cpp_generator
-import Makefile_generator
 
 import yaml
 from  optparse import OptionParser
@@ -84,34 +74,66 @@ model_defines_h_generator.generate(destinationDir, config, generatedFileHeadComm
 
 print "Generating fraction-related headers and sources:"
 for fractionId in config['model']['fractions']:
+    fraction = config['model']['fractions'][fractionId]
     print "   " + fractionId + " header..."
-    fraction_header_generator.generate(destinationDir, config, generatedFileHeadComment, fractionId)
+    code_utils.genFileByTemplate(os.path.join(destinationDir, fraction['header_name']),
+                                'templates/fraction-header.h.template',
+                                fraction,
+                                generatedFileHeadComment)
     print "   " + fractionId + " source..."
-    fraction_cpp_generator.generate(destinationDir, config, generatedFileHeadComment, fractionId)
+    code_utils.genFileByTemplate(os.path.join(destinationDir, fraction['cpp_name']),
+                                'templates/fraction.cpp.template',
+                                fraction,
+                                generatedFileHeadComment)
 
 print "Generating fractions-pool.h"
-fractions_pool_h_generator.generate(destinationDir, config, generatedFileHeadComment)
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'fractions-pool.h'),
+                                'templates/fractions-pool.h.template',
+                                config['model'],
+                                generatedFileHeadComment)
 
 print "Generating fractions-pool.cpp"
-fractions_pool_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'fractions-pool.cpp'),
+                                'templates/fractions-pool.cpp.template',
+                                config['model'],
+                                generatedFileHeadComment)
 
 print "Generating space.cpp"
-space_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'space.cpp'),
+                                'templates/space.cpp.template',
+                                config['model'],
+                                generatedFileHeadComment)
+
 
 print "Generating model.cpp"
-model_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'model.cpp'),
+                                'templates/model.cpp.template',
+                                config['model'],
+                                generatedFileHeadComment)
 
 print "Generating model-output.h"
-model_output_h_generator.generate(destinationDir, config, generatedFileHeadComment)
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'model-output.h'),
+                                'templates/model-output.h.template',
+                                config['output'],
+                                generatedFileHeadComment)
 
 print "Generating model-output.cpp"
-model_output_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'model-output.cpp'),
+                                'templates/model-output.cpp.template',
+                                config['output'],
+                                generatedFileHeadComment)
 
 print "Generating main.cpp"
-main_cpp_generator.generate(destinationDir, config, generatedFileHeadComment)
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'main.cpp'),
+                                'templates/main.cpp.template',
+                                config['run_options'],
+                                generatedFileHeadComment)
 
 print "Generating Makefile"
-Makefile_generator.generate(destinationDir, config, generatedFileHeadCommentForMake)
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'Makefile'),
+                                'templates/Makefile.template',
+                                config['model'],
+                                generatedFileHeadCommentForMake)
 
 
 print ""
