@@ -29,3 +29,9 @@ def genFileByTemplate(result, template, dictionary, headComment):
         outputFile.write(lineTemplate.substitute(dictionary))
     inputFile.close()
     outputFile.close()
+
+def readTemplate(fileName):
+    inpFile = open(fileName, "r")
+    text = inpFile.read()
+    inpFile.close()
+    return string.Template(text)

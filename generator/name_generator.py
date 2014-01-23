@@ -3,11 +3,8 @@ import code_utils
 import string
 import re
 
-axisUniformConfigTemplate = string.Template("""Axis& ${axis_id} = ${description_class}.axis[${axis_index}];
-    ${axis_id}.uniformInit(${axis_min}, ${axis_max}, ${axis_segments_count});
-    ${axis_id}.setName("${axis_name}");
-    
-    """)
+axisUniformConfigTemplate = code_utils.readTemplate("fragments/axis-uniform-config.template")
+fractionInitCodeTemplate = code_utils.readTemplate("fragments/fraction-init-code.template")
 
 outputInitCode = string.Template("outputMaker.addInstance(new ${class_name});\n    ")
 
@@ -63,8 +60,6 @@ void ${class_name}::printToFile(double time)
     }
 }
 """)
-
-fractionInitCodeTemplate = string.Template("fractions[${fractions_enum_element}] = new ${fraction_space_classname}(this);\n    ")
 
 def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     result = code
