@@ -1,6 +1,6 @@
 #include "model-output.h"
 #include <iostream>
-
+/*
 Fraction1ConcentrationVsCoordsOutput::Fraction1ConcentrationVsCoordsOutput() :
     OutputInstanceBase(FRACTION1_QUANTITIES_PARTICLES_COUNT,
         0.01,
@@ -79,3 +79,4 @@ void Fraction1ConcentrationVsVelocityOutput::printToFile(double time)
     }
 }
 
+*/  
