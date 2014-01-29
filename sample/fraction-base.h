@@ -16,6 +16,8 @@ template <int AxisCount, class FractionCellType>
 class FractionSpaceBase : public Grid<AxisCount, FractionCellType>, public IFractionSpace
 {
 public:
+    typedef FractionSpaceBase<AxisCount, FractionCellType> FractionSpaceBaseInstance;
+    typedef Grid<AxisCount, FractionCellType> GridInstance;
     
     FractionSpaceBase(FractionsPoolBase* parentFractionsPool) :
         parent(parentFractionsPool)
@@ -23,7 +25,7 @@ public:
     
     virtual ~FractionSpaceBase() { }
     
-    virtual void calculateFlowsEvolution(double dt)
+    void calculateFlowsEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateDerivatives();
@@ -32,16 +34,29 @@ public:
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateFlowsEvolution(dt);
     }
     
-    virtual void calculateSourceEvolution(double dt)
+    void calculateSourceEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateSourceEvolution(dt);
     }
     
-    virtual void swapBuffers()
+    void swapBuffers()
     {
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->swapBuffers();
+    }
+    
+    IFractionCell* getCell(const double* coords)
+    {
+        return static_cast<IFractionCell*> (this->accessElement_d(coords));
+    }
+    
+    double getQuantitiesSum(unsigned int quantityIndex)
+    {
+        double sum=0;
+        for (unsigned int i=0; i<this->elementsCount; i++)
+            sum += this->elements[i].quantities[quantityIndex];
+        return sum;
     }
     
     FractionsPoolBase* parent;
@@ -74,7 +89,7 @@ public:
     
     virtual ~FractionCellBase() { }
     
-    virtual void swapBuffers()
+    void swapBuffers()
     {
         if (quantities == quantitiesBuffer0)
         {
@@ -204,6 +219,8 @@ public:
             }
         }
     }
+    
+    double* getQuantities() { return quantities; }
     
     double* quantities;
     double* nextStepQuantities;

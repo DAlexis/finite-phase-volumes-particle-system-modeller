@@ -24,7 +24,8 @@ enum OutputAxisType
 class OutputInstance
 {
 public:
-    OutputInstance();
+    OutputInstance(OutputMaker* parent);
+    ~OutputInstance();
     /// Configure axis in output
     void configAxis(int axisNumber,
         OutputAxisType type,
@@ -33,11 +34,13 @@ public:
     
     void setParent(OutputMaker* parent);
     
-    void setPeriod(double period);
     void setFilenamePrefix(const std::string& filenamePrefix);
     
     double* getFractionPoint() { return fractionPoint; }
     double* getSpacePoint() { return spacePoint; }
+    
+    void setFractionAndQuantity(uint fractionId, uint quantityId) { m_fractionId = fractionId; m_quantityId = quantityId; }
+    void setPeriod(double period) { m_period = period; }
     
     void output(double time);
     
@@ -77,6 +80,8 @@ private:
     bool isFirstTime;
     double lastOutputTime;
     std::ofstream* m_file;
+    
+    uint m_fractionId, m_quantityId;
     
     double fractionPoint[MAX_FRACTION_DIMENSION];
     double spacePoint[SPACE_COORDS_COUNT];

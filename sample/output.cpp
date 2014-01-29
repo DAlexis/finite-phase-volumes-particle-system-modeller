@@ -8,16 +8,25 @@
 #include <limits>
 #include <string.h>
 
-OutputInstance::OutputInstance() :
+OutputInstance::OutputInstance(OutputMaker* parent) :
     hasParticleAxis(false),
     hasSpaceAxis(false),
     hasTimeAxis(false),
     enabledAxisCount(0),
+    m_parent(parent),
     isFirstTime(true),
     lastOutputTime(0),
     mode(OM_NOT_DEFINED)
 {
     
+}
+
+OutputInstance::~OutputInstance()
+{
+    if (m_file) {
+        m_file->close();
+        delete m_file;
+    }
 }
 
 void OutputInstance::configAxis(int axisNumber,
@@ -46,11 +55,6 @@ void OutputInstance::setParent(OutputMaker* parent)
     m_parent = parent;
 }
 
-void OutputInstance::setPeriod(double period)
-{
-    m_period = period;
-}
-
 void OutputInstance::setFilenamePrefix(const std::string& filenamePrefix)
 {
     m_filenamePrefix = filenamePrefix;
@@ -58,6 +62,8 @@ void OutputInstance::setFilenamePrefix(const std::string& filenamePrefix)
 
 void OutputInstance::output(double time)
 {
+    if ((time < lastOutputTime+m_period) && !isFirstTime)
+        return;
     switch(enabledAxisCount)
     {
         case 1: {
@@ -66,33 +72,31 @@ void OutputInstance::output(double time)
                 m_file = new std::ofstream(m_filenamePrefix+".txt");
                 (*m_file) << std::setprecision (std::numeric_limits<double>::digits10 + 1);
             }
-            if ((time >= lastOutputTime+m_period) || isFirstTime)
+            if (not isFirstTime)
+                (*m_file) << std::endl;
+            
+            switch (axis[0].type)
             {
-                if (not isFirstTime)
-                    (*m_file) << std::endl;
-                
-                switch (axis[0].type)
-                {
-                    case OAT_SPACE_COORDINATE: {
-                        Space& space = *(m_parent->m_space);
-                        double maxVal = space.gridDescription->axis[axis[0].axisIndex].getMaxValue();
-                        double minVal = space.gridDescription->axis[axis[0].axisIndex].getMinValue();
-                        for (unsigned int sapceIndex=0; sapceIndex<axis[0].pointsCount; sapceIndex++)
-                        {
-                            spacePoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * sapceIndex / axis[0].pointsCount;
-                            FractionsPool *spaceCell = space.accessElement_d(spacePoint);
-                            
-                        }
-    
-                    } break;
-                    case OAT_FRACTION_COORDINATE: {
-                        
-                    } break;
-                    default: break;
-                }
-                
-                lastOutputTime = time;
+                case OAT_SPACE_COORDINATE: {
+                    Space& space = *(m_parent->m_space);
+                    double maxVal = space.gridDescription->axis[axis[0].axisIndex].getMaxValue();
+                    double minVal = space.gridDescription->axis[axis[0].axisIndex].getMinValue();
+                    for (unsigned int sapceIndex=0; sapceIndex<axis[0].pointsCount; sapceIndex++)
+                    {
+                        spacePoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * sapceIndex / axis[0].pointsCount;
+                        FractionsPool *spaceCell = space.accessElement_d(spacePoint);
+                        IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
+                        double result = fractionSpace->getQuantitiesSum(m_quantityId);
+                        result /= spaceCell->volume;
+                        (*m_file) << time << " " << spacePoint[axis[0].axisIndex] << " "<< result << std::endl;
+                    }
+                } break;
+                case OAT_FRACTION_COORDINATE: {
+                    
+                } break;
+                default: break;
             }
+            lastOutputTime = time;
             
             if (isFirstTime) isFirstTime = false;
         } break;

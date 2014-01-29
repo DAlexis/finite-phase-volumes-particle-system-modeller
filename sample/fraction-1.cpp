@@ -29,7 +29,6 @@ void Fraction1Cell::calculateSourceEvolution(double dt)
     if (fabs(spaceCell->coordinates[SPACE_COORDS_X_COORD]-8) < 1)
     //    nextStepQuantities[FRACTION1_QUANTITY_COUNT] += 0.1*spaceCell->volume*dt;
     nextStepQuantities[FRACTION1_QUANTITIES_PARTICLES_COUNT] = 1;//spaceCell->coordinates[SPACE_COORDS_X]/30;
-
 }
 
 void* Fraction1Cell::getModel()
