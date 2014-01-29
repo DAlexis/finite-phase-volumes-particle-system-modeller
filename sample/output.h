@@ -24,29 +24,29 @@ enum OutputAxisType
 class OutputInstance
 {
 public:
-    OutputInstance(OutputMaker* parent);
+    OutputInstance();
     ~OutputInstance();
     /// Configure axis in output
-    void configAxis(int axisNumber,
+    OutputInstance* configAxis(int axisNumber,
         OutputAxisType type,
         unsigned int pointsCount,
         unsigned int axisIndex);
     
-    void setParent(OutputMaker* parent);
+    OutputInstance* setFilenamePrefix(const std::string& filenamePrefix);
+    OutputInstance* setFractionAndQuantity(uint fractionId, uint quantityId);
+    OutputInstance* setPeriod(double period);
     
-    void setFilenamePrefix(const std::string& filenamePrefix);
     
     double* getFractionPoint() { return fractionPoint; }
     double* getSpacePoint() { return spacePoint; }
     
-    void setFractionAndQuantity(uint fractionId, uint quantityId) { m_fractionId = fractionId; m_quantityId = quantityId; }
-    void setPeriod(double period) { m_period = period; }
-    
+    void setParent(OutputMaker* parent);
     void output(double time);
     
 private:
     void continiousOutput(double time);
     void regularOutput(double time);
+    
     struct OutputAxisDescription
     {
         OutputAxisDescription():

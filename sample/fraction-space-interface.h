@@ -5,6 +5,7 @@
 #ifndef FRACTION_SPACE_INTERFACE_H_INCLUDED
 #define FRACTION_SPACE_INTERFACE_H_INCLUDED
 
+class Axis;
 class IFractionCell;
 
 class IFractionSpace
@@ -17,6 +18,8 @@ public:
     virtual IFractionCell* getCell(const double* coords) = 0;
     
     virtual double getQuantitiesSum(unsigned int quantityIndex) = 0;
+    
+    virtual const Axis* getAxisDescription(unsigned int axis) = 0;
     
     virtual ~IFractionSpace() {}
 };

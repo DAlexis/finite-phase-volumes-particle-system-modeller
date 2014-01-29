@@ -8,12 +8,12 @@
 #include <limits>
 #include <string.h>
 
-OutputInstance::OutputInstance(OutputMaker* parent) :
+OutputInstance::OutputInstance() :
     hasParticleAxis(false),
     hasSpaceAxis(false),
     hasTimeAxis(false),
     enabledAxisCount(0),
-    m_parent(parent),
+    m_parent(NULL),
     isFirstTime(true),
     lastOutputTime(0),
     mode(OM_NOT_DEFINED)
@@ -29,7 +29,7 @@ OutputInstance::~OutputInstance()
     }
 }
 
-void OutputInstance::configAxis(int axisNumber,
+OutputInstance* OutputInstance::configAxis(int axisNumber,
     OutputAxisType type,
     unsigned int pointsCount,
     unsigned int axisIndex)
@@ -48,6 +48,7 @@ void OutputInstance::configAxis(int axisNumber,
         default: break;
     }
     enabledAxisCount = std::max(enabledAxisCount, axisNumber+1);
+    return this;
 }
 
 void OutputInstance::setParent(OutputMaker* parent)
@@ -55,9 +56,23 @@ void OutputInstance::setParent(OutputMaker* parent)
     m_parent = parent;
 }
 
-void OutputInstance::setFilenamePrefix(const std::string& filenamePrefix)
+OutputInstance* OutputInstance::setPeriod(double period)
+{
+    m_period = period;
+    return this;
+}
+
+OutputInstance* OutputInstance::setFractionAndQuantity(uint fractionId, uint quantityId)
+{
+    m_fractionId = fractionId;
+    m_quantityId = quantityId;
+    return this;
+}
+
+OutputInstance* OutputInstance::setFilenamePrefix(const std::string& filenamePrefix)
 {
     m_filenamePrefix = filenamePrefix;
+    return this;
 }
 
 void OutputInstance::output(double time)
@@ -81,9 +96,9 @@ void OutputInstance::output(double time)
                     Space& space = *(m_parent->m_space);
                     double maxVal = space.gridDescription->axis[axis[0].axisIndex].getMaxValue();
                     double minVal = space.gridDescription->axis[axis[0].axisIndex].getMinValue();
-                    for (unsigned int sapceIndex=0; sapceIndex<axis[0].pointsCount; sapceIndex++)
+                    for (unsigned int pointNumber=0; pointNumber<axis[0].pointsCount; pointNumber++)
                     {
-                        spacePoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * sapceIndex / axis[0].pointsCount;
+                        spacePoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / axis[0].pointsCount;
                         FractionsPool *spaceCell = space.accessElement_d(spacePoint);
                         IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
                         double result = fractionSpace->getQuantitiesSum(m_quantityId);
@@ -92,7 +107,18 @@ void OutputInstance::output(double time)
                     }
                 } break;
                 case OAT_FRACTION_COORDINATE: {
+                    Space& space = *(m_parent->m_space);
+                    IFractionSpace *fractionSpace = space.accessElement_d(spacePoint)->fractions[m_fractionId];
+                    double maxVal = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMaxValue();
+                    double minVal = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMinValue();
                     
+                    for (unsigned int pointNumber=0; pointNumber<axis[0].pointsCount; pointNumber++)
+                    {
+                        fractionPoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / axis[0].pointsCount;
+                        IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
+                        double result = fractionCell->getQuantitiesDensity(m_quantityId);
+                        (*m_file) << time << " " << fractionPoint[axis[0].axisIndex] << " "<< result << std::endl;
+                    }
                 } break;
                 default: break;
             }

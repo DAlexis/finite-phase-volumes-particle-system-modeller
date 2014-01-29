@@ -59,6 +59,10 @@ public:
         return sum;
     }
     
+    const Axis* getAxisDescription(unsigned int axis)
+    {
+        return &(this->gridDescription->axis[axis]);
+    }
     FractionsPoolBase* parent;
 
 protected:
@@ -220,7 +224,10 @@ public:
         }
     }
     
-    double* getQuantities() { return quantities; }
+    double getQuantitiesDensity(unsigned int index)
+    {
+        return quantities[index] / this->volume;
+    }
     
     double* quantities;
     double* nextStepQuantities;

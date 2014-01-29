@@ -13,7 +13,7 @@ public:
     virtual void calculateFlowsEvolution(double dt) = 0;
     virtual void swapBuffers() = 0;
     
-    virtual double* getQuantities() = 0;
+    virtual double getQuantitiesDensity(unsigned int index) = 0;
     
     virtual ~IFractionCell() {}
 };
