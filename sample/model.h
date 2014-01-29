@@ -6,7 +6,7 @@
 #define MODEL_H_INCLUDED
 
 #include "space.h"
-#include "model-output.h"
+#include "output.h"
 
 class Model
 {
