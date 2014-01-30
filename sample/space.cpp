@@ -7,8 +7,8 @@ Space::Space(void* model) :
 {
     Axis& x_coord = spaceGridDescription.axis[SPACE_COORDS_X_COORD];
     x_coord.uniformInit(-10.0, 9, 100);
+    x_coord.setId("x_coord");
     x_coord.setName("Horisontal coordinate, m");
-    
     
     constructGrid(spaceGridDescription);
 }

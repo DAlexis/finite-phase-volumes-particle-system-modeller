@@ -6,6 +6,7 @@ Fraction1Space::Fraction1Space(FractionsPool* parentFractionsPool) :
 {
     Axis& x_speed = fractionGridDescription.axis[FRACTION1_COORDS_X_SPEED];
     x_speed.uniformInit(-10.0, 10.0, 50);
+    x_speed.setId("x_speed");
     x_speed.setName("Horisontal speed, m/s");
     
     

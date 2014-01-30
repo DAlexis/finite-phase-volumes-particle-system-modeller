@@ -103,11 +103,15 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
     }
     else if (axisIndex < axis.size()-2)
     {
-        /// @todo Add here axis id
+        // May be little optimized
         if (axis[axisIndex].type == OAT_SPACE_COORDINATE)
-            fileName += "-" + std::to_string(spacePoint[axis[axisIndex].axisIndex]);
+            fileName +=
+                "-" + m_space->gridDescription->axis[axis[axisIndex].axisIndex].getId()
+                + "=" + std::to_string(spacePoint[axis[axisIndex].axisIndex]);
         else
-            fileName += "-" + std::to_string(spacePoint[axis[axisIndex].axisIndex]);
+            fileName += 
+                "-" + m_space->accessElement_d(spacePoint)->fractions[m_fractionId]->getAxisDescription(axis[axisIndex].axisIndex)->getId()
+                + "=" + std::to_string(spacePoint[axis[axisIndex].axisIndex]);
     }
     
     // Iterating here
