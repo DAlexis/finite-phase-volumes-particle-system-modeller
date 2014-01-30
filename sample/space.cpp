@@ -6,7 +6,7 @@ Space::Space(void* model) :
     parent(model)
 {
     Axis& x_coord = spaceGridDescription.axis[SPACE_COORDS_X_COORD];
-    x_coord.uniformInit(-10.0, 10.0, 100);
+    x_coord.uniformInit(-10.0, 9, 100);
     x_coord.setName("Horisontal coordinate, m");
     
     

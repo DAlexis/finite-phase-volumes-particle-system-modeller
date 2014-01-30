@@ -14,8 +14,10 @@ OutputInstance::OutputInstance() :
     hasTimeAxis(false),
     enabledAxisCount(0),
     m_parent(NULL),
+    m_space(NULL),
     isFirstTime(true),
     lastOutputTime(0),
+    m_currentTime(0),
     mode(OM_NOT_DEFINED)
 {
     
@@ -29,14 +31,15 @@ OutputInstance::~OutputInstance()
     }
 }
 
-OutputInstance* OutputInstance::configAxis(int axisNumber,
+OutputInstance* OutputInstance::configAxis(
     OutputAxisType type,
     unsigned int pointsCount,
     unsigned int axisIndex)
 {
-    axis[axisNumber].type = type;
-    axis[axisNumber].pointsCount = pointsCount;
-    axis[axisNumber].axisIndex = axisIndex;
+    axis.push_back(OutputAxisDescription());
+    axis.back().type = type;
+    axis.back().pointsCount = pointsCount;
+    axis.back().axisIndex = axisIndex;
     switch (type)
     {
         case OAT_SPACE_COORDINATE:
@@ -47,13 +50,14 @@ OutputInstance* OutputInstance::configAxis(int axisNumber,
         break;
         default: break;
     }
-    enabledAxisCount = std::max(enabledAxisCount, axisNumber+1);
+    enabledAxisCount++;
     return this;
 }
 
 void OutputInstance::setParent(OutputMaker* parent)
 {
     m_parent = parent;
+    m_space = m_parent->m_space;
 }
 
 OutputInstance* OutputInstance::setPeriod(double period)
@@ -75,152 +79,132 @@ OutputInstance* OutputInstance::setFilenamePrefix(const std::string& filenamePre
     return this;
 }
 
+void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
+{
+    if (axisIndex == axis.size())
+    {
+        FractionsPool *spaceCell = m_space->accessElement_d(spacePoint);
+        IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
+        IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
+        /// @todo add here convolutions
+        double result = fractionCell->getQuantitiesDensity(m_quantityId) / spaceCell->volume;
+        for (uint i=axisIndex-2; i<axisIndex; i++)
+        {
+            if (axis[i].type == OAT_SPACE_COORDINATE)
+                (*m_file) << spacePoint[axis[i].axisIndex] << " ";
+            else
+                (*m_file) <<  fractionPoint[axis[i].axisIndex] << " ";
+        }
+        (*m_file) << result << std::endl;
+        return;
+    }
+    
+    if (axisIndex == axis.size()-2)
+    {
+        // It is time to open file
+        m_file = new std::ofstream(fileName + "-t=" + std::to_string(m_currentTime) +".txt");
+        (*m_file) << std::setprecision (std::numeric_limits<double>::digits10 + 1);
+    }
+    else if (axisIndex < axis.size()-2)
+    {
+        /// @todo Add here axis id
+        if (axis[axisIndex].type == OAT_SPACE_COORDINATE)
+            fileName += "-" + std::to_string(spacePoint[axis[axisIndex].axisIndex]);
+        else
+            fileName += "-" + std::to_string(spacePoint[axis[axisIndex].axisIndex]);
+    }
+    
+    // Iterating here
+    switch(axis[axisIndex].type)
+    {
+        case OAT_SPACE_COORDINATE: {
+            double maxVal = m_space->gridDescription->axis[axis[axisIndex].axisIndex].getMaxValue();
+            double minVal = m_space->gridDescription->axis[axis[axisIndex].axisIndex].getMinValue();
+            for (uint i=0; i<axis[axisIndex].pointsCount; i++)
+            {
+                spacePoint[axis[axisIndex].axisIndex] = minVal + (maxVal-minVal) * i / (axis[axisIndex].pointsCount-1);
+                recursiveIterate(axisIndex+1, fileName);
+            }
+        } break;
+        case OAT_FRACTION_COORDINATE: {
+            FractionsPool *spaceCell = m_space->accessElement_d(spacePoint);
+            IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
+            double maxVal = fractionSpace->getAxisDescription(axis[axisIndex].axisIndex)->getMaxValue();
+            double minVal = fractionSpace->getAxisDescription(axis[axisIndex].axisIndex)->getMinValue();
+            for (uint i=0; i<axis[axisIndex].pointsCount; i++)
+            {
+                fractionPoint[axis[axisIndex].axisIndex] = minVal + (maxVal-minVal) * i / (axis[axisIndex].pointsCount-1);
+                recursiveIterate(axisIndex+1, fileName);
+            }
+        } break;
+        default: break;
+    }
+    
+    if (axisIndex == axis.size()-1)
+        (*m_file) << std::endl;
+    
+    else if (axisIndex == axis.size()-2)
+    {
+        // It is time to close file
+        m_file->close();
+        delete m_file;
+        m_file = NULL;
+    }
+}
+
 void OutputInstance::output(double time)
 {
     if ((time < lastOutputTime+m_period) && !isFirstTime)
         return;
-    /// May be I should use recursive algorythm here
-    switch(enabledAxisCount)
+    m_currentTime = time;
+    
+    // When one axis is time
+    if (axis.size() == 1)
     {
-        case 1: {
-            // X=axis, Y=time, Z=quantity
-            if (isFirstTime) {
-                m_file = new std::ofstream(m_filenamePrefix+".txt");
-                (*m_file) << std::setprecision (std::numeric_limits<double>::digits10 + 1);
-            }
-            if (not isFirstTime)
-                (*m_file) << std::endl;
-            
-            switch (axis[0].type)
-            {
-                case OAT_SPACE_COORDINATE: {
-                    Space& space = *(m_parent->m_space);
-                    double maxVal = space.gridDescription->axis[axis[0].axisIndex].getMaxValue();
-                    double minVal = space.gridDescription->axis[axis[0].axisIndex].getMinValue();
-                    for (unsigned int pointNumber=0; pointNumber<axis[0].pointsCount; pointNumber++)
-                    {
-                        spacePoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / axis[0].pointsCount;
-                        FractionsPool *spaceCell = space.accessElement_d(spacePoint);
-                        IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
-                        double result = fractionSpace->getQuantitiesSum(m_quantityId) / spaceCell->volume;
-                        (*m_file) << time << " " << spacePoint[axis[0].axisIndex] << " "<< result << std::endl;
-                    }
-                } break;
-                case OAT_FRACTION_COORDINATE: {
-                    Space& space = *(m_parent->m_space);
-                    FractionsPool *spaceCell = space.accessElement_d(spacePoint);
-                    IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
-                    double maxVal = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMaxValue();
-                    double minVal = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMinValue();
-                    
-                    for (unsigned int pointNumber=0; pointNumber<axis[0].pointsCount; pointNumber++)
-                    {
-                        fractionPoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / axis[0].pointsCount;
-                        IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-                        double result = fractionCell->getQuantitiesDensity(m_quantityId) / spaceCell->volume;
-                        (*m_file) << time << " " << fractionPoint[axis[0].axisIndex] << " "<< result << std::endl;
-                    }
-                } break;
-                default: break;
-            }
-            
-        } break;
-        case 2: {
-            m_file = new std::ofstream(m_filenamePrefix + "-t=" + std::to_string(time) +".txt");
+        if (isFirstTime) {
+            m_file = new std::ofstream(m_filenamePrefix+".txt");
             (*m_file) << std::setprecision (std::numeric_limits<double>::digits10 + 1);
-            // If both are coordinate
-            if (axis[0].type == OAT_SPACE_COORDINATE && axis[1].type == OAT_SPACE_COORDINATE)
-            {
+        }
+        if (not isFirstTime)
+            (*m_file) << std::endl;
+        
+        switch (axis[0].type)
+        {
+            case OAT_SPACE_COORDINATE: {
                 Space& space = *(m_parent->m_space);
-                double maxValX = space.gridDescription->axis[axis[0].axisIndex].getMaxValue();
-                double minValX = space.gridDescription->axis[axis[0].axisIndex].getMinValue();
-                
-                double maxValY = space.gridDescription->axis[axis[1].axisIndex].getMaxValue();
-                double minValY = space.gridDescription->axis[axis[1].axisIndex].getMinValue();
-                
-                for (unsigned int pointNumberX=0; pointNumberX<axis[0].pointsCount; pointNumberX++)
+                double maxVal = space.gridDescription->axis[axis[0].axisIndex].getMaxValue();
+                double minVal = space.gridDescription->axis[axis[0].axisIndex].getMinValue();
+                for (unsigned int pointNumber=0; pointNumber<axis[0].pointsCount; pointNumber++)
                 {
-                    for (unsigned int pointNumberY=0; pointNumberY<axis[1].pointsCount; pointNumberY++)
-                    {
-                        spacePoint[axis[0].axisIndex] = minValX + (maxValX-minValX) * pointNumberX / axis[0].pointsCount;
-                        spacePoint[axis[1].axisIndex] = minValY + (maxValY-minValY) * pointNumberY / axis[1].pointsCount;
-                        FractionsPool *spaceCell = space.accessElement_d(spacePoint);
-                        IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
-                        double result = fractionSpace->getQuantitiesSum(m_quantityId) / spaceCell->volume;
-                        (*m_file) << spacePoint[axis[0].axisIndex] << " "
-                                  << spacePoint[axis[1].axisIndex] << " "
-                                  << result << std::endl;
-                    }
-                    (*m_file) << std::endl;
-                }
-            }
-            
-            if (axis[0].type == OAT_FRACTION_COORDINATE && axis[1].type == OAT_SPACE_COORDINATE)
-                std::swap(axis[0], axis[1]);
-            
-            if (axis[0].type == OAT_SPACE_COORDINATE && axis[1].type == OAT_FRACTION_COORDINATE)
-            {
-                Space& space = *(m_parent->m_space);
-                double maxValX = space.gridDescription->axis[axis[0].axisIndex].getMaxValue();
-                double minValX = space.gridDescription->axis[axis[0].axisIndex].getMinValue();
-                
-                for (unsigned int pointNumberX=0; pointNumberX<axis[0].pointsCount; pointNumberX++)
-                {
-                    spacePoint[axis[0].axisIndex] = minValX + (maxValX-minValX) * pointNumberX / axis[0].pointsCount;
+                    spacePoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / (axis[0].pointsCount-1);
                     FractionsPool *spaceCell = space.accessElement_d(spacePoint);
                     IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
-                    
-                    double maxValY = fractionSpace->getAxisDescription(axis[1].axisIndex)->getMaxValue();
-                    double minValY = fractionSpace->getAxisDescription(axis[1].axisIndex)->getMinValue();
-                
-                    for (unsigned int pointNumberY=0; pointNumberY<axis[1].pointsCount; pointNumberY++)
-                    {
-                        fractionPoint[axis[1].axisIndex] = minValY + (maxValY-minValY) * pointNumberY / axis[1].pointsCount;
-                        IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-                        double result = fractionCell->getQuantitiesDensity(m_quantityId) / spaceCell->volume;
-                        (*m_file) << spacePoint[axis[0].axisIndex] << " "
-                                  << fractionPoint[axis[1].axisIndex] << " "
-                                  << result << std::endl;
-                    }
-                    (*m_file) << std::endl;
+                    double result = fractionSpace->getQuantitiesSum(m_quantityId) / spaceCell->volume;
+                    (*m_file) << time << " " << spacePoint[axis[0].axisIndex] << " "<< result << std::endl;
                 }
-            }
-            
-            if (axis[0].type == OAT_FRACTION_COORDINATE && axis[1].type == OAT_FRACTION_COORDINATE)
-            {
+            } break;
+            case OAT_FRACTION_COORDINATE: {
                 Space& space = *(m_parent->m_space);
                 FractionsPool *spaceCell = space.accessElement_d(spacePoint);
                 IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
-                double maxValX = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMaxValue();
-                double minValX = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMinValue();
+                double maxVal = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMaxValue();
+                double minVal = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMinValue();
                 
-                double maxValY = fractionSpace->getAxisDescription(axis[1].axisIndex)->getMaxValue();
-                double minValY = fractionSpace->getAxisDescription(axis[1].axisIndex)->getMinValue();
-                
-                for (unsigned int pointNumberX=0; pointNumberX<axis[0].pointsCount; pointNumberX++)
+                for (unsigned int pointNumber=0; pointNumber<axis[0].pointsCount; pointNumber++)
                 {
-                    for (unsigned int pointNumberY=0; pointNumberY<axis[1].pointsCount; pointNumberY++)
-                    {
-                        fractionPoint[axis[0].axisIndex] = minValX + (maxValX-minValX) * pointNumberX / axis[0].pointsCount;
-                        fractionPoint[axis[1].axisIndex] = minValY + (maxValY-minValY) * pointNumberY / axis[1].pointsCount;
-                        
-                        IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-                        double result = fractionCell->getQuantitiesDensity(m_quantityId) / spaceCell->volume;
-                        (*m_file) << fractionPoint[axis[0].axisIndex] << " "
-                                  << fractionPoint[axis[1].axisIndex] << " "
-                                  << result << std::endl;
-                    }
-                    (*m_file) << std::endl;
+                    fractionPoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / (axis[0].pointsCount-1);
+                    IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
+                    double result = fractionCell->getQuantitiesDensity(m_quantityId) / spaceCell->volume;
+                    (*m_file) << time << " " << fractionPoint[axis[0].axisIndex] << " "<< result << std::endl;
                 }
-            }
-            
-            m_file->close();
-            delete m_file;
-            m_file = NULL;
-        } break;
-    }
-    lastOutputTime = time;
+            } break;
+            default: break;
+        }
+    } else
+        recursiveIterate(0, m_filenamePrefix);
+    
     isFirstTime = false;
+    lastOutputTime = time;
 }
 
 //////////////////////

@@ -27,10 +27,7 @@ public:
     OutputInstance();
     ~OutputInstance();
     /// Configure axis in output
-    OutputInstance* configAxis(int axisNumber,
-        OutputAxisType type,
-        unsigned int pointsCount,
-        unsigned int axisIndex);
+    OutputInstance* configAxis(OutputAxisType type, unsigned int pointsCount, unsigned int axisIndex);
     
     OutputInstance* setFilenamePrefix(const std::string& filenamePrefix);
     OutputInstance* setFractionAndQuantity(uint fractionId, uint quantityId);
@@ -44,8 +41,7 @@ public:
     void output(double time);
     
 private:
-    void continiousOutput(double time);
-    void regularOutput(double time);
+    void recursiveIterate(uint axisIndex, std::string fileName);
     
     struct OutputAxisDescription
     {
@@ -72,8 +68,9 @@ private:
     
     int enabledAxisCount;
     
-    OutputAxisDescription axis[3];
+    std::vector<OutputAxisDescription> axis;
     OutputMaker* m_parent;
+    Space* m_space;
     
     double m_period;
     std::string m_filenamePrefix;
@@ -86,6 +83,7 @@ private:
     double fractionPoint[MAX_FRACTION_DIMENSION];
     double spacePoint[SPACE_COORDS_COUNT];
     
+    double m_currentTime;
     OutputMode mode;
 };
 
