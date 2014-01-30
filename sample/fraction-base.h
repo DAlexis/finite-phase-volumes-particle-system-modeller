@@ -229,6 +229,32 @@ public:
         return quantities[index] / this->volume;
     }
     
+    double getQuantitiesDensityConvolution(unsigned int quantityIndex, const std::vector<unsigned int>& convoluteBy)
+    {
+        double result = quantities[quantityIndex];
+        double coefficient = 1 / this->volume;
+        for (auto it=convoluteBy.begin(); it != convoluteBy.end(); it++)
+        {
+            // Convolution by one dimension
+            coefficient *= this->size[*it];
+            
+            FractionCellBaseInstance* current = static_cast<FractionCellBaseInstance*>(this->next[quantityIndex]);
+            while (current != 0)
+            {
+                result += current->quantities[quantityIndex];
+                current = static_cast<FractionCellBaseInstance*>(current->next[quantityIndex]);
+            }
+            current = static_cast<FractionCellBaseInstance*>(this->prev[quantityIndex]);
+            while (current != 0)
+            {
+                result += current->quantities[quantityIndex];
+                current = static_cast<FractionCellBaseInstance*>(current->prev[quantityIndex]);
+            }
+        }
+        result *= coefficient;
+        return result;
+    }
+    
     double* quantities;
     double* nextStepQuantities;
     

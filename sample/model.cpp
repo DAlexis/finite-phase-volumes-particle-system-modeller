@@ -12,7 +12,8 @@ Model::Model() :
     instance1
         ->setFilenamePrefix("Output-instance-1")
         ->setFractionAndQuantity(FRACTION_FRACTION1, FRACTION1_QUANTITIES_PARTICLES_COUNT)
-        ->configAxis(OAT_SPACE_COORDINATE, 100, SPACE_COORDS_X_COORD)
+        ->addOutputAxis(OAT_SPACE_COORDINATE, 100, SPACE_COORDS_X_COORD)
+        ->useAllFractionSpaceConvolution(FRACTION1_QUANTITIES_COUNT)
         ->setPeriod(0.04);
     
     
@@ -23,7 +24,7 @@ Model::Model() :
     instance2
         ->setFilenamePrefix("Output-instance-2")
         ->setFractionAndQuantity(FRACTION_FRACTION1, FRACTION1_QUANTITIES_PARTICLES_COUNT)
-        ->configAxis(OAT_FRACTION_COORDINATE, 100, FRACTION1_COORDS_X_SPEED)
+        ->addOutputAxis(OAT_FRACTION_COORDINATE, 100, FRACTION1_COORDS_X_SPEED)
         ->setPeriod(0.04);
     
     OutputInstance* instance3 = new OutputInstance;
@@ -31,8 +32,8 @@ Model::Model() :
     instance3->getSpacePoint()[0] = 0;
     
     instance3
-        ->configAxis(OAT_SPACE_COORDINATE, 100, SPACE_COORDS_X_COORD)
-        ->configAxis(OAT_FRACTION_COORDINATE, 100, FRACTION1_COORDS_X_SPEED)
+        ->addOutputAxis(OAT_SPACE_COORDINATE, 100, SPACE_COORDS_X_COORD)
+        ->addOutputAxis(OAT_FRACTION_COORDINATE, 100, FRACTION1_COORDS_X_SPEED)
         ->setFractionAndQuantity(FRACTION_FRACTION1, FRACTION1_QUANTITIES_PARTICLES_COUNT)
         ->setFilenamePrefix("Output-instance-3")
         ->setPeriod(0.5);

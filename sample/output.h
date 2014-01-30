@@ -27,7 +27,9 @@ public:
     OutputInstance();
     ~OutputInstance();
     /// Configure axis in output
-    OutputInstance* configAxis(OutputAxisType type, unsigned int pointsCount, unsigned int axisIndex);
+    OutputInstance* addOutputAxis(OutputAxisType type, unsigned int pointsCount, unsigned int axisIndex);
+    OutputInstance* useConvolutionByFractionAxis(unsigned int axisIndex);
+    OutputInstance* useAllFractionSpaceConvolution(unsigned int fractionSpaceDimension);
     
     OutputInstance* setFilenamePrefix(const std::string& filenamePrefix);
     OutputInstance* setFractionAndQuantity(uint fractionId, uint quantityId);
@@ -55,27 +57,17 @@ private:
         unsigned int axisIndex;
     };
     
-    enum OutputMode
-    {
-        OM_NOT_DEFINED = 0,
-        OM_CONTINIOUS,
-        OM_REGULAR
-    };
-    
-    bool hasParticleAxis;
-    bool hasSpaceAxis;
-    bool hasTimeAxis;
-    
-    int enabledAxisCount;
-    
     std::vector<OutputAxisDescription> axis;
+    std::vector<uint> convolutionAxis;
     OutputMaker* m_parent;
     Space* m_space;
     
     double m_period;
     std::string m_filenamePrefix;
+    
     bool isFirstTime;
     double lastOutputTime;
+    
     std::ofstream* m_file;
     
     uint m_fractionId, m_quantityId;
@@ -84,7 +76,6 @@ private:
     double spacePoint[SPACE_COORDS_COUNT];
     
     double m_currentTime;
-    OutputMode mode;
 };
 
 class OutputMaker

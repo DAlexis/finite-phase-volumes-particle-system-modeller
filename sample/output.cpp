@@ -9,16 +9,11 @@
 #include <string.h>
 
 OutputInstance::OutputInstance() :
-    hasParticleAxis(false),
-    hasSpaceAxis(false),
-    hasTimeAxis(false),
-    enabledAxisCount(0),
     m_parent(NULL),
     m_space(NULL),
     isFirstTime(true),
     lastOutputTime(0),
-    m_currentTime(0),
-    mode(OM_NOT_DEFINED)
+    m_currentTime(0)
 {
     
 }
@@ -31,7 +26,7 @@ OutputInstance::~OutputInstance()
     }
 }
 
-OutputInstance* OutputInstance::configAxis(
+OutputInstance* OutputInstance::addOutputAxis(
     OutputAxisType type,
     unsigned int pointsCount,
     unsigned int axisIndex)
@@ -40,17 +35,19 @@ OutputInstance* OutputInstance::configAxis(
     axis.back().type = type;
     axis.back().pointsCount = pointsCount;
     axis.back().axisIndex = axisIndex;
-    switch (type)
-    {
-        case OAT_SPACE_COORDINATE:
-            hasSpaceAxis = true;
-        break;
-        case OAT_FRACTION_COORDINATE:
-            hasParticleAxis = true;
-        break;
-        default: break;
-    }
-    enabledAxisCount++;
+    return this;
+}
+
+OutputInstance* OutputInstance::useConvolutionByFractionAxis(unsigned int axisIndex)
+{
+    convolutionAxis.push_back(axisIndex);
+    return this;
+}
+
+OutputInstance* OutputInstance::useAllFractionSpaceConvolution(unsigned int fractionSpaceDimension)
+{
+    for (uint i=0; i<fractionSpaceDimension; i++)
+        useConvolutionByFractionAxis(i);
     return this;
 }
 
@@ -86,8 +83,7 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
         FractionsPool *spaceCell = m_space->accessElement_d(spacePoint);
         IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
         IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-        /// @todo add here convolutions
-        double result = fractionCell->getQuantitiesDensity(m_quantityId) / spaceCell->volume;
+        double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->volume;
         for (uint i=axisIndex-2; i<axisIndex; i++)
         {
             if (axis[i].type == OAT_SPACE_COORDINATE)
@@ -179,7 +175,8 @@ void OutputInstance::output(double time)
                     spacePoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / (axis[0].pointsCount-1);
                     FractionsPool *spaceCell = space.accessElement_d(spacePoint);
                     IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
-                    double result = fractionSpace->getQuantitiesSum(m_quantityId) / spaceCell->volume;
+                    IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
+                    double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->volume;
                     (*m_file) << time << " " << spacePoint[axis[0].axisIndex] << " "<< result << std::endl;
                 }
             } break;
@@ -194,7 +191,7 @@ void OutputInstance::output(double time)
                 {
                     fractionPoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / (axis[0].pointsCount-1);
                     IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-                    double result = fractionCell->getQuantitiesDensity(m_quantityId) / spaceCell->volume;
+                    double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->volume;
                     (*m_file) << time << " " << fractionPoint[axis[0].axisIndex] << " "<< result << std::endl;
                 }
             } break;
