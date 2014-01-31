@@ -20,6 +20,11 @@ def includeStd(header):
     return '#include <' + header + '>\n'
 
 def genFileByTemplate(result, template, dictionary, headComment):
+    """
+    Generate file with name result from a template stored it template,
+    substituting using dictionary. Result file will be also beginned 
+    with test from headComment.
+    """
     outputFile = open(result, 'w')
     inputFile = open(template, 'r')
     outputFile.write(headComment)
@@ -31,6 +36,9 @@ def genFileByTemplate(result, template, dictionary, headComment):
     outputFile.close()
 
 def readTemplate(fileName):
+    """
+    Simply read template's text fromfile and return this template
+    """
     inpFile = open(fileName, "r")
     text = inpFile.read()
     inpFile.close()

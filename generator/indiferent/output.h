@@ -12,33 +12,70 @@
 
 class OutputMaker;
 
-class OutputInstanceBase
+enum OutputAxisType
+{
+    OAT_NOT_DEFINED = 0,
+    OAT_SPACE_COORDINATE,
+    OAT_FRACTION_COORDINATE
+};
+
+#define MAX_FRACTION_DIMENSION  15
+
+class OutputInstance
 {
 public:
-    OutputInstanceBase(
-        int quantity,
-        double period,
-        unsigned int pointsCount,
-        const std::string& fileName);
+    OutputInstance();
+    ~OutputInstance();
+    /// Configure axis in output
+    OutputInstance* addOutputAxis(OutputAxisType type, unsigned int pointsCount, unsigned int axisIndex);
+    OutputInstance* useConvolutionByFractionAxis(unsigned int axisIndex);
+    OutputInstance* useAllFractionSpaceConvolution(unsigned int fractionSpaceDimension);
     
-    virtual ~OutputInstanceBase();
+    OutputInstance* setFilenamePrefix(const std::string& filenamePrefix);
+    OutputInstance* setFractionAndQuantity(uint fractionId, uint quantityId);
+    OutputInstance* setPeriod(double period);
     
-    void output(double time);
+    
+    double* getFractionPoint() { return fractionPoint; }
+    double* getSpacePoint() { return spacePoint; }
     
     void setParent(OutputMaker* parent);
+    void output(double time);
     
-protected:
-    /// This function will be called when file is ready and it is time to print data
-    virtual void printToFile(double time) {}
-    int m_quantity;
-    double m_period;
-    unsigned int m_pointsCount;
-    std::string m_fileName;
-    double m_lastOutput;
-    bool m_isFirst;
-    /// Pointer is used because before first output this class can be copied some times in vector that contained it
-    std::ofstream* m_file;
+private:
+    void recursiveIterate(uint axisIndex, std::string fileName);
+    
+    struct OutputAxisDescription
+    {
+        OutputAxisDescription():
+            pointsCount(10),
+            type(OAT_NOT_DEFINED),
+            axisIndex(0)
+        {}
+        unsigned int pointsCount;
+        OutputAxisType type;
+        unsigned int axisIndex;
+    };
+    
+    std::vector<OutputAxisDescription> axis;
+    std::vector<uint> convolutionAxis;
     OutputMaker* m_parent;
+    Space* m_space;
+    
+    double m_period;
+    std::string m_filenamePrefix;
+    
+    bool isFirstTime;
+    double lastOutputTime;
+    
+    std::ofstream* m_file;
+    
+    uint m_fractionId, m_quantityId;
+    
+    double fractionPoint[MAX_FRACTION_DIMENSION];
+    double spacePoint[SPACE_COORDS_COUNT];
+    
+    double m_currentTime;
 };
 
 class OutputMaker
@@ -47,14 +84,14 @@ public:
     OutputMaker(Space* space);
     ~OutputMaker();
     
-    void addInstance(OutputInstanceBase* instance);
+    void addInstance(OutputInstance* instance);
     
     void output(double time);
     
     Space* m_space;
     
 private:
-    std::vector<OutputInstanceBase*> m_instances;
+    std::vector<OutputInstance*> m_instances;
 };
 
 #endif //OUTPUT_H_INCLUDED

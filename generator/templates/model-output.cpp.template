@@ -1,5 +1,0 @@
-#include "model-output.h"
-#include <iostream>
-
-${cpp_code}
-

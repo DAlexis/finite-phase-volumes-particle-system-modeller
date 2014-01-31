@@ -130,6 +130,21 @@ double Axis::getMaxSegmentCenter() const
     return getPoint(m_count-1);
 }
 
+const std::string& Axis::getId() const
+{
+    return m_id;
+}
+
+const std::string& Axis::getName() const
+{
+    return m_name;
+}
+
+void Axis::setId(const std::string& id)
+{
+    m_id = id;
+}
+
 void Axis::setName(const std::string& name)
 {
     m_name = name;

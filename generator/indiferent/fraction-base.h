@@ -16,6 +16,8 @@ template <int AxisCount, class FractionCellType>
 class FractionSpaceBase : public Grid<AxisCount, FractionCellType>, public IFractionSpace
 {
 public:
+    typedef FractionSpaceBase<AxisCount, FractionCellType> FractionSpaceBaseInstance;
+    typedef Grid<AxisCount, FractionCellType> GridInstance;
     
     FractionSpaceBase(FractionsPoolBase* parentFractionsPool) :
         parent(parentFractionsPool)
@@ -23,7 +25,7 @@ public:
     
     virtual ~FractionSpaceBase() { }
     
-    virtual void calculateFlowsEvolution(double dt)
+    void calculateFlowsEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateDerivatives();
@@ -32,18 +34,35 @@ public:
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateFlowsEvolution(dt);
     }
     
-    virtual void calculateSourceEvolution(double dt)
+    void calculateSourceEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateSourceEvolution(dt);
     }
     
-    virtual void swapBuffers()
+    void swapBuffers()
     {
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->swapBuffers();
     }
     
+    IFractionCell* getCell(const double* coords)
+    {
+        return static_cast<IFractionCell*> (this->accessElement_d(coords));
+    }
+    
+    double getQuantitiesSum(unsigned int quantityIndex)
+    {
+        double sum=0;
+        for (unsigned int i=0; i<this->elementsCount; i++)
+            sum += this->elements[i].quantities[quantityIndex];
+        return sum;
+    }
+    
+    const Axis* getAxisDescription(unsigned int axis)
+    {
+        return &(this->gridDescription->axis[axis]);
+    }
     FractionsPoolBase* parent;
 
 protected:
@@ -74,7 +93,7 @@ public:
     
     virtual ~FractionCellBase() { }
     
-    virtual void swapBuffers()
+    void swapBuffers()
     {
         if (quantities == quantitiesBuffer0)
         {
@@ -203,6 +222,37 @@ public:
                 if (prev) prev->nextStepQuantities[quantity] += flowOutDown[FractionSpaceDimension+coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
             }
         }
+    }
+    
+    double getQuantitiesDensity(unsigned int index)
+    {
+        return quantities[index] / this->volume;
+    }
+    
+    double getQuantitiesDensityConvolution(unsigned int quantityIndex, const std::vector<unsigned int>& convoluteBy)
+    {
+        double result = quantities[quantityIndex];
+        double coefficient = 1 / this->volume;
+        for (auto it=convoluteBy.begin(); it != convoluteBy.end(); it++)
+        {
+            // Convolution by one dimension
+            coefficient *= this->size[*it];
+            
+            FractionCellBaseInstance* current = static_cast<FractionCellBaseInstance*>(this->next[quantityIndex]);
+            while (current != 0)
+            {
+                result += current->quantities[quantityIndex];
+                current = static_cast<FractionCellBaseInstance*>(current->next[quantityIndex]);
+            }
+            current = static_cast<FractionCellBaseInstance*>(this->prev[quantityIndex]);
+            while (current != 0)
+            {
+                result += current->quantities[quantityIndex];
+                current = static_cast<FractionCellBaseInstance*>(current->prev[quantityIndex]);
+            }
+        }
+        result *= coefficient;
+        return result;
     }
     
     double* quantities;

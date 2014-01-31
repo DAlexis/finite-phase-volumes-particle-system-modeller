@@ -1,0 +1,12 @@
+OutputInstance* ${instance_id} = new OutputInstance;
+    ${space_point_init}
+    ${fraction_point_init}
+    
+    ${instance_id}
+        ->setFilenamePrefix("${name}")
+        ->setFractionAndQuantity(${fraction_index}, ${quantity_index})
+        ${output_axis_configuration}
+        ${convolution_configureation}
+        ->setPeriod(${time_step});
+    
+    outputMaker.addInstance(${instance_id});

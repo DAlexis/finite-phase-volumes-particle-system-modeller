@@ -35,6 +35,13 @@ public:
     /// Maximal coordinate of segment's center
     double getMaxSegmentCenter() const;
     
+    /// Get axis id
+    const std::string& getId() const;
+    /// Get axis name
+    const std::string& getName() const;
+    
+    /// Set axis id (axis' machine name)
+    void setId(const std::string& id);
     /// Set axis human-readable name (for output etc.)
     void setName(const std::string& name);
     
@@ -65,6 +72,7 @@ private:
     
     double m_minValue, m_maxValue;
     
+    std::string m_id;
     std::string m_name;
     size_t m_count;
 };

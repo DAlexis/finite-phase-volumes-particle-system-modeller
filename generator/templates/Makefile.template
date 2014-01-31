@@ -10,7 +10,6 @@ cpp_sources =   main.cpp \
                 model.cpp \
                 axis.cpp \
                 ${fraction_sources_list} \
-                output.cpp \
-                model-output.cpp
+                output.cpp
 
 include $$(HOME_DIR)/Makefile.inc

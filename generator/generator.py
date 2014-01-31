@@ -111,18 +111,6 @@ code_utils.genFileByTemplate(os.path.join(destinationDir, 'model.cpp'),
                                 config['model'],
                                 generatedFileHeadComment)
 
-print "Generating model-output.h"
-code_utils.genFileByTemplate(os.path.join(destinationDir, 'model-output.h'),
-                                'templates/model-output.h.template',
-                                config['output'],
-                                generatedFileHeadComment)
-
-print "Generating model-output.cpp"
-code_utils.genFileByTemplate(os.path.join(destinationDir, 'model-output.cpp'),
-                                'templates/model-output.cpp.template',
-                                config['output'],
-                                generatedFileHeadComment)
-
 print "Generating main.cpp"
 code_utils.genFileByTemplate(os.path.join(destinationDir, 'main.cpp'),
                                 'templates/main.cpp.template',

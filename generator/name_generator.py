@@ -3,63 +3,12 @@ import code_utils
 import string
 import re
 
+particlesCountQuantityId = 'particles_count'
+everyFractionCountQuantityIndex = 'EVERY_FRACTION_COUNT_QUANTITY_INDEX'
+
 axisUniformConfigTemplate = code_utils.readTemplate("fragments/axis-uniform-config.template")
 fractionInitCodeTemplate = code_utils.readTemplate("fragments/fraction-init-code.template")
-
-outputInitCode = string.Template("outputMaker.addInstance(new ${class_name});\n    ")
-
-outputQvsSCHeaderTemplate = string.Template("""
-class ${class_name} : public OutputInstanceBase
-{
-public:
-    ${class_name}();
-    virtual ~${class_name}();
-    
-protected:
-    virtual void printToFile(double time);
-};
-""")
-
-outputQvsSCSourceTemplate = string.Template("""
-${class_name}::${class_name}() :
-    OutputInstanceBase(0, // This is because really quantity index is not used by OutputInstanceBase
-        ${time_step},
-        ${points_count},
-        "${file_name}")
-{
-}
-
-${class_name}::~${class_name}()
-{
-}
-
-void ${class_name}::printToFile(double time)
-{
-    Space& space = *(m_parent->m_space);
-    double maxVal = space.gridDescription->axis[${iterating_coord}].getMaxValue();
-    double minVal = space.gridDescription->axis[${iterating_coord}].getMinValue();
-    
-    double spacePoint[SPACE_COORDS_COUNT];
-    ${space_point_init}
-    
-    for (unsigned int sapceIndex=0; sapceIndex<m_pointsCount; sapceIndex++)
-    {
-        spacePoint[${iterating_coord}] = minVal + (maxVal-minVal) * sapceIndex / (m_pointsCount-1);
-        
-        FractionsPool *spaceCell = space.accessElement_d(spacePoint);
-        ${fraction_space_classname} *fractionSpace = static_cast<${fraction_space_classname}*> (spaceCell->fractions[${fraction_index}]);
-        // Convolution in space cell
-        double result = 0;
-        for (unsigned int particleIndex=0; particleIndex < fractionSpace->elementsCount; particleIndex++)
-        {
-            ${fraction_cell_classname}& cell = fractionSpace->elements[particleIndex];
-            result += ${output_code}
-            ;
-        }
-        (*m_file) << time << " " << spacePoint[${iterating_coord}] << " " << result << std::endl;
-    }
-}
-""")
+outputInstanceInitCodeTemplate = code_utils.readTemplate("fragments/output-instance-config.template")
 
 def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     result = code
@@ -121,6 +70,9 @@ def completeConfig(configTree):
     fractionsInitCode = ""
     fractionSourcesList = ""
     for fractionId in configTree['model']['fractions']:
+        #
+        # Fraction-related strings
+        #
         fraction = configTree['model']['fractions'][fractionId]
         fraction['fractions_enum_element'] = 'FRACTION_' + fractionId.upper()
         fraction['coordinates_enum_prefix'] = fractionId.upper() + '_COORDS_'
@@ -131,6 +83,7 @@ def completeConfig(configTree):
         fraction['fraction_cell_base_classname'] = fractionId.title() + 'CellBase'
         fraction['fraction_space_classname'] = fractionId.title() + 'Space'
         fraction['fraction_space_base_classname'] = fractionId.title() + 'SpaceBase'
+        fraction['fractions_quantities_count_enum_element'] = fraction['quantities_enum_prefix'] + 'COUNT'
         fraction['header_name'] = fractionId.lower() + '.h'
         allFractionHeadersInclude = allFractionHeadersInclude + '#include "' + fraction['header_name'] + '"\n'
         fraction['cpp_name'] = fractionId.lower() + '.cpp'
@@ -140,15 +93,19 @@ def completeConfig(configTree):
         fractionsInitCode = fractionsInitCode + fractionInitCodeTemplate.substitute(fraction)
         
         axisConfig = ""
-        
+        #
+        # Fraction space configuration
+        #
         if fraction['fraction_space_grid']:
             for dimensionId in fraction['fraction_space_grid']:
                 dimension = fraction['fraction_space_grid'][dimensionId]
                 dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
                 axisConfig = axisConfig + generateAxisConfig(dimension, dimensionId, dimension['fraction_coordinate_enum_element'], 'fraction')
-            
         fraction['axis_configuration'] = axisConfig
         
+        #
+        # Fraction's quantities configuration
+        #
         if fraction['quantities']:
             for quantityId in fraction['quantities']:
                 currentQuantity = fraction['quantities'][quantityId]
@@ -167,44 +124,76 @@ def completeConfig(configTree):
     
     configTree['model']['space_axis_configuration'] = spaceAxisConfiguration
     
-    outputHeaderCode = ""
-    outputCppCode = ""
+    #
+    # Output initialisation code generation
+    #
     outputsInitialisationCode = ""
     for instanceId in configTree['output']:
         instance = configTree['output'][instanceId]
-        instance['class_name'] = instanceId.title()
-        if instance['mode'] == 'quantity_vs_space_coord':
-            outputHeaderCode = outputHeaderCode + outputQvsSCHeaderTemplate.substitute(instance)
-            # Creating space point initialisation
-            spacePointInitStr = ""
+        instance['instance_id'] = instanceId
+        fraction = configTree['model']['fractions'][instance['fraction']]
+        instance['fraction_index'] = fraction['fractions_enum_element']
+        if instance['quantity'] == particlesCountQuantityId:
+            instance['quantity_index'] = everyFractionCountQuantityIndex
+        else:
+            instance['quantity_index'] = fraction['quantities'][instance['quantity']]['fraction_quantity_enum_element']
+        
+        # Space point config
+        spacePointInitCode = ""
+        if instance['space_point']:
             for coordId in instance['space_point']:
-                spacePointInitStr += 'spacePoint[' + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] + '] = ' + str(instance['space_point'][coordId]) + ';\n    '
-            
-            quantityIndex = ""
-            if instance['quantity'] == 'particles_count':
-                quantityIndex = "EVERY_FRACTION_COUNT_QUANTITY_INDEX"
+                spacePointInitCode = spacePointInitCode \
+                    + instance['instance_id'] + "->getSpacePoint()[" \
+                    + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] \
+                    + "] = " + str(instance['space_point'][coordId]) + ";\n    "
+        instance['space_point_init'] = spacePointInitCode
+        
+        # Fraction point config
+        fractionPointInitCode = ""
+        if instance['fraction_point']:
+            for coordId in instance['fraction_point']:
+                fractionPointInitCode = fractionPointInitCode \
+                    + instance['instance_id'] + "->getFractionPoint()[" \
+                    + fraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] \
+                    + "] = " + str(instance['fraction_point'][coordId]) + ";\n    "
+        instance['fraction_point_init'] = fractionPointInitCode
+        
+        # Output axis config
+        axisAddingCode = ""
+        for axisId in instance['output_axis']:
+            if axisId in fraction['fraction_space_grid']:
+                axisAddingCode = axisAddingCode + "->addOutputAxis(OAT_FRACTION_COORDINATE, " \
+                    + str(instance['output_axis'][axisId]['points_count']) + ", " \
+                    + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
+                    + ")\n        "
             else:
-                quantityIndex = configTree['model']['fractions'][instance['fraction']]['quantities'][instance['quantity']]['fraction_quantity_enum_element']
-            instance['output_code'] = 'cell.quantities[' + quantityIndex + '] / cell.volume'
-            
-            outputCppCode = outputCppCode + outputQvsSCSourceTemplate.substitute(
-                class_name          = instance['class_name'],
-                iterating_coord     = configTree['model']['cordinate_space_grid'][instance['iterating_coord']]['space_dimension_enum_element'],
-                space_point_init    = spacePointInitStr,
-                fraction_cell_classname     = configTree['model']['fractions'][instance['fraction']]['fraction_cell_classname'],
-                fraction_space_classname    = configTree['model']['fractions'][instance['fraction']]['fraction_space_classname'],
-                output_code         = instance['output_code'],
-                fraction_index      = configTree['model']['fractions'][instance['fraction']]['fractions_enum_element'],
-                file_name       = str(instance['file_name']),
-                points_count    = str(instance['points_count']),
-                time_step       = str(instance['time_step'])
-                )
-            thisOutputCode = resolveSymbolsInFractionCode(outputInitCode.substitute(instance), configTree, configTree['model']['fractions'][instance['fraction']])
-            outputsInitialisationCode = outputsInitialisationCode + thisOutputCode
-    configTree['output']['header_code'] = outputHeaderCode
-    configTree['output']['cpp_code'] = outputCppCode
+                axisAddingCode = axisAddingCode + "->addOutputAxis(OAT_SPACE_COORDINATE, " \
+                    + str(instance['output_axis'][axisId]['points_count']) + ", " \
+                    + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element']\
+                    + ")\n        "
+        instance['output_axis_configuration'] = axisAddingCode
+        
+        # Convolution configuration
+        convilutionAddingCode = ""
+        if instance['convolution']:
+            if instance['convolution'] == "all":
+                convilutionAddingCode = "->useAllFractionSpaceConvolution(" \
+                    + fraction['fractions_quantities_count_enum_element'] + ")\n        "
+            else:
+                for fractionAxis in instance['convolution']:
+                    convilutionAddingCode = convilutionAddingCode \
+                        + "->useConvolutionByFractionAxis(" \
+                        + fraction['fraction_space_grid'][fractionAxis]['fraction_coordinate_enum_element'] \
+                        + ")\n        "
+        instance['convolution_configureation'] = convilutionAddingCode
+        outputsInitialisationCode = outputsInitialisationCode + outputInstanceInitCodeTemplate.substitute(instance)
+        
+    
     configTree['model']['outputs_init_code'] = outputsInitialisationCode
     
+    #
+    # Resolving macro symbols in code fragments
+    #
     for fractionId in configTree['model']['fractions']:
         fraction = configTree['model']['fractions'][fractionId]
         # Resolving id's in code

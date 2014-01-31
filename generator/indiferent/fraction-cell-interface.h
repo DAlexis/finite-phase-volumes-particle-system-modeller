@@ -5,6 +5,8 @@
 #ifndef FRACTION_CELL_INTERFACE_H_INCLUDED
 #define FRACTION_CELL_INTERFACE_H_INCLUDED
 
+#include <vector>
+
 class IFractionCell
 {
 public:
@@ -12,6 +14,9 @@ public:
     virtual void calculateSourceEvolution(double dt) = 0;
     virtual void calculateFlowsEvolution(double dt) = 0;
     virtual void swapBuffers() = 0;
+    
+    virtual double getQuantitiesDensity(unsigned int index) = 0;
+    virtual double getQuantitiesDensityConvolution(unsigned int quantityIndex, const std::vector<unsigned int>& convoluteBy) = 0;
     
     virtual ~IFractionCell() {}
 };

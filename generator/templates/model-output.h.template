@@ -1,8 +1,0 @@
-#ifndef MODEL_OUTPUT_H_INCLUDED
-#define MODEL_OUTPUT_H_INCLUDED
-
-#include "output.h"
-
-${header_code}
-
-#endif // MODEL_OUTPUT_H_INCLUDED

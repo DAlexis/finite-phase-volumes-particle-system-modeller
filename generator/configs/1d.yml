@@ -40,27 +40,19 @@ model:
                 x_speed.DER = 0; // -9.8;
 output:
     concentration_vs_x:
-        name: Concentration vs X coordinate
-        mode: quantity_vs_space_coord
-        space_point:
-            x_coord: 0
-        iterating_coord: x_coord
+        name: Concentration-graph
         fraction: fraction1
         quantity: particles_count
-        file_name: "Fraction1-concentration-x-slice-(t).txt"
-        points_count: 100
-        time_step: 0.01
-    
-    test_quantity_1_vs_x:
-        name: Test quantity 1 vs coordinate
-        mode: quantity_vs_space_coord
         space_point:
             x_coord: 0
-        iterating_coord: x_coord
-        fraction: fraction1
-        quantity: testQuantity1
-        file_name: "Fraction1-test-quantity-x-slice-(t).txt"
-        points_count: 100
+        fraction_point:
+            x_speed: 0
+        output_axis:
+            x_coord:
+                points_count: 100
+        convolution:
+          - x_speed
+        #convolution: all
         time_step: 0.01
 
 run_options:
