@@ -15,7 +15,10 @@ OutputInstance::OutputInstance() :
     lastOutputTime(0),
     m_currentTime(0)
 {
-    
+    for (uint i=0; i<MAX_FRACTION_DIMENSION; i++)
+        fractionPoint[i] = 0;
+    for (uint i=0; i<SPACE_COORDS_COUNT; i++)
+        spacePoint[i] = 0;
 }
 
 OutputInstance::~OutputInstance()

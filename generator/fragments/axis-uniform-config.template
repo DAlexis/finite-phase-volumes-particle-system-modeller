@@ -1,3 +1,4 @@
 Axis& ${axis_id} = ${description_class}.axis[${axis_index}];
+    ${axis_id}.setId("${axis_id}");
     ${axis_id}.uniformInit(${axis_min}, ${axis_max}, ${axis_segments_count});
     ${axis_id}.setName("${axis_name}");
