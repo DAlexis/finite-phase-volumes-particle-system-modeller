@@ -1,6 +1,6 @@
 #!/usr/bin/python2.7
 import code_utils
-import name_generator
+import config_completer
 import model_defines_h_generator
 
 import yaml
@@ -63,7 +63,7 @@ for fileName in filesAsIs:
     print "Copying " + target + " to " + destinationDir
     shutil.copy(target, destinationDir)
 
-name_generator.completeConfig(config)
+config_completer.completeConfig(config)
 
 #
 # Generating code

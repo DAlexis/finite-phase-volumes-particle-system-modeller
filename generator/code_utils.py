@@ -19,6 +19,18 @@ def include(header):
 def includeStd(header):
     return '#include <' + header + '>\n'
 
+def createEnum(name, items):
+    result = "enum " + name + "\n{\n"
+    isFirst = True
+    for item in items:
+        result = result + "    " + item;
+        if isFirst:
+            result = result + " = 0"
+            isFirst = False
+        result = result + ",\n"
+    result = result + "};\n"
+    return result
+
 def genFileByTemplate(result, template, dictionary, headComment):
     """
     Generate file with name result from a template stored it template,

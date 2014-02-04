@@ -30,15 +30,11 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
             result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
     # Replacing this fraction's quantities
-    if thisFraction['quantities']:
-        for quantityId in thisFraction['quantities']:
-            nextStepQuantityFullName = 'nextStepQuantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
-            result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*NEXT\b', nextStepQuantityFullName, result)
-            quantityFullName = 'quantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
-            result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
-    
-    result = re.sub(r'\bparticles_count[\s]*.[\s]*NEXT\b', 'nextStepQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]', result)
-    result = re.sub(r'\bparticles_count\b', 'quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]', result)
+    for quantityId in thisFraction['quantities']:
+        nextStepQuantityFullName = 'nextStepQuantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+        result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*NEXT\b', nextStepQuantityFullName, result)
+        quantityFullName = 'quantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+        result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
     
     # Replacing space coords and its derivatives
     for coordId in configTree['model']['cordinate_space_grid']:
@@ -106,6 +102,11 @@ def completeConfig(configTree):
         #
         # Fraction's quantities configuration
         #
+        # Adding particles_count quantity declared implicitly
+        if not particlesCountQuantityId in fraction['quantities']:
+            fraction['quantities'][particlesCountQuantityId] = {}
+            fraction['quantities'][particlesCountQuantityId]['name'] = 'Particles count of ' + fraction['name']
+        
         if fraction['quantities']:
             for quantityId in fraction['quantities']:
                 currentQuantity = fraction['quantities'][quantityId]
@@ -133,10 +134,7 @@ def completeConfig(configTree):
         instance['instance_id'] = instanceId
         fraction = configTree['model']['fractions'][instance['fraction']]
         instance['fraction_index'] = fraction['fractions_enum_element']
-        if instance['quantity'] == particlesCountQuantityId:
-            instance['quantity_index'] = everyFractionCountQuantityIndex
-        else:
-            instance['quantity_index'] = fraction['quantities'][instance['quantity']]['fraction_quantity_enum_element']
+        instance['quantity_index'] = fraction['quantities'][instance['quantity']]['fraction_quantity_enum_element']
         
         # Space point config
         spacePointInitCode = ""
@@ -200,4 +198,3 @@ def completeConfig(configTree):
         fraction['sources'] = resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction)
         fraction['space_coords_derivatives'] = resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction)
         fraction['fraction_coords_derivatives'] = resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction)
-        
