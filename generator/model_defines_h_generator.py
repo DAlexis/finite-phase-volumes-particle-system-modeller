@@ -42,9 +42,13 @@ def generate(destinationDir, config, generatedFileHeadComment):
         # Fraction's axis enum
         #
         fractionsEnumItems = []
-        if currentFraction['fraction_space_grid']:
-            for fractDimensionId in currentFraction['fraction_space_grid']:
-                fractionsEnumItems.append(currentFraction['fraction_space_grid'][fractDimensionId]['fraction_coordinate_enum_element'])
+        print ""
+        print currentFraction
+        print ""
+        if ('fraction_space_grid' in currentFraction):
+            if currentFraction['fraction_space_grid']:
+                for fractDimensionId in currentFraction['fraction_space_grid']:
+                    fractionsEnumItems.append(currentFraction['fraction_space_grid'][fractDimensionId]['fraction_coordinate_enum_element'])
         fractionsEnumItems.append(currentFraction['coordinates_enum_prefix'] + 'COUNT')
         modDef_h.write(code_utils.createEnum(currentFraction['fraction_coordinate_enum'], fractionsEnumItems) + "\n")
         

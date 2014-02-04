@@ -12,18 +12,17 @@
 
 #include <string.h>
 
+/// This is a part of FractionSpaceBase that is indifferent to case AxisCount == 0
 template <int AxisCount, class FractionCellType>
-class FractionSpaceBase : public Grid<AxisCount, FractionCellType>, public IFractionSpace
+class FractionSpaceBaseIncomplete : public Grid<AxisCount, FractionCellType>, public IFractionSpace
 {
 public:
-    typedef FractionSpaceBase<AxisCount, FractionCellType> FractionSpaceBaseInstance;
-    typedef Grid<AxisCount, FractionCellType> GridInstance;
     
-    FractionSpaceBase(FractionsPoolBase* parentFractionsPool) :
+    FractionSpaceBaseIncomplete(FractionsPoolBase* parentFractionsPool) :
         parent(parentFractionsPool)
     {}
     
-    virtual ~FractionSpaceBase() { }
+    virtual ~FractionSpaceBaseIncomplete() { }
     
     void calculateFlowsEvolution(double dt)
     {
@@ -59,14 +58,44 @@ public:
         return sum;
     }
     
-    const Axis* getAxisDescription(unsigned int axis)
-    {
-        return &(this->gridDescription->axis[axis]);
-    }
+    //const Axis* getAxisDescription(unsigned int axis);
+    
     FractionsPoolBase* parent;
 
 protected:
     typename Grid<AxisCount, FractionCellType>::GridDescription fractionGridDescription;
+};
+
+
+template <int AxisCount, class FractionCellType>
+class FractionSpaceBase : public FractionSpaceBaseIncomplete<AxisCount, FractionCellType>
+{
+public:
+    FractionSpaceBase(FractionsPoolBase* parentFractionsPool) :
+        FractionSpaceBaseIncomplete<AxisCount, FractionCellType>(parentFractionsPool)
+    {}
+    
+    virtual ~FractionSpaceBase() {}
+    typedef FractionSpaceBase<AxisCount, FractionCellType> FractionSpaceBaseInstance;
+    typedef Grid<AxisCount, FractionCellType> GridInstance;
+    
+    const Axis* getAxisDescription(unsigned int axis) { return &(this->gridDescription->axis[axis]); }
+};
+
+template <class FractionCellType>
+class FractionSpaceBase<0, FractionCellType> : public FractionSpaceBaseIncomplete<0, FractionCellType>
+{
+public:
+    FractionSpaceBase(FractionsPoolBase* parentFractionsPool) :
+        FractionSpaceBaseIncomplete<0, FractionCellType>(parentFractionsPool)
+    {}
+    
+    virtual ~FractionSpaceBase() {}
+    typedef FractionSpaceBase<0, FractionCellType> FractionSpaceBaseInstance;
+    typedef Grid<0, FractionCellType> GridInstance;
+    
+    /// This function is not ever called and is here only to prevent compilation errors
+    const Axis* getAxisDescription(unsigned int axis) { return NULL; }
 };
 
 template <int FractionIndex,

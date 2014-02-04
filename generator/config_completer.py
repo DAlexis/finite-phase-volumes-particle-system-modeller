@@ -22,12 +22,13 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
         result = re.sub(r'\b' + fractionId + r'\b', fractionFullName, result)
     
     # Replacing this fraction's coords
-    if thisFraction['fraction_space_grid']:
-        for coordId in thisFraction['fraction_space_grid']:
-            coordDerFullName = 'fractionCoordsDerivatives[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
-            result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)
-            coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
-            result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
+    if 'fraction_space_grid' in fraction:
+        if fraction['fraction_space_grid']:
+            for coordId in thisFraction['fraction_space_grid']:
+                coordDerFullName = 'fractionCoordsDerivatives[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
+                result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)
+                coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
+                result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
     # Replacing this fraction's quantities
     for quantityId in thisFraction['quantities']:
@@ -92,25 +93,28 @@ def completeConfig(configTree):
         #
         # Fraction space configuration
         #
-        if fraction['fraction_space_grid']:
-            for dimensionId in fraction['fraction_space_grid']:
-                dimension = fraction['fraction_space_grid'][dimensionId]
-                dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
-                axisConfig = axisConfig + generateAxisConfig(dimension, dimensionId, dimension['fraction_coordinate_enum_element'], 'fraction')
+        if 'fraction_space_grid' in fraction:
+            if fraction['fraction_space_grid']:
+                for dimensionId in fraction['fraction_space_grid']:
+                    dimension = fraction['fraction_space_grid'][dimensionId]
+                    dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
+                    axisConfig = axisConfig + generateAxisConfig(dimension, dimensionId, dimension['fraction_coordinate_enum_element'], 'fraction')
         fraction['axis_configuration'] = axisConfig
         
         #
         # Fraction's quantities configuration
         #
         # Adding particles_count quantity declared implicitly
+        if not 'quantities' in fraction:
+            fraction['quantities'] = {}
+        
         if not particlesCountQuantityId in fraction['quantities']:
             fraction['quantities'][particlesCountQuantityId] = {}
             fraction['quantities'][particlesCountQuantityId]['name'] = 'Particles count of ' + fraction['name']
         
-        if fraction['quantities']:
-            for quantityId in fraction['quantities']:
-                currentQuantity = fraction['quantities'][quantityId]
-                currentQuantity['fraction_quantity_enum_element'] = fraction['quantities_enum_prefix'] + quantityId.upper()
+        for quantityId in fraction['quantities']:
+            currentQuantity = fraction['quantities'][quantityId]
+            currentQuantity['fraction_quantity_enum_element'] = fraction['quantities_enum_prefix'] + quantityId.upper()
         
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
     configTree['model']['fraction_sources_list'] = fractionSourcesList
@@ -148,7 +152,7 @@ def completeConfig(configTree):
         
         # Fraction point config
         fractionPointInitCode = ""
-        if instance['fraction_point']:
+        if 'fraction_point' in instance:
             for coordId in instance['fraction_point']:
                 fractionPointInitCode = fractionPointInitCode \
                     + instance['instance_id'] + "->getFractionPoint()[" \
@@ -159,21 +163,23 @@ def completeConfig(configTree):
         # Output axis config
         axisAddingCode = ""
         for axisId in instance['output_axis']:
-            if axisId in fraction['fraction_space_grid']:
-                axisAddingCode = axisAddingCode + "->addOutputAxis(OAT_FRACTION_COORDINATE, " \
-                    + str(instance['output_axis'][axisId]['points_count']) + ", " \
-                    + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
-                    + ")\n        "
-            else:
+            #if ('fraction_space_grid' in fraction) and (axisId in fraction['fraction_space_grid']):
+            if (axisId in configTree['model']['cordinate_space_grid']):
                 axisAddingCode = axisAddingCode + "->addOutputAxis(OAT_SPACE_COORDINATE, " \
                     + str(instance['output_axis'][axisId]['points_count']) + ", " \
                     + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element']\
                     + ")\n        "
+            else:
+                axisAddingCode = axisAddingCode + "->addOutputAxis(OAT_FRACTION_COORDINATE, " \
+                    + str(instance['output_axis'][axisId]['points_count']) + ", " \
+                    + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
+                    + ")\n        "
+        
         instance['output_axis_configuration'] = axisAddingCode
         
         # Convolution configuration
         convilutionAddingCode = ""
-        if instance['convolution']:
+        if 'convolution' in instance:
             if instance['convolution'] == "all":
                 convilutionAddingCode = "->useAllFractionSpaceConvolution(" \
                     + fraction['fractions_quantities_count_enum_element'] + ")\n        "

@@ -211,7 +211,7 @@ public:
     Grid() : elements(0), elementsCount(0), offsets(0), currentCoords_d(0), currentCoords_ui(0) {}
     virtual ~Grid()
     {
-        if (elements) delete[] elements;
+        if (elements) delete elements;
     }
     
     ElementType* accessElement_ui(const uint* coords)
