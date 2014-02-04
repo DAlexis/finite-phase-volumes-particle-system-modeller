@@ -1,0 +1,54 @@
+#
+# This is a simple sample config
+#
+# Note: particles count quantity synonim is 'particles_count'
+model:
+    name: One dimension test config
+    cordinate_space_grid:
+        x_coord:
+            name: Coordinate X, m
+            division:
+                mode: uniform
+                min: -10.0
+                max: 10.0
+                segments_count: 50
+        y_coord:
+            name: Coordinate Y, m
+            division:
+                mode: uniform
+                min: -10.0
+                max: 10.0
+                segments_count: 100
+    fractions:
+        fraction1:
+            name: Test Fraction One
+            fraction_space_grid:
+            sources: |
+                // Generating initial state of particles
+                    if (model->time < 0.02)
+                            if (fabs(x_coord) < 2 && fabs(y_coord) < 2)
+                                particles_count.NEXT = 1;
+            space_coords_derivatives: |
+                x_coord.DER = -1;
+                    y_coord.DER = -1;
+            fraction_coords_derivatives: |
+
+output:
+    concentration_vs_coords:
+        name: Concentration-vs-coords
+        fraction: fraction1
+        quantity: particles_count
+        space_point:
+            x_coord: 0
+            y_coord: 0
+        output_axis:
+            x_coord:
+                points_count: 100
+            y_coord:
+                points_count: 100
+        time_step: 0.05
+
+run_options:
+    start_time: 0
+    stop_time: 5
+    time_step: 0.01

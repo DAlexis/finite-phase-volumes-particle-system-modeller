@@ -42,9 +42,6 @@ def generate(destinationDir, config, generatedFileHeadComment):
         # Fraction's axis enum
         #
         fractionsEnumItems = []
-        print ""
-        print currentFraction
-        print ""
         if ('fraction_space_grid' in currentFraction):
             if currentFraction['fraction_space_grid']:
                 for fractDimensionId in currentFraction['fraction_space_grid']:
@@ -60,7 +57,7 @@ def generate(destinationDir, config, generatedFileHeadComment):
         for quantityId in currentFraction['quantities']:
             if not quantityId == 'particles_count':
                 fractionsEnumItems.append(currentFraction['quantities'][quantityId]['fraction_quantity_enum_element'])
-        fractionsEnumItems.append(currentFraction['quantities_enum_prefix'] + 'COUNT' + '\n')
+        fractionsEnumItems.append(currentFraction['quantities_enum_prefix'] + 'COUNT')
         modDef_h.write(code_utils.createEnum(currentFraction['fraction_quantity_enum'], fractionsEnumItems) + "\n");
 
     modDef_h.write(code_utils.headerGuardBottom("model-defines.h"))
