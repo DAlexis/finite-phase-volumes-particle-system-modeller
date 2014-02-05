@@ -40,6 +40,7 @@ void Axis::specificInit(const std::string& fileName)
     m_maxValue = border;
     m_count = m_points.size();
     file.close();
+    m_mode = SPECIFIC;
 }
 
 double Axis::getPoint(size_t number) const

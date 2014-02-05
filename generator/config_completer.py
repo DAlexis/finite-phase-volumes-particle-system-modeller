@@ -7,6 +7,7 @@ particlesCountQuantityId = 'particles_count'
 everyFractionCountQuantityIndex = 'EVERY_FRACTION_COUNT_QUANTITY_INDEX'
 
 axisUniformConfigTemplate = code_utils.readTemplate("fragments/axis-uniform-config.template")
+axisSpecificConfigTemplate = code_utils.readTemplate("fragments/axis-specific-config.template")
 fractionInitCodeTemplate = code_utils.readTemplate("fragments/fraction-init-code.template")
 outputInstanceInitCodeTemplate = code_utils.readTemplate("fragments/output-instance-config.template")
 
@@ -60,6 +61,14 @@ def generateAxisConfig(asixDescriptionSubtree, axisId, axisIndex, axisType):
             axis_min    = asixDescriptionSubtree['division']['min'],
             axis_max    = asixDescriptionSubtree['division']['max'],
             axis_segments_count = asixDescriptionSubtree['division']['segments_count']
+            )
+    else:
+        return axisSpecificConfigTemplate.substitute(
+            axis_id     = axisId,
+            axis_index  = axisIndex,
+            description_class = descriptionClassName,
+            axis_name   = asixDescriptionSubtree['name'],
+            filename    = asixDescriptionSubtree['division']['filename'],
             )
 
 def completeConfig(configTree):
