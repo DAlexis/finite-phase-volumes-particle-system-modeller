@@ -4,8 +4,11 @@
 ${fraction_space_classname}::${fraction_space_classname}(FractionsPool* parentFractionsPool) :
     ${fraction_space_base_classname}(parentFractionsPool)
 {
+    // Configuring fraction axis
     ${axis_configuration}
     constructGrid(fractionGridDescription);
+    // Configuring boundary conditions
+    ${boundary_conditions_config}
 }
 
 void ${fraction_cell_classname}::calculateDerivatives()

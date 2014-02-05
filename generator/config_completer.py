@@ -63,6 +63,18 @@ def generateAxisConfig(asixDescriptionSubtree, axisId, axisIndex, axisType):
             )
 
 def completeConfig(configTree):
+    #
+    # Space axis configuration
+    #
+    spaceAxisConfiguration = ""
+    for dimensionId in configTree['model']['cordinate_space_grid']:
+        dimension = configTree['model']['cordinate_space_grid'][dimensionId]
+        dimension ['space_dimension_enum_element'] = 'SPACE_COORDS_' + dimensionId.upper()
+        spaceAxisConfiguration = spaceAxisConfiguration + generateAxisConfig(dimension, dimensionId, dimension ['space_dimension_enum_element'], 'space')
+    configTree['model']['space_axis_configuration'] = spaceAxisConfiguration
+    #
+    # Configuring fractions
+    #
     allFractionHeadersInclude = ""
     fractionsInitCode = ""
     fractionSourcesList = ""
@@ -86,9 +98,7 @@ def completeConfig(configTree):
         fraction['cpp_name'] = fractionId.lower() + '.cpp'
         fractionSourcesList = fractionSourcesList + fraction['cpp_name'] + ' '
         fraction['header_guard'] = code_utils.formHeaderGuard(fraction ['header_name'])
-        
         fractionsInitCode = fractionsInitCode + fractionInitCodeTemplate.substitute(fraction)
-        
         axisConfig = ""
         #
         # Fraction space configuration
@@ -100,7 +110,6 @@ def completeConfig(configTree):
                     dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
                     axisConfig = axisConfig + generateAxisConfig(dimension, dimensionId, dimension['fraction_coordinate_enum_element'], 'fraction')
         fraction['axis_configuration'] = axisConfig
-        
         #
         # Fraction's quantities configuration
         #
@@ -115,19 +124,43 @@ def completeConfig(configTree):
         for quantityId in fraction['quantities']:
             currentQuantity = fraction['quantities'][quantityId]
             currentQuantity['fraction_quantity_enum_element'] = fraction['quantities_enum_prefix'] + quantityId.upper()
+        #
+        # Boundary conditions configuration
+        #
+        boundaryConditionsInitCode = ""
+        if 'boundary_conditions' in fraction:
+            if fraction['boundary_conditions']:
+                
+                for axisId in fraction['boundary_conditions']:
+                    if axisId in configTree['model']['cordinate_space_grid']:
+                        # Space axis borders
+                        if 'top' in fraction['boundary_conditions'][axisId]:
+                            if fraction['boundary_conditions'][axisId]['top'] == 'open':
+                                boundaryConditionsInitCode = boundaryConditionsInitCode + 'spaceTopBorderType[' \
+                                    + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] \
+                                    + '] = BT_OPEN;\n    '
+                        if 'bottom' in fraction['boundary_conditions'][axisId]:
+                            if fraction['boundary_conditions'][axisId]['bottom'] == 'open':
+                                boundaryConditionsInitCode = boundaryConditionsInitCode + 'spaceBottomBorderType[' \
+                                    + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] \
+                                    + '] = BT_OPEN;\n    '
+                    else:
+                        # Fraction axis borders
+                        if 'top' in fraction['boundary_conditions'][axisId]:
+                            if fraction['boundary_conditions'][axisId]['top'] == 'open':
+                                boundaryConditionsInitCode = boundaryConditionsInitCode + 'fractionTopBorderType[' \
+                                    + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
+                                    + '] = BT_OPEN;\n    '
+                        if 'bottom' in fraction['boundary_conditions'][axisId]:
+                            if fraction['boundary_conditions'][axisId]['bottom'] == 'open':
+                                boundaryConditionsInitCode = boundaryConditionsInitCode + 'fractionBottomBorderType[' \
+                                    + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
+                                    + '] = BT_OPEN;\n    '
+        fraction['boundary_conditions_config'] = boundaryConditionsInitCode
         
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
     configTree['model']['fraction_sources_list'] = fractionSourcesList
     configTree['model']['fractions_init_code'] = fractionsInitCode
-    
-    spaceAxisConfiguration = ""
-    
-    for dimensionId in configTree['model']['cordinate_space_grid']:
-        dimension = configTree['model']['cordinate_space_grid'][dimensionId]
-        dimension ['space_dimension_enum_element'] = 'SPACE_COORDS_' + dimensionId.upper()
-        spaceAxisConfiguration = spaceAxisConfiguration + generateAxisConfig(dimension, dimensionId, dimension ['space_dimension_enum_element'], 'space')
-    
-    configTree['model']['space_axis_configuration'] = spaceAxisConfiguration
     
     #
     # Output initialisation code generation

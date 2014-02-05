@@ -32,7 +32,14 @@ model:
                 x_coord.DER = -1;
                     y_coord.DER = -1;
             fraction_coords_derivatives: |
-
+            boundary_conditions:
+                # Default value is wall
+                x_coord:
+                    top: open
+                    bottom: open
+                y_coord:
+                    top: wall
+                    bottom: wall
 output:
     concentration_vs_coords:
         name: Concentration-vs-coords
@@ -50,5 +57,5 @@ output:
 
 run_options:
     start_time: 0
-    stop_time: 5
+    stop_time: 10
     time_step: 0.01
