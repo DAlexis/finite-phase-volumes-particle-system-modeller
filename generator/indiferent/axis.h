@@ -8,6 +8,12 @@
 #include <string>
 #include <vector>
 
+enum BorderType
+{
+    BT_OPEN = 0, /// Particles flow out counting produced as if that was another cells across the border
+    BT_WALL, /// Flow out is always zero
+};
+
 /// Stores axis parameters. Provides getting segment center and size by index, segment index by coordinate etc.
 class Axis
 {

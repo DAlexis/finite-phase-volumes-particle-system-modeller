@@ -20,7 +20,16 @@ public:
     
     FractionSpaceBaseIncomplete(FractionsPoolBase* parentFractionsPool) :
         parent(parentFractionsPool)
-    {}
+    {
+        for (uint i=0; i<AxisCount; i++)
+        {
+            fractionTopBorderType[i] = BT_WALL; fractionBottomBorderType[i] = BT_WALL;
+        }
+        for (uint i=0; i<SPACE_COORDS_COUNT; i++)
+        {
+            spaceTopBorderType[i] = BT_WALL; spaceBottomBorderType[i] = BT_WALL;
+        }
+    }
     
     virtual ~FractionSpaceBaseIncomplete() { }
     
@@ -61,7 +70,10 @@ public:
     //const Axis* getAxisDescription(unsigned int axis);
     
     FractionsPoolBase* parent;
-
+    
+    BorderType fractionTopBorderType[AxisCount], fractionBottomBorderType[AxisCount];
+    BorderType spaceTopBorderType[SPACE_COORDS_COUNT], spaceBottomBorderType[SPACE_COORDS_COUNT];
+    
 protected:
     typename Grid<AxisCount, FractionCellType>::GridDescription fractionGridDescription;
 };
@@ -154,28 +166,31 @@ public:
         {
             FractionCellBaseInstance* next = nextInFractionSpace(coord);
             FractionCellBaseInstance* prev = prevInFractionSpace(coord);
+            double transfer = 0;
             if (next)
+                transfer = getFlowInFractionSpace(coord, next) *dt;
+            else
+                transfer = getFlowOutThroughFractionTopBorder(coord) * dt;
+            
+            if (transfer > 0)
             {
-                /// @todo Interpolation should be added here
-                double transfer = getFlowInFractionSpace(coord, next) *dt;
-                if (transfer > 0)
-                {
-                    // Flow out from this cell in positive coordinate direction
-                    flowOutUp[coord] = transfer;
-                    totalFlowOut += transfer;
-                }
+                // Flow out from this cell in positive coordinate direction
+                flowOutUp[coord] = transfer;
+                totalFlowOut += transfer;
             }
             
             if (prev)
+                transfer = -getFlowInFractionSpace(coord, prev) *dt;
+            else
+                transfer = -getFlowOutThroughFractionBottomBorder(coord) * dt;
+            
+            if (transfer > 0)
             {
-                double transfer = -getFlowInFractionSpace(coord, prev) *dt;
-                if (transfer > 0)
-                {
-                    // Flow out from this cell in negative coordinate direction
-                    flowOutDown[coord] = transfer;
-                    totalFlowOut += transfer;
-                }
+                // Flow out from this cell in negative coordinate direction
+                flowOutDown[coord] = transfer;
+                totalFlowOut += transfer;
             }
+
         }
         
         // Flows in coordinate space
@@ -183,25 +198,29 @@ public:
         {
             FractionCellBaseInstance* next = nextInSpace(coord);
             FractionCellBaseInstance* prev = prevInSpace(coord);
+            double transfer = 0;
             if (next)
+                transfer = getFlowInSpace(coord, next) * dt;
+            else
+                transfer = getFlowOutThroughCoordinateTopBorder(coord) * dt;
+            
+            if (transfer > 0)
             {
-                double transfer = getFlowInSpace(coord, next) * dt;
-                if (transfer > 0)
-                {
-                    // Flow out from this cell in positive coordinate direction
-                    flowOutUp[FractionSpaceDimension + coord] = transfer;
-                    totalFlowOut += transfer;
-                }
+                // Flow out from this cell in positive coordinate direction
+                flowOutUp[FractionSpaceDimension + coord] = transfer;
+                totalFlowOut += transfer;
             }
+            
             if (prev)
+                transfer = -getFlowInSpace(coord, prev) * dt;
+            else
+                transfer = -getFlowOutThroughCoordinateBottomBorder(coord) * dt;
+            
+            if (transfer > 0)
             {
-                double transfer = -getFlowInSpace(coord, prev) * dt;
-                if (transfer > 0)
-                {
-                    // Flow out from this cell in negative coordinate direction
-                    flowOutDown[FractionSpaceDimension + coord] = transfer;
-                    totalFlowOut += transfer;
-                }
+                // Flow out from this cell in negative coordinate direction
+                flowOutDown[FractionSpaceDimension + coord] = transfer;
+                totalFlowOut += transfer;
             }
         }
         
@@ -341,6 +360,82 @@ protected:
 private:
     double quantitiesBuffer0[QuantitiesCount];
     double quantitiesBuffer1[QuantitiesCount];
+    
+    /// @todo May be optimexed checking of velocity sign. Now sign is sign of flow projection.
+    inline double getFlowOutThroughCoordinateTopBorder(uint coordinate)
+    {
+        switch (static_cast<FractionSpaceBaseInstance*>(this->parentGrid)->spaceTopBorderType[coordinate])
+        {
+            case BT_OPEN: {
+                // Case of open border
+                SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
+                double l1 = thisSpaceCell->size[coordinate];
+                if (spaceCoordsDerivatives[coordinate] > 0)
+                    return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
+                else
+                    return 0.0;
+            }
+            default:
+            case BT_WALL:
+                return 0.0;
+        }
+    }
+    
+    inline double getFlowOutThroughCoordinateBottomBorder(uint coordinate)
+    {
+        switch (static_cast<FractionSpaceBaseInstance*>(this->parentGrid)->spaceBottomBorderType[coordinate])
+        {
+            case BT_OPEN: {
+                // Case of open border
+                SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
+                double l1 = thisSpaceCell->size[coordinate];
+                if (spaceCoordsDerivatives[coordinate] < 0)
+                    return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
+                else
+                    return 0.0;
+            }
+            default:
+            case BT_WALL:
+                return 0.0;
+        }
+    }
+    
+    inline double getFlowOutThroughFractionTopBorder(uint coordinate)
+    {
+        switch (static_cast<FractionSpaceBaseInstance*>(this->parentGrid)->fractionTopBorderType[coordinate])
+        {
+            case BT_OPEN: {
+                // Case of open border
+                double l1 = this->size[coordinate];
+                if (fractionCoordsDerivatives[coordinate] > 0)
+                    return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
+                else
+                    return 0.0;
+            }
+            default:
+            case BT_WALL:
+                return 0.0;
+        }
+    }
+    
+    inline double getFlowOutThroughFractionBottomBorder(uint coordinate)
+    {
+        switch (static_cast<FractionSpaceBaseInstance*>(this->parentGrid)->fractionBottomBorderType[coordinate])
+        {
+            case BT_OPEN: {
+                // Case of open border
+                double l1 = this->size[coordinate];
+                if (fractionCoordsDerivatives[coordinate] < 0)
+                    return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
+                else
+                    return 0.0;
+            }
+            default:
+            case BT_WALL:
+                return 0.0;
+        }
+    }
+    
 };
 
 #endif // FRACTION_CELL_TEMPLATE
