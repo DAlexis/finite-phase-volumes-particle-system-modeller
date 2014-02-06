@@ -25,7 +25,7 @@ void Axis::uniformInit(double min, double max, unsigned int count)
 void Axis::specificInit(const std::string& fileName)
 {
     std::ifstream file(fileName);
-    if (file.eof()) throw ExSegmentFileIsInvalid();
+    if (!file.is_open() || file.eof()) throw ExSegmentFileIsInvalid();
     
     file >> m_minValue;
     double prevBorder;
