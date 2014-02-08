@@ -1,5 +1,4 @@
 import code_utils
-import name_generator
 
 import os
 
