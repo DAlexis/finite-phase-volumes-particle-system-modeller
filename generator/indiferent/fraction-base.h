@@ -349,8 +349,7 @@ private:
     double quantitiesBuffer0[QuantitiesCount];
     double quantitiesBuffer1[QuantitiesCount];
     
-    /** @brief This function calculates flow from lower cell to higher (flow's projection to axis), so to get outgoing flow in negative direction it should be multiplied by -1
-     */
+    /// This function calculates flow from lower cell to higher (flow's projection to axis), so to get OUTGOING flow in negative direction it should be multiplied by -1
     inline double getConvectiveFlowInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
@@ -358,10 +357,29 @@ private:
         return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
     }
     
+    /// This function calculates flow from lower cell to higher (flow's projection to axis), so to get OUTGOING flow in negative direction it should be multiplied by -1
     inline double getConvectiveFlowInFractionSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         double l1 = this->size[coordinate];
         return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
+    }
+    
+    /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
+    inline double getDiffusionFlowInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
+    {
+        SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
+        SpaceGridType::GridElementBase* neighborSpaceCell = neighbor->getSpaceCell();
+        double l1 = thisSpaceCell->size[coordinate];
+        double l2 = neighborSpaceCell->size[coordinate];
+        return (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
+    }
+    
+    /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
+    inline double getDiffusionFlowInFractionSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
+    {
+        double l1 = this->size[coordinate];
+        double l2 = neighbor->size[coordinate];
+        return (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getFractionDiffusionCoefficient(quantity, coordinate);
     }
     
     /// @todo May be optimexed checking of velocity sign. Now sign is sign of flow projection.
