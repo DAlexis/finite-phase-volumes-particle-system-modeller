@@ -26,3 +26,13 @@ void* ${fraction_cell_classname}::getModel()
 {
     return static_cast<Space*>(getSpaceCell()->parentGrid)->parent;
 }
+
+double ${fraction_cell_classname}::getSpaceDiffusionCoefficient(uint quantity, uint axisIndex)
+{
+    return 0.0;
+}
+
+double ${fraction_cell_classname}::getFractionDiffusionCoefficient(uint quantity, uint axisIndex)
+{
+    return 0.0;
+}

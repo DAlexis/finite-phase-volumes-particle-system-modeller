@@ -78,7 +78,7 @@ protected:
     typename Grid<AxisCount, FractionCellType>::GridDescription fractionGridDescription;
 };
 
-
+/// FractionSpaceBase in case AxisCount != 0
 template <int AxisCount, class FractionCellType>
 class FractionSpaceBase : public FractionSpaceBaseIncomplete<AxisCount, FractionCellType>
 {
@@ -168,9 +168,9 @@ public:
             FractionCellBaseInstance* prev = prevInFractionSpace(coord);
             double transfer = 0;
             if (next)
-                transfer = getFlowInFractionSpace(coord, next) *dt;
+                transfer = getConvectiveFlowInFractionSpace(coord, next) *dt;
             else
-                transfer = getFlowOutThroughFractionTopBorder(coord) * dt;
+                transfer = getConvectiveFlowOutThroughFractionTopBorder(coord) * dt;
             
             if (transfer > 0)
             {
@@ -180,9 +180,9 @@ public:
             }
             
             if (prev)
-                transfer = -getFlowInFractionSpace(coord, prev) *dt;
+                transfer = -getConvectiveFlowInFractionSpace(coord, prev) *dt;
             else
-                transfer = -getFlowOutThroughFractionBottomBorder(coord) * dt;
+                transfer = -getConvectiveFlowOutThroughFractionBottomBorder(coord) * dt;
             
             if (transfer > 0)
             {
@@ -200,9 +200,9 @@ public:
             FractionCellBaseInstance* prev = prevInSpace(coord);
             double transfer = 0;
             if (next)
-                transfer = getFlowInSpace(coord, next) * dt;
+                transfer = getConvectiveFlowInSpace(coord, next) * dt;
             else
-                transfer = getFlowOutThroughCoordinateTopBorder(coord) * dt;
+                transfer = getConvectiveFlowOutThroughCoordinateTopBorder(coord) * dt;
             
             if (transfer > 0)
             {
@@ -212,9 +212,9 @@ public:
             }
             
             if (prev)
-                transfer = -getFlowInSpace(coord, prev) * dt;
+                transfer = -getConvectiveFlowInSpace(coord, prev) * dt;
             else
-                transfer = -getFlowOutThroughCoordinateBottomBorder(coord) * dt;
+                transfer = -getConvectiveFlowOutThroughCoordinateBottomBorder(coord) * dt;
             
             if (transfer > 0)
             {
@@ -342,27 +342,30 @@ protected:
     inline FractionCellBase* nextInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->next[coordinate]); }
     inline FractionCellBase* prevInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->prev[coordinate]); }
     
+    virtual double getSpaceDiffusionCoefficient(uint quantity, uint axisIndex) { return 0.0; };
+    virtual double getFractionDiffusionCoefficient(uint quantity, uint axisIndex) { return 0.0; };
+    
+private:
+    double quantitiesBuffer0[QuantitiesCount];
+    double quantitiesBuffer1[QuantitiesCount];
+    
     /** @brief This function calculates flow from lower cell to higher (flow's projection to axis), so to get outgoing flow in negative direction it should be multiplied by -1
      */
-    inline double getFlowInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
+    inline double getConvectiveFlowInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
         return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
     }
     
-    inline double getFlowInFractionSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
+    inline double getConvectiveFlowInFractionSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         double l1 = this->size[coordinate];
         return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
     }
     
-private:
-    double quantitiesBuffer0[QuantitiesCount];
-    double quantitiesBuffer1[QuantitiesCount];
-    
     /// @todo May be optimexed checking of velocity sign. Now sign is sign of flow projection.
-    inline double getFlowOutThroughCoordinateTopBorder(uint coordinate)
+    inline double getConvectiveFlowOutThroughCoordinateTopBorder(uint coordinate)
     {
         switch (static_cast<FractionSpaceBaseInstance*>(this->parentGrid)->spaceTopBorderType[coordinate])
         {
@@ -381,7 +384,7 @@ private:
         }
     }
     
-    inline double getFlowOutThroughCoordinateBottomBorder(uint coordinate)
+    inline double getConvectiveFlowOutThroughCoordinateBottomBorder(uint coordinate)
     {
         switch (static_cast<FractionSpaceBaseInstance*>(this->parentGrid)->spaceBottomBorderType[coordinate])
         {
@@ -400,7 +403,7 @@ private:
         }
     }
     
-    inline double getFlowOutThroughFractionTopBorder(uint coordinate)
+    inline double getConvectiveFlowOutThroughFractionTopBorder(uint coordinate)
     {
         switch (static_cast<FractionSpaceBaseInstance*>(this->parentGrid)->fractionTopBorderType[coordinate])
         {
@@ -418,7 +421,7 @@ private:
         }
     }
     
-    inline double getFlowOutThroughFractionBottomBorder(uint coordinate)
+    inline double getConvectiveFlowOutThroughFractionBottomBorder(uint coordinate)
     {
         switch (static_cast<FractionSpaceBaseInstance*>(this->parentGrid)->fractionBottomBorderType[coordinate])
         {
