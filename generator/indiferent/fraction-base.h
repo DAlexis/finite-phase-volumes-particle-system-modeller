@@ -158,11 +158,11 @@ public:
         /// @todo Implement here for multi-sign values (like charge)
         /// @todo optimize here?
         // For each quantity
-        double flowOutUp[(FractionSpaceDimension + SpaceDimension) * QuantitiesCount];
-        double flowOutDown[(FractionSpaceDimension + SpaceDimension) * QuantitiesCount];
+        double flowOutUpward[(FractionSpaceDimension + SpaceDimension) * QuantitiesCount];
+        double flowOutDownward[(FractionSpaceDimension + SpaceDimension) * QuantitiesCount];
         double totalFlowOut[QuantitiesCount];
-        memset( flowOutUp, 0, sizeof(double) * (FractionSpaceDimension + SpaceDimension) * QuantitiesCount );
-        memset( flowOutDown, 0, sizeof(double) * (FractionSpaceDimension + SpaceDimension) * QuantitiesCount );
+        memset( flowOutUpward, 0, sizeof(double) * (FractionSpaceDimension + SpaceDimension) * QuantitiesCount );
+        memset( flowOutDownward, 0, sizeof(double) * (FractionSpaceDimension + SpaceDimension) * QuantitiesCount );
         memset( totalFlowOut, 0, sizeof(double) * QuantitiesCount );
         
         // Particles flows in fraction space
@@ -172,21 +172,19 @@ public:
             FractionCellBaseInstance* prev = prevInFractionSpace(coord);
             double transfer = 0;
             if (next)
-                transfer = (getConvectiveFlowOutInFractionSpaceUpward(coord, next)
-                    + getDiffusionFlowOutInFractionSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, next)) *dt;
+                transfer = getConvectiveFlowOutInFractionSpaceUpward(coord, next)*dt;
             else
                 transfer = getConvectiveFlowOutThroughFractionTopBorder(coord) * dt;
             
-            flowOutUp[coord] = transfer;
+            flowOutUpward[coord] = transfer;
             totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
             
             if (prev)
-                transfer = (getConvectiveFlowOutInFractionSpaceDownward(coord, prev)
-                    + getDiffusionFlowOutInFractionSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, prev))*dt;
+                transfer = getConvectiveFlowOutInFractionSpaceDownward(coord, prev)*dt;
             else
                 transfer = -getConvectiveFlowOutThroughFractionBottomBorder(coord) * dt;
             
-            flowOutDown[coord] = transfer;
+            flowOutDownward[coord] = transfer;
             totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
         }
         
@@ -202,7 +200,7 @@ public:
             else
                 transfer = getConvectiveFlowOutThroughCoordinateTopBorder(coord) * dt;
             
-            flowOutUp[FractionSpaceDimension + coord] = transfer;
+            flowOutUpward[FractionSpaceDimension + coord] = transfer;
             totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
             
             if (prev)
@@ -211,7 +209,7 @@ public:
             else
                 transfer = -getConvectiveFlowOutThroughCoordinateBottomBorder(coord) * dt;
             
-            flowOutDown[FractionSpaceDimension + coord] = transfer;
+            flowOutDownward[FractionSpaceDimension + coord] = transfer;
             totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
         }
         /////////////////////////
@@ -231,16 +229,14 @@ public:
             // Upward
             if (next) {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutUp[coord] * quantityOverParticlesCount[quantity] // Flows out with particles
-                        + getDiffusionFlowOutInFractionSpace(coord, quantity, next) * dt; // Flows out with diffusion
-                    flowOutUp[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
+                    transfer = flowOutUpward[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
+                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
                     totalFlowOut[quantity] += transfer;
                 }
             } else {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutUp[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
-                    // No diffusion out of space
-                    flowOutUp[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
+                    transfer = flowOutUpward[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
+                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
                     totalFlowOut[quantity] += transfer;
                 }
             }
@@ -248,16 +244,15 @@ public:
             // Downward
             if (prev) {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutDown[coord] * quantityOverParticlesCount[quantity] // Flows out with particles
-                        + getDiffusionFlowOutInFractionSpace(coord, quantity, prev) * dt; // Flows out with diffusion
-                    flowOutDown[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
+                    transfer = flowOutDownward[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
+                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
                     totalFlowOut[quantity] += transfer;
                 }
             } else {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutDown[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
+                    transfer = flowOutDownward[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
                     // No diffusion out of space
-                    flowOutDown[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
+                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
                     totalFlowOut[quantity] += transfer;
                 }
             }
@@ -272,16 +267,16 @@ public:
             // Upward
             if (next) {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutUp[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity] // Flows out with particles
+                    transfer = flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity] // Flows out with particles
                         + getDiffusionFlowOutInSpace(coord, quantity, next) * dt; // Flows out with diffusion
-                    flowOutUp[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
+                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
                     totalFlowOut[quantity] += transfer;
                 }
             } else {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutUp[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
+                    transfer = flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
                     // No diffusion out of space
-                    flowOutUp[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
+                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
                     totalFlowOut[quantity] += transfer;
                 }
             }
@@ -289,16 +284,16 @@ public:
             // Downward
             if (prev) {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutDown[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity] // Flows out with particles
+                    transfer = flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity] // Flows out with particles
                         + getDiffusionFlowOutInSpace(coord, quantity, prev) * dt; // Flows out with diffusion
-                    flowOutDown[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
+                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
                     totalFlowOut[quantity] += transfer;
                 }
             } else {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutDown[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
+                    transfer = flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
                     // No diffusion out of space
-                    flowOutDown[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
+                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
                     totalFlowOut[quantity] += transfer;
                 }
             }
@@ -312,15 +307,14 @@ public:
                 double renormCoefficient = quantities[quantity] / totalFlowOut[quantity];
                 for (uint i=0; i < FractionSpaceDimension + SpaceDimension; i++)
                 {
-                    flowOutDown[(FractionSpaceDimension + SpaceDimension)*quantity + i] *= renormCoefficient;
-                    flowOutUp[(FractionSpaceDimension + SpaceDimension)*quantity + i] *= renormCoefficient;
+                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + i] *= renormCoefficient;
+                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + i] *= renormCoefficient;
                 }
                 totalFlowOut[quantity] = quantities[quantity];
             }
         }
         
         // Now we sure that counted flows out are correct
-        
         // We can remove and add values now
         // Removing values
         for (uint quantity=0; quantity<QuantitiesCount; quantity++)
@@ -333,11 +327,11 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    next->nextStepQuantities[quantity] += flowOutUp[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
+                    next->nextStepQuantities[quantity] += flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    prev->nextStepQuantities[quantity] += flowOutDown[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
+                    prev->nextStepQuantities[quantity] += flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
         }
         
         // Adding values in coordinate space
@@ -348,56 +342,12 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    next->nextStepQuantities[quantity] += flowOutUp[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
+                    next->nextStepQuantities[quantity] += flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    prev->nextStepQuantities[quantity] += flowOutDown[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
+                    prev->nextStepQuantities[quantity] += flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
         }
-        
-        /*
-        // q[i]/n
-        double quantityOverParticlesCount[QuantitiesCount];
-        /// @todo [optimisation] May be coefficients could be optimized to be more understandable at least
-        /// We know that particles count is not null (see function beginning)
-        for (unsigned int quantity=0; quantity<QuantitiesCount; quantity++)
-            quantityOverParticlesCount[quantity] = quantities[quantity] / quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
-        
-        double rewnormCoefficient = 1;
-        // Removing flowed out quantities including particles count
-        if (totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] > quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX])
-        {
-            // All particles moved out
-            rewnormCoefficient = quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX] / totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
-            for (unsigned int quantity=0; quantity<QuantitiesCount; quantity++)
-                nextStepQuantities[quantity] = 0;
-        } else {
-            for (unsigned int quantity=0; quantity<QuantitiesCount; quantity++)
-                nextStepQuantities[quantity] -= totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] * quantityOverParticlesCount[quantity];
-        }
-        
-        // Adding quantities to neighbors
-        for (unsigned int quantity=0; quantity<QuantitiesCount; quantity++)
-        {
-            // In fraction space
-            for (uint coord=0; coord<FractionSpaceDimension; coord++)
-            {
-                FractionCellBaseInstance *next = nextInFractionSpace(coord);
-                if (next) next->nextStepQuantities[quantity] += flowOutUp[coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
-                
-                FractionCellBaseInstance *prev = prevInFractionSpace(coord);
-                if (prev) prev->nextStepQuantities[quantity] += flowOutDown[coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
-            }
-            // In coordinate space
-            for (uint coord=0; coord<SpaceDimension; coord++)
-            {
-                FractionCellBaseInstance *next = nextInSpace(coord);
-                if (next) next->nextStepQuantities[quantity] += flowOutUp[FractionSpaceDimension+coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
-                
-                FractionCellBaseInstance *prev = prevInSpace(coord);
-                if (prev) prev->nextStepQuantities[quantity] += flowOutDown[FractionSpaceDimension+coord] * rewnormCoefficient * quantityOverParticlesCount[quantity];
-            }
-        }*/
     }
     
     double getQuantitiesDensity(unsigned int index)
@@ -541,18 +491,6 @@ private:
         double l2 = neighborSpaceCell->size[coordinate];
         double result = (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
         if (result > 0.0)
-            return result;
-        else
-            return 0.0;
-    }
-    
-    /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
-    inline double getDiffusionFlowOutInFractionSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
-    {
-        double l1 = this->size[coordinate];
-        double l2 = neighbor->size[coordinate];
-        double result = (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getFractionDiffusionCoefficient(quantity, coordinate);
-        if (result > 0)
             return result;
         else
             return 0.0;

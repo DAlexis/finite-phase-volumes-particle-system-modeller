@@ -25,9 +25,19 @@ typedef Grid<SPACE_COORDS_COUNT, FractionsPool> SpaceGridType;
 inline bool isNotNull(double x)
 {
     if (fabs(x) < DOUBLE_NULL) return false;
-        return true;
+    return true;
 }
 
+inline bool isNull(double x)
+{
+    if (fabs(x) < DOUBLE_NULL) return true;
+    return false;
+}
 
+inline bool isNotCount(double x)
+{
+    if (x < DOUBLE_NULL) return true;
+    return false;
+}
 
 #endif // GLOBAL_DEFINES_H_INCLUDED
