@@ -31,8 +31,3 @@ double ${fraction_cell_classname}::getSpaceDiffusionCoefficient(uint quantity, u
 {
     return 0.0;
 }
-
-double ${fraction_cell_classname}::getFractionDiffusionCoefficient(uint quantity, uint axisIndex)
-{
-    return 0.0;
-}

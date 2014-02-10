@@ -420,8 +420,7 @@ protected:
     inline FractionCellBase* nextInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->next[coordinate]); }
     inline FractionCellBase* prevInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->prev[coordinate]); }
     
-    virtual double getSpaceDiffusionCoefficient(uint quantity, uint axisIndex) { return 0.0; };
-    virtual double getFractionDiffusionCoefficient(uint quantity, uint axisIndex) { return 0.0; };
+    virtual double getSpaceDiffusionCoefficient(uint quantity, uint axisIndex) = 0;
     
 private:
     double quantitiesBuffer0[QuantitiesCount];
@@ -489,7 +488,7 @@ private:
         SpaceGridType::GridElementBase* neighborSpaceCell = neighbor->getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
         double l2 = neighborSpaceCell->size[coordinate];
-        double result = (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
+        double result = (quantities[quantity]/l1 - neighbor->quantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
         if (result > 0.0)
             return result;
         else
