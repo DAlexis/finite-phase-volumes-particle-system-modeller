@@ -152,6 +152,9 @@ public:
     
     void calculateFlowsEvolution(double dt)
     {
+        // All calculations below means that particles count in this cell is not zero
+        if (isNull(quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]))
+            return;
         /// @todo Implement here for multi-sign values (like charge)
         /// @todo optimize here?
         // For each quantity
@@ -161,81 +164,64 @@ public:
         memset( flowOutUp, 0, sizeof(double) * (FractionSpaceDimension+SpaceDimension) );
         memset( flowOutDown, 0, sizeof(double) * (FractionSpaceDimension+SpaceDimension) );
         
-        // Flows in fraction space
+        // Particles flows in fraction space
         for (uint coord=0; coord<FractionSpaceDimension; coord++)
         {
             FractionCellBaseInstance* next = nextInFractionSpace(coord);
             FractionCellBaseInstance* prev = prevInFractionSpace(coord);
             double transfer = 0;
             if (next)
-                transfer = getConvectiveFlowInFractionSpace(coord, next) *dt;
+                transfer = (getConvectiveFlowOutInFractionSpaceUpward(coord, next)
+                    + getDiffusionFlowOutInFractionSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, next)) *dt;
             else
                 transfer = getConvectiveFlowOutThroughFractionTopBorder(coord) * dt;
             
-            if (transfer > 0)
-            {
-                // Flow out from this cell in positive coordinate direction
-                flowOutUp[coord] = transfer;
-                totalFlowOut += transfer;
-            }
+            flowOutUp[coord] = transfer;
+            totalFlowOut += transfer;
             
             if (prev)
-                transfer = -getConvectiveFlowInFractionSpace(coord, prev) *dt;
+                transfer = (getConvectiveFlowOutInFractionSpaceDownward(coord, prev)
+                    + getDiffusionFlowOutInFractionSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, prev))*dt;
             else
                 transfer = -getConvectiveFlowOutThroughFractionBottomBorder(coord) * dt;
             
-            if (transfer > 0)
-            {
-                // Flow out from this cell in negative coordinate direction
-                flowOutDown[coord] = transfer;
-                totalFlowOut += transfer;
-            }
-
+            flowOutDown[coord] = transfer;
+            totalFlowOut += transfer;
         }
         
-        // Flows in coordinate space
+        // Particles flows in coordinate space
         for (uint coord=0; coord<SpaceDimension; coord++)
         {
             FractionCellBaseInstance* next = nextInSpace(coord);
             FractionCellBaseInstance* prev = prevInSpace(coord);
             double transfer = 0;
             if (next)
-                transfer = getConvectiveFlowInSpace(coord, next) * dt;
+                transfer = (getConvectiveFlowOutInSpaceUpward(coord, next)
+                    + getDiffusionFlowOutInSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, next)) * dt;
             else
                 transfer = getConvectiveFlowOutThroughCoordinateTopBorder(coord) * dt;
             
-            if (transfer > 0)
-            {
-                // Flow out from this cell in positive coordinate direction
-                flowOutUp[FractionSpaceDimension + coord] = transfer;
-                totalFlowOut += transfer;
-            }
+            flowOutUp[FractionSpaceDimension + coord] = transfer;
+            totalFlowOut += transfer;
             
             if (prev)
-                transfer = -getConvectiveFlowInSpace(coord, prev) * dt;
+                transfer = (getConvectiveFlowOutInSpaceDownward(coord, prev)
+                    + getDiffusionFlowOutInSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, prev)) * dt;
             else
                 transfer = -getConvectiveFlowOutThroughCoordinateBottomBorder(coord) * dt;
             
-            if (transfer > 0)
-            {
-                // Flow out from this cell in negative coordinate direction
-                flowOutDown[FractionSpaceDimension + coord] = transfer;
-                totalFlowOut += transfer;
-            }
+            flowOutDown[FractionSpaceDimension + coord] = transfer;
+            totalFlowOut += transfer;
         }
-        
-        double rewnormCoefficient = 1;
         
         // q[i]/n
         double quantityOverParticlesCount[QuantitiesCount];
-        /// @todo May be coefficients could be optimized to be more understandable at least
-        /// @todo move if out from circle
+        /// @todo [optimisation] May be coefficients could be optimized to be more understandable at least
+        /// We know that particles count is not null (see function beginning)
         for (unsigned int quantity=0; quantity<QuantitiesCount; quantity++)
-            if (isNotNull(quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]))
-                quantityOverParticlesCount[quantity] = quantities[quantity] / quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
-            else
-                quantityOverParticlesCount[quantity] = 0;
+            quantityOverParticlesCount[quantity] = quantities[quantity] / quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
         
+        double rewnormCoefficient = 1;
         // Removing flowed out quantities including particles count
         if (totalFlowOut > quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX])
         {
@@ -349,6 +335,9 @@ private:
     double quantitiesBuffer0[QuantitiesCount];
     double quantitiesBuffer1[QuantitiesCount];
     
+    ///////////////////
+    // Convective flows couning
+
     /// This function calculates flow from lower cell to higher (flow's projection to axis), so to get OUTGOING flow in negative direction it should be multiplied by -1
     inline double getConvectiveFlowInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
@@ -364,22 +353,67 @@ private:
         return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
     }
     
+    
+    inline double getConvectiveFlowOutInSpaceUpward(unsigned int coordinate, FractionCellBaseInstance* neighbor)
+    {
+        double result = getConvectiveFlowInSpace(coordinate, neighbor);
+        if (result > 0.0)
+            return result;
+        else
+            return 0.0;
+    }
+    
+    inline double getConvectiveFlowOutInFractionSpaceUpward(unsigned int coordinate, FractionCellBaseInstance* neighbor)
+    {
+        double result = getConvectiveFlowInFractionSpace(coordinate, neighbor);
+        if (result > 0.0)
+            return result;
+        else
+            return 0.0;
+    }
+    
+    inline double getConvectiveFlowOutInSpaceDownward(unsigned int coordinate, FractionCellBaseInstance* neighbor)
+    {
+        double result = getConvectiveFlowInSpace(coordinate, neighbor);
+        if (result < 0.0)
+            return -result;
+        else
+            return 0.0;
+    }
+    
+    inline double getConvectiveFlowOutInFractionSpaceDownward(unsigned int coordinate, FractionCellBaseInstance* neighbor)
+    {
+        double result = getConvectiveFlowInFractionSpace(coordinate, neighbor);
+        if (result < 0.0)
+            return -result;
+        else
+            return 0.0;
+    }
+    
     /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
-    inline double getDiffusionFlowInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
+    inline double getDiffusionFlowOutInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
     {
         SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
         SpaceGridType::GridElementBase* neighborSpaceCell = neighbor->getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
         double l2 = neighborSpaceCell->size[coordinate];
-        return (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
+        double result = (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
+        if (result > 0.0)
+            return result;
+        else
+            return 0.0;
     }
     
     /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
-    inline double getDiffusionFlowInFractionSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
+    inline double getDiffusionFlowOutInFractionSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
     {
         double l1 = this->size[coordinate];
         double l2 = neighbor->size[coordinate];
-        return (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getFractionDiffusionCoefficient(quantity, coordinate);
+        double result = (neighbor->quantities[quantity]/l2 - quantities[quantity]/l1) / (l1+l2)*2 * getFractionDiffusionCoefficient(quantity, coordinate);
+        if (result > 0)
+            return result;
+        else
+            return 0.0;
     }
     
     /// @todo May be optimexed checking of velocity sign. Now sign is sign of flow projection.
