@@ -15,6 +15,7 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     result = code
     # Replacing simple words
     result = re.sub(r'\bmodel\b', 'static_cast<Model*>(getModel())', result)
+    result = re.sub(r'\bspace_volume\b', 'getSpaceCell()->volume', result)
     
     # Replacing fractions id to its adresses
     for fractionId in configTree['model']['fractions']:
