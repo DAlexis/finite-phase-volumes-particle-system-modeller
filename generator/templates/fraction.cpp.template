@@ -29,5 +29,7 @@ void* ${fraction_cell_classname}::getModel()
 
 double ${fraction_cell_classname}::getSpaceDiffusionCoefficient(uint quantity, uint axisIndex)
 {
-    return 0.0;
+    double diffusion = 0.0;
+${diffusion_coefficient_counting_code}
+    return diffusion;
 }

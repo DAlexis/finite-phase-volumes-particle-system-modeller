@@ -166,6 +166,24 @@ def completeConfig(configTree):
                                     + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
                                     + '] = BT_OPEN;\n    '
         fraction['boundary_conditions_config'] = boundaryConditionsInitCode
+        #
+        # Diffusion coefficient counting
+        #
+        diffCountingCode = ""
+        if 'diffusion' in fraction:
+            if fraction['diffusion']:
+                quantitiesSwitchCases = {}
+                for quantityId in fraction['diffusion']:
+                    currentQuantityDescription = fraction['quantities'][quantityId]
+                    axisSwitchCases = {}
+                    if fraction['diffusion'][quantityId]:
+                        for axisId in fraction['diffusion'][quantityId]:
+                            axisSwitchCases[ configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] ] = \
+                                fraction['diffusion'][quantityId][axisId] # Adding code to cases dictionary
+                    quantitiesSwitchCases[currentQuantityDescription['fraction_quantity_enum_element']] = \
+                        code_utils.createSwitch("axisIndex", axisSwitchCases)
+                diffCountingCode = code_utils.createSwitch("quantity", quantitiesSwitchCases)
+        fraction['diffusion_coefficient_counting_code'] = code_utils.indentCode(diffCountingCode, "    ")
         
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
     configTree['model']['fraction_sources_list'] = fractionSourcesList
@@ -233,7 +251,6 @@ def completeConfig(configTree):
                         + ")\n        "
         instance['convolution_configureation'] = convilutionAddingCode
         outputsInitialisationCode = outputsInitialisationCode + outputInstanceInitCodeTemplate.substitute(instance)
-        
     
     configTree['model']['outputs_init_code'] = outputsInitialisationCode
     

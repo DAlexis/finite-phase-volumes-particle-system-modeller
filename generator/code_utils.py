@@ -1,4 +1,5 @@
 import string
+import re
 
 splitterComment = '//////////////////////////'
 
@@ -19,6 +20,11 @@ def include(header):
 def includeStd(header):
     return '#include <' + header + '>\n'
 
+def indentCode(code, indentation):
+    result = re.sub(r'\n', '\n' + indentation, code)
+    result = indentation + result;
+    return result
+
 def createEnum(name, items):
     result = "enum " + name + "\n{\n"
     isFirst = True
@@ -29,6 +35,17 @@ def createEnum(name, items):
             isFirst = False
         result = result + ",\n"
     result = result + "};\n"
+    return result
+
+def createSwitch(variable, cases):
+    result = ""
+    if cases:
+        result = "switch(" + variable + ") {\n"
+        for caseName in cases:
+            result = result + "    case " + caseName + ": {\n"
+            result = result + indentCode(cases[caseName], "        ")
+            result = result + "\n    } break;\n"
+        result = result + "}"
     return result
 
 def genFileByTemplate(result, template, dictionary, headComment):

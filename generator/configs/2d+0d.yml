@@ -31,8 +31,8 @@ model:
                             if (fabs(x_coord) < 2 && fabs(y_coord) < 2)
                                 particles_count.NEXT = 1;
             space_coords_derivatives: |
-                x_coord.DER = -1;
-                    y_coord.DER = -1;
+                //x_coord.DER = -1;
+                    //y_coord.DER = -1;
             fraction_coords_derivatives: |
             boundary_conditions:
                 # Default value is wall
@@ -42,6 +42,10 @@ model:
                 y_coord:
                     top: wall
                     bottom: wall
+            diffusion:
+                particles_count:
+                    x_coord: |
+                        diffusion = 1;
 output:
     concentration_vs_coords:
         name: Concentration-vs-coords
