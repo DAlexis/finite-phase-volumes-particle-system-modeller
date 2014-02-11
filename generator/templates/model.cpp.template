@@ -5,7 +5,7 @@ Model::Model() :
     outputMaker(&space),
     time(0)
 {
-    ${outputs_init_code}
+${outputs_init_code}
 }
 
 void Model::iterate(double dt)

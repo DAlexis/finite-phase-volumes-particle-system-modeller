@@ -12,5 +12,5 @@ FractionsPool::~FractionsPool()
 
 void FractionsPool::createFractions()
 {
-    ${fractions_init_code}
+${fractions_init_code}
 }

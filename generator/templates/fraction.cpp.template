@@ -5,21 +5,21 @@ ${fraction_space_classname}::${fraction_space_classname}(FractionsPool* parentFr
     ${fraction_space_base_classname}(parentFractionsPool)
 {
     // Configuring fraction axis
-    ${axis_configuration}
+${axis_configuration}
     constructGrid(fractionGridDescription);
     // Configuring boundary conditions
-    ${boundary_conditions_config}
+${boundary_conditions_config}
 }
 
 void ${fraction_cell_classname}::calculateDerivatives()
 {
-    ${space_coords_derivatives}
-    ${fraction_coords_derivatives}
+${space_coords_derivatives}
+${fraction_coords_derivatives}
 }
 
 void ${fraction_cell_classname}::calculateSourceEvolution(double dt)
 {
-    ${sources}
+${sources}
 }
 
 void* ${fraction_cell_classname}::getModel()

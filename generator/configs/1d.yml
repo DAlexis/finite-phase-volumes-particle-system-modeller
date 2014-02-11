@@ -28,12 +28,12 @@ model:
                     name: Test quantity 1
             sources: |
                 // Generating initial state of particles
-                    if (model->time < 0.02)
-                        if (fabs(x_speed+3) < 0.5 || fabs(x_speed-3) < 0.5)
-                            if (fabs(x_coord) < 1) {
-                                particles_count.NEXT = 1;
-                                testQuantity1.NEXT = 1;
-                            }
+                if (model->time < 0.02)
+                    if (fabs(x_speed+3) < 0.5 || fabs(x_speed-3) < 0.5)
+                        if (fabs(x_coord) < 1) {
+                            particles_count.NEXT = 1;
+                            testQuantity1.NEXT = 1;
+                        }
             space_coords_derivatives: |
                 x_coord.DER = x_speed;
             fraction_coords_derivatives: |

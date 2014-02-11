@@ -5,7 +5,7 @@
 Space::Space(void* model) :
     parent(model)
 {
-    ${space_axis_configuration}
+${space_axis_configuration}
     constructGrid(spaceGridDescription);
 }
 

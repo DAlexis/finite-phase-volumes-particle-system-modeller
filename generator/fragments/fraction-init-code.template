@@ -1,2 +1,1 @@
 fractions[${fractions_enum_element}] = new ${fraction_space_classname}(this);
-    

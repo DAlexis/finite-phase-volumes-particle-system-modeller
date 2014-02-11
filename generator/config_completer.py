@@ -80,7 +80,7 @@ def completeConfig(configTree):
         dimension = configTree['model']['cordinate_space_grid'][dimensionId]
         dimension ['space_dimension_enum_element'] = 'SPACE_COORDS_' + dimensionId.upper()
         spaceAxisConfiguration = spaceAxisConfiguration + generateAxisConfig(dimension, dimensionId, dimension ['space_dimension_enum_element'], 'space')
-    configTree['model']['space_axis_configuration'] = spaceAxisConfiguration
+    configTree['model']['space_axis_configuration'] = code_utils.indentCode(spaceAxisConfiguration, "    ")
     #
     # Configuring fractions
     #
@@ -107,7 +107,7 @@ def completeConfig(configTree):
         fraction['cpp_name'] = fractionId.lower() + '.cpp'
         fractionSourcesList = fractionSourcesList + fraction['cpp_name'] + ' '
         fraction['header_guard'] = code_utils.formHeaderGuard(fraction ['header_name'])
-        fractionsInitCode = fractionsInitCode + fractionInitCodeTemplate.substitute(fraction)
+        fractionsInitCode = fractionsInitCode + code_utils.indentCode(fractionInitCodeTemplate.substitute(fraction), "    ")
         axisConfig = ""
         #
         # Fraction space configuration
@@ -147,25 +147,25 @@ def completeConfig(configTree):
                             if fraction['boundary_conditions'][axisId]['top'] == 'open':
                                 boundaryConditionsInitCode = boundaryConditionsInitCode + 'spaceTopBorderType[' \
                                     + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] \
-                                    + '] = BT_OPEN;\n    '
+                                    + '] = BT_OPEN;\n'
                         if 'bottom' in fraction['boundary_conditions'][axisId]:
                             if fraction['boundary_conditions'][axisId]['bottom'] == 'open':
                                 boundaryConditionsInitCode = boundaryConditionsInitCode + 'spaceBottomBorderType[' \
                                     + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] \
-                                    + '] = BT_OPEN;\n    '
+                                    + '] = BT_OPEN;\n'
                     else:
                         # Fraction axis borders
                         if 'top' in fraction['boundary_conditions'][axisId]:
                             if fraction['boundary_conditions'][axisId]['top'] == 'open':
                                 boundaryConditionsInitCode = boundaryConditionsInitCode + 'fractionTopBorderType[' \
                                     + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
-                                    + '] = BT_OPEN;\n    '
+                                    + '] = BT_OPEN;\n'
                         if 'bottom' in fraction['boundary_conditions'][axisId]:
                             if fraction['boundary_conditions'][axisId]['bottom'] == 'open':
                                 boundaryConditionsInitCode = boundaryConditionsInitCode + 'fractionBottomBorderType[' \
                                     + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
-                                    + '] = BT_OPEN;\n    '
-        fraction['boundary_conditions_config'] = boundaryConditionsInitCode
+                                    + '] = BT_OPEN;\n'
+        fraction['boundary_conditions_config'] = code_utils.indentCode(boundaryConditionsInitCode, "    ")
         #
         # Diffusion coefficient counting
         #
@@ -207,7 +207,7 @@ def completeConfig(configTree):
                 spacePointInitCode = spacePointInitCode \
                     + instance['instance_id'] + "->getSpacePoint()[" \
                     + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] \
-                    + "] = " + str(instance['space_point'][coordId]) + ";\n    "
+                    + "] = " + str(instance['space_point'][coordId]) + ";\n"
         instance['space_point_init'] = spacePointInitCode
         
         # Fraction point config
@@ -217,7 +217,7 @@ def completeConfig(configTree):
                 fractionPointInitCode = fractionPointInitCode \
                     + instance['instance_id'] + "->getFractionPoint()[" \
                     + fraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] \
-                    + "] = " + str(instance['fraction_point'][coordId]) + ";\n    "
+                    + "] = " + str(instance['fraction_point'][coordId]) + ";\n"
         instance['fraction_point_init'] = fractionPointInitCode
         
         # Output axis config
@@ -228,29 +228,30 @@ def completeConfig(configTree):
                 axisAddingCode = axisAddingCode + "->addOutputAxis(OAT_SPACE_COORDINATE, " \
                     + str(instance['output_axis'][axisId]['points_count']) + ", " \
                     + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element']\
-                    + ")\n        "
+                    + ")\n"
             else:
                 axisAddingCode = axisAddingCode + "->addOutputAxis(OAT_FRACTION_COORDINATE, " \
                     + str(instance['output_axis'][axisId]['points_count']) + ", " \
                     + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
-                    + ")\n        "
+                    + ")\n"
         
-        instance['output_axis_configuration'] = axisAddingCode
+        instance['output_axis_configuration'] = code_utils.indentCode(axisAddingCode, "    ")
         
         # Convolution configuration
         convilutionAddingCode = ""
         if 'convolution' in instance:
             if instance['convolution'] == "all":
                 convilutionAddingCode = "->useAllFractionSpaceConvolution(" \
-                    + fraction['fractions_quantities_count_enum_element'] + ")\n        "
+                    + fraction['fractions_quantities_count_enum_element'] + ")\n"
             else:
                 for fractionAxis in instance['convolution']:
                     convilutionAddingCode = convilutionAddingCode \
                         + "->useConvolutionByFractionAxis(" \
                         + fraction['fraction_space_grid'][fractionAxis]['fraction_coordinate_enum_element'] \
-                        + ")\n        "
-        instance['convolution_configureation'] = convilutionAddingCode
-        outputsInitialisationCode = outputsInitialisationCode + outputInstanceInitCodeTemplate.substitute(instance)
+                        + ")\n"
+        instance['convolution_configureation'] = code_utils.indentCode(convilutionAddingCode, "    ")
+        outputsInitialisationCode = outputsInitialisationCode + \
+            code_utils.indentCode(outputInstanceInitCodeTemplate.substitute(instance), "    ")
     
     configTree['model']['outputs_init_code'] = outputsInitialisationCode
     
@@ -260,6 +261,7 @@ def completeConfig(configTree):
     for fractionId in configTree['model']['fractions']:
         fraction = configTree['model']['fractions'][fractionId]
         # Resolving id's in code
-        fraction['sources'] = resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction)
-        fraction['space_coords_derivatives'] = resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction)
-        fraction['fraction_coords_derivatives'] = resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction)
+        fraction['sources'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction), "    ")
+        
+        fraction['space_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction), "    ")
+        fraction['fraction_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction), "    ")
