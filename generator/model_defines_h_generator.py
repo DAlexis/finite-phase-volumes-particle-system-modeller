@@ -13,21 +13,21 @@ def generate(destinationDir, config, generatedFileHeadComment):
     #
     # Fractions enum
     #
-    fractionsEnumItems = []
+    enumElements = []
     for fractionId in config['model']['fractions']:
-        fractionsEnumItems.append(config['model']['fractions'][fractionId]['fractions_enum_element'])
-    fractionsEnumItems.append('FRACTIONS_COUNT')
-    modDef_h.write(code_utils.createEnum('Fraction', fractionsEnumItems) + "\n")
+        enumElements.append(config['model']['fractions'][fractionId]['fractions_enum_element'])
+    enumElements.append('FRACTIONS_COUNT')
+    modDef_h.write(code_utils.createEnum('Fraction', enumElements) + "\n")
     
     #
     # Space axis enum
     #
-    fractionsEnumItems = []
+    enumElements = []
     for spaceDimId in config['model']['cordinate_space_grid']:
-        fractionsEnumItems.append(config['model']['cordinate_space_grid'][spaceDimId]['space_dimension_enum_element'])
+        enumElements.append(config['model']['cordinate_space_grid'][spaceDimId]['space_dimension_enum_element'])
 
-    fractionsEnumItems.append('SPACE_COORDS_COUNT')
-    modDef_h.write(code_utils.createEnum('SpaceCoordinate', fractionsEnumItems) + "\n")
+    enumElements.append('SPACE_COORDS_COUNT')
+    modDef_h.write(code_utils.createEnum('SpaceCoordinate', enumElements) + "\n")
     
     #
     # Enums for each fraction
@@ -40,25 +40,37 @@ def generate(destinationDir, config, generatedFileHeadComment):
         #
         # Fraction's axis enum
         #
-        fractionsEnumItems = []
+        enumElements = []
         if ('fraction_space_grid' in currentFraction):
             if currentFraction['fraction_space_grid']:
                 for fractDimensionId in currentFraction['fraction_space_grid']:
-                    fractionsEnumItems.append(currentFraction['fraction_space_grid'][fractDimensionId]['fraction_coordinate_enum_element'])
-        fractionsEnumItems.append(currentFraction['coordinates_enum_prefix'] + 'COUNT')
-        modDef_h.write(code_utils.createEnum(currentFraction['fraction_coordinate_enum'], fractionsEnumItems) + "\n")
+                    enumElements.append(currentFraction['fraction_space_grid'][fractDimensionId]['fraction_coordinate_enum_element'])
+        enumElements.append(currentFraction['coordinates_enum_prefix'] + 'COUNT')
+        modDef_h.write(code_utils.createEnum(currentFraction['fraction_coordinate_enum'], enumElements) + "\n")
         
         #
-        # Fraction's Quantities enum
+        # Fraction's quantities enum
         #
-        fractionsEnumItems = []
-        fractionsEnumItems.append(currentFraction['quantities']['particles_count']['fraction_quantity_enum_element'])
+        enumElements = []
+        enumElements.append(currentFraction['quantities']['particles_count']['fraction_quantity_enum_element'])
         for quantityId in currentFraction['quantities']:
             if not quantityId == 'particles_count':
-                fractionsEnumItems.append(currentFraction['quantities'][quantityId]['fraction_quantity_enum_element'])
-        fractionsEnumItems.append(currentFraction['quantities_enum_prefix'] + 'COUNT')
-        modDef_h.write(code_utils.createEnum(currentFraction['fraction_quantity_enum'], fractionsEnumItems) + "\n");
-
+                enumElements.append(currentFraction['quantities'][quantityId]['fraction_quantity_enum_element'])
+        enumElements.append(currentFraction['quantities_enum_prefix'] + 'COUNT')
+        modDef_h.write(code_utils.createEnum(currentFraction['fraction_quantity_enum'], enumElements) + "\n");
+        
+        #
+        # Fraction's secondary quantities enum
+        #
+        enumElements = []
+        if 'secondary_quantities' in currentFraction:
+            if currentFraction['secondary_quantities']:
+                for seqQuantityId in currentFraction['secondary_quantities']:
+                    enumElements.append(currentFraction['secondary_quantities'][seqQuantityId]['fraction_secondary_quantity_enum_element'])
+        
+        enumElements.append(currentFraction['secondary_quantities_enum_prefix'] + 'COUNT')
+        modDef_h.write(code_utils.createEnum(currentFraction['fraction_secondary_quantity_enum'], enumElements) + "\n");
+        
     modDef_h.write(code_utils.headerGuardBottom("model-defines.h"))
 
     modDef_h.close()

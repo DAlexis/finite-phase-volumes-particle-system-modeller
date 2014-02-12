@@ -39,6 +39,13 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
         quantityFullName = 'quantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
         result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
     
+    # Replacing this fraction's secondary quantities
+    if 'secondary_quantities' in thisFraction:
+        if thisFraction['secondary_quantities']:
+            for secQuantityId in thisFraction['secondary_quantities']:
+                secondaryQuantityFullName = 'secondaryQuantities[' + thisFraction['secondary_quantities'][secQuantityId]['fraction_secondary_quantity_enum_element'] + ']'
+                result = re.sub(r'\b' + secQuantityId + r'\b', secondaryQuantityFullName, result)
+        
     # Replacing space coords and its derivatives
     for coordId in configTree['model']['cordinate_space_grid']:
         coordDerFullName = 'spaceCoordsDerivatives[' + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] + ']'
@@ -96,8 +103,10 @@ def completeConfig(configTree):
         fraction['fractions_enum_element'] = 'FRACTION_' + fractionId.upper()
         fraction['coordinates_enum_prefix'] = fractionId.upper() + '_COORDS_'
         fraction['quantities_enum_prefix'] = fractionId.upper() + '_QUANTITIES_'
+        fraction['secondary_quantities_enum_prefix'] = fractionId.upper() + '_SECONDARY_QUANTITIES_'
         fraction['fraction_coordinate_enum'] = fractionId.title() + 'Coordinate'
         fraction['fraction_quantity_enum'] = fractionId.title() + 'Quantity'
+        fraction['fraction_secondary_quantity_enum'] = fractionId.title() + 'SecondaryQuantity'
         fraction['fraction_cell_classname'] = fractionId.title() + 'Cell'
         fraction['fraction_cell_base_classname'] = fractionId.title() + 'CellBase'
         fraction['fraction_space_classname'] = fractionId.title() + 'Space'
@@ -134,6 +143,17 @@ def completeConfig(configTree):
         for quantityId in fraction['quantities']:
             currentQuantity = fraction['quantities'][quantityId]
             currentQuantity['fraction_quantity_enum_element'] = fraction['quantities_enum_prefix'] + quantityId.upper()
+        #
+        # Secondary quantities
+        #
+        secQuantitiesCountingCode = ""
+        if 'secondary_quantities' in fraction:
+            if fraction['secondary_quantities']:
+                for secQuantityId in fraction['secondary_quantities']:
+                    currentSecQuantity = fraction['secondary_quantities'][secQuantityId]
+                    currentSecQuantity['fraction_secondary_quantity_enum_element'] = fraction['secondary_quantities_enum_prefix'] + secQuantityId.upper()
+                    secQuantitiesCountingCode = secQuantitiesCountingCode + currentSecQuantity['counting'] + '\n'
+        fraction['secondary_quantities_counting_code'] = secQuantitiesCountingCode
         #
         # Boundary conditions configuration
         #
@@ -263,6 +283,6 @@ def completeConfig(configTree):
         fraction = configTree['model']['fractions'][fractionId]
         # Resolving id's in code
         fraction['sources'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction), "    ")
-        
         fraction['space_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction), "    ")
         fraction['fraction_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction), "    ")
+        fraction['secondary_quantities_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['secondary_quantities_counting_code'], configTree, fraction), "    ")

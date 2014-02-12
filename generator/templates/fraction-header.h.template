@@ -10,16 +10,18 @@ typedef FractionCellBase<${fractions_enum_element},
                      SPACE_COORDS_COUNT,
                      ${coordinates_enum_prefix}COUNT,
                      ${quantities_enum_prefix}COUNT,
+                     ${secondary_quantities_enum_prefix}COUNT,
                      ${fraction_cell_classname}>       ${fraction_cell_base_classname};
 
-typedef FractionSpaceBase<FRACTION1_COORDS_COUNT, ${fraction_cell_classname}> ${fraction_space_base_classname};
+typedef FractionSpaceBase<${coordinates_enum_prefix}COUNT, ${fraction_cell_classname}> ${fraction_space_base_classname};
 
 class ${fraction_cell_classname} : public ${fraction_cell_base_classname}
 {
 public:
     virtual ~${fraction_cell_classname}() { }
-    virtual void calculateDerivatives();
-    virtual void calculateSourceEvolution(double dt);
+    void calculateDerivatives();
+    void calculateSourceEvolution(double dt);
+    void calculateSecondaryQuantities();
     
 protected:
     double getSpaceDiffusionCoefficient(uint quantity, uint axisIndex);

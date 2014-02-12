@@ -36,6 +36,9 @@ public:
     void calculateFlowsEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateSecondaryQuantities();
+        
+        for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateDerivatives();
         
         for (size_t i=0; i<this->elementsCount; i++)
@@ -114,6 +117,7 @@ template <int FractionIndex,
           int SpaceDimension,
           int FractionSpaceDimension,
           int QuantitiesCount,
+          int SecondaryQuantitiesCount,
           class FractionCellType>
 class FractionCellBase : public Grid<FractionSpaceDimension, FractionCellType>::GridElementBase, public IFractionCell
 {
@@ -125,9 +129,12 @@ public:
     FractionCellBase()
     {
         for (unsigned int i=0; i<QuantitiesCount; i++) {
-            quantitiesBuffer0[i] = 0;
-            quantitiesBuffer1[i] = 0;
+            quantitiesBuffer0[i] = 0.0;
+            quantitiesBuffer1[i] = 0.0;
         }
+        for (unsigned int i=0; i<SecondaryQuantitiesCount; i++)
+            secondaryQuantities[i] = 0.0;
+        
         quantities = quantitiesBuffer0;
         nextStepQuantities = quantitiesBuffer1;
     }
@@ -383,6 +390,7 @@ public:
     
     double* quantities;
     double* nextStepQuantities;
+    double secondaryQuantities[SecondaryQuantitiesCount];
     
      /// Space coordinates derivatives
     double spaceCoordsDerivatives[SpaceDimension];

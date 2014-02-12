@@ -13,6 +13,7 @@ public:
     virtual void calculateDerivatives() = 0;
     virtual void calculateSourceEvolution(double dt) = 0;
     virtual void calculateFlowsEvolution(double dt) = 0;
+    virtual void calculateSecondaryQuantities() = 0;
     virtual void swapBuffers() = 0;
     
     virtual double getQuantitiesDensity(unsigned int index) = 0;

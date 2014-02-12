@@ -33,3 +33,8 @@ double ${fraction_cell_classname}::getSpaceDiffusionCoefficient(uint quantity, u
 ${diffusion_coefficient_counting_code}
     return diffusion;
 }
+
+void ${fraction_cell_classname}::calculateSecondaryQuantities()
+{
+${secondary_quantities_counting_code}
+}
