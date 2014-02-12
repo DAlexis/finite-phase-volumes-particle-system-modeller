@@ -66,10 +66,11 @@ OutputInstance* OutputInstance::setPeriod(double period)
     return this;
 }
 
-OutputInstance* OutputInstance::setFractionAndQuantity(uint fractionId, uint quantityId)
+OutputInstance* OutputInstance::setFractionAndQuantity(uint fractionId, uint quantityId, OutputQuantityType quantityType)
 {
     m_fractionId = fractionId;
     m_quantityId = quantityId;
+    m_quantityType = quantityType;
     return this;
 }
 

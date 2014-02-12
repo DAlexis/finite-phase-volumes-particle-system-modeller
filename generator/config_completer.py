@@ -219,7 +219,12 @@ def completeConfig(configTree):
         instance['instance_id'] = instanceId
         fraction = configTree['model']['fractions'][instance['fraction']]
         instance['fraction_index'] = fraction['fractions_enum_element']
-        instance['quantity_index'] = fraction['quantities'][instance['quantity']]['fraction_quantity_enum_element']
+        if instance['quantity'] in fraction['quantities']:
+            instance['quantity_index'] = fraction['quantities'][instance['quantity']]['fraction_quantity_enum_element']
+            instance['quantity_type'] = "OCT_PRIMARY_QUANTITY"
+        else:
+            instance['quantity_index'] = fraction['secondary_quantities'][instance['quantity']]['fraction_secondary_quantity_enum_element']
+            instance['quantity_type'] = "OCT_SECONDARY_QUANTITY"
         
         # Space point config
         spacePointInitCode = ""

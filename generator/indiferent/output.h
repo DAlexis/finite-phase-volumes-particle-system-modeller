@@ -19,6 +19,13 @@ enum OutputAxisType
     OAT_FRACTION_COORDINATE
 };
 
+enum OutputQuantityType
+{
+    OCT_NOT_DEFINED = 0,
+    OCT_PRIMARY_QUANTITY,
+    OCT_SECONDARY_QUANTITY
+};
+
 #define MAX_FRACTION_DIMENSION  15
 
 class OutputInstance
@@ -32,7 +39,7 @@ public:
     OutputInstance* useAllFractionSpaceConvolution(unsigned int fractionSpaceDimension);
     
     OutputInstance* setFilenamePrefix(const std::string& filenamePrefix);
-    OutputInstance* setFractionAndQuantity(uint fractionId, uint quantityId);
+    OutputInstance* setFractionAndQuantity(uint fractionId, uint quantityId, OutputQuantityType quantityType);
     OutputInstance* setPeriod(double period);
     
     
@@ -71,6 +78,7 @@ private:
     std::ofstream* m_file;
     
     uint m_fractionId, m_quantityId;
+    OutputQuantityType m_quantityType;
     
     double fractionPoint[MAX_FRACTION_DIMENSION];
     double spacePoint[SPACE_COORDS_COUNT];
