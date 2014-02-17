@@ -6,6 +6,7 @@ Model::Model() :
     time(0)
 {
 ${outputs_init_code}
+    space.initQuantities();
 }
 
 void Model::iterate(double dt)

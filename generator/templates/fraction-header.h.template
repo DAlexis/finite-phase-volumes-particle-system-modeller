@@ -19,6 +19,7 @@ class ${fraction_cell_classname} : public ${fraction_cell_base_classname}
 {
 public:
     virtual ~${fraction_cell_classname}() { }
+    void initQuantities();
     void calculateDerivatives();
     void calculateSourceEvolution(double dt);
     void calculateIntensiveQuantities();

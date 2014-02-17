@@ -11,6 +11,7 @@ class IFractionCell;
 class IFractionSpace
 {
 public:
+    virtual void initQuantities() = 0;
     virtual void calculateSourceEvolution(double dt) = 0;
     virtual void calculateFlowsEvolution(double dt) = 0;
     virtual void swapBuffers() = 0;

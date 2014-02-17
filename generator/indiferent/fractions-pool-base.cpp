@@ -38,3 +38,9 @@ void FractionsPoolBase::swapBuffers()
     for (unsigned int i=0; i<FRACTIONS_COUNT; i++)
         fractions[i]->swapBuffers();
 }
+
+void FractionsPoolBase::initQuantities()
+{
+    for (unsigned int i=0; i<FRACTIONS_COUNT; i++)
+        fractions[i]->initQuantities();
+}

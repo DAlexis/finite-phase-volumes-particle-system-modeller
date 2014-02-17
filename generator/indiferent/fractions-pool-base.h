@@ -14,6 +14,7 @@ public:
     FractionsPoolBase();
     virtual ~FractionsPoolBase();
     
+    void initQuantities();
     void calculateSourceEvolution(double dt);
     void calculateFlowsEvolution(double dt);
     void swapBuffers();

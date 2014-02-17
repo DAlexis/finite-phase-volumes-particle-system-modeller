@@ -102,11 +102,13 @@ def completeConfig(configTree):
         fraction = configTree['model']['fractions'][fractionId]
         fraction['fractions_enum_element'] = 'FRACTION_' + fractionId.upper()
         fraction['coordinates_enum_prefix'] = fractionId.upper() + '_COORDS_'
-        fraction['quantities_enum_prefix'] = fractionId.upper() + '_QUANTITIES_'
-        fraction['secondary_quantities_enum_prefix'] = fractionId.upper() + '_SECONDARY_QUANTITIES_'
+        fraction['quantities_enum_prefix'] = fractionId.upper() + '_EXTENSIVE_QUANTITIES_'
+        fraction['secondary_quantities_enum_prefix'] = fractionId.upper() + '_INTENSIVE_QUANTITIES_'
+        
         fraction['fraction_coordinate_enum'] = fractionId.title() + 'Coordinate'
-        fraction['fraction_quantity_enum'] = fractionId.title() + 'Quantity'
-        fraction['fraction_secondary_quantity_enum'] = fractionId.title() + 'SecondaryQuantity'
+        fraction['fraction_quantity_enum'] = fractionId.title() + 'ExtensiveQuantity'
+        fraction['fraction_secondary_quantity_enum'] = fractionId.title() + 'IntensiveQuantity'
+        
         fraction['fraction_cell_classname'] = fractionId.title() + 'Cell'
         fraction['fraction_cell_base_classname'] = fractionId.title() + 'CellBase'
         fraction['fraction_space_classname'] = fractionId.title() + 'Space'
@@ -291,3 +293,4 @@ def completeConfig(configTree):
         fraction['space_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction), "    ")
         fraction['fraction_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction), "    ")
         fraction['secondary_quantities_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['secondary_quantities_counting_code'], configTree, fraction), "    ")
+        fraction['init_quantities'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['init_quantities'], configTree, fraction), "    ")

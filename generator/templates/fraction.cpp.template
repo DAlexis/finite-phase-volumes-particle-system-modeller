@@ -11,6 +11,16 @@ ${axis_configuration}
 ${boundary_conditions_config}
 }
 
+void* ${fraction_cell_classname}::getModel()
+{
+    return static_cast<Space*>(getSpaceCell()->parentGrid)->parent;
+}
+
+void ${fraction_cell_classname}::initQuantities()
+{
+${init_quantities}
+}
+
 void ${fraction_cell_classname}::calculateDerivatives()
 {
 ${space_coords_derivatives}
@@ -20,11 +30,6 @@ ${fraction_coords_derivatives}
 void ${fraction_cell_classname}::calculateSourceEvolution(double dt)
 {
 ${sources}
-}
-
-void* ${fraction_cell_classname}::getModel()
-{
-    return static_cast<Space*>(getSpaceCell()->parentGrid)->parent;
 }
 
 double ${fraction_cell_classname}::getSpaceDiffusionCoefficient(uint quantity, uint axisIndex)

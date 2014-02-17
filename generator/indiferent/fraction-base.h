@@ -33,6 +33,12 @@ public:
     
     virtual ~FractionSpaceBaseIncomplete() { }
     
+    void initQuantities()
+    {
+        for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->initQuantities();
+    }
+    
     void calculateFlowsEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)

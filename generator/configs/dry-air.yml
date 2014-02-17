@@ -35,14 +35,12 @@ model:
                     name: Air pressure, N/m^2
                     counting: |
                         pressure = (1.4-1) * internal_energy / space_volume;
+            init_quantities: |
+                particles_count = 1000 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
+                internal_energy = 1/(1.4-1) * particles_count * 8.31*300;
             sources: |
-                // Generating initial state of particles
-                if (model->time < 0.02) {
-                    // Particles! Particles everywhere!
-                    particles_count.NEXT = 1000 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
-                    internal_energy.NEXT = 1/(1.4-1) * particles_count.NEXT * 8.31*300;
-                    // pressure
-                }
+                particles_count.NEXT = particles_count;
+                internal_energy.NEXT = internal_energy;
             space_coords_derivatives: |
                 //x_coord.DER = 0.5;
                 //y_coord.DER = 0.0;

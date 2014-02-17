@@ -27,3 +27,8 @@ void Space::swapBuffers()
         elements[i].swapBuffers();
 }
 
+void Space::initQuantities()
+{
+    for (size_t i=0; i<elementsCount; i++)
+        elements[i].initQuantities();
+}

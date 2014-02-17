@@ -10,6 +10,7 @@
 class IFractionCell
 {
 public:
+    virtual void initQuantities() = 0;
     virtual void calculateDerivatives() = 0;
     virtual void calculateSourceEvolution(double dt) = 0;
     virtual void calculateFlowsEvolution(double dt) = 0;
