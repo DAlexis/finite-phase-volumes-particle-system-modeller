@@ -28,15 +28,17 @@ model:
             quantities:
                 quantity_that_diffuse:
                     name: Quantity with diffusion turned on
-            sources: |
-                // Generating initial state of particles
-                if (model->time < 0.02) 
-                    // Particles! Particles everywhere!
-                    particles_count.NEXT = 1 * space_volume;
+            init_quantities: |
+                // Particles! Particles everywhere!
+                particles_count.NEXT = 1 * space_volume;
                 
+                if (fabs(x_coord) < 2 && fabs(y_coord) < 2)
+                    quantity_that_diffuse.NEXT = 1 * space_volume;
+            sources: |
                 // Always constant heat in square 2x2 with center (0, 0)
                 if (fabs(x_coord) < 2 && fabs(y_coord) < 2)
                     quantity_that_diffuse.NEXT = 1 * space_volume;
+                
             space_coords_derivatives: |
                 // The wind here
                 x_coord.DER = 0.5;

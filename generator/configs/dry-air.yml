@@ -30,23 +30,37 @@ model:
                     name: Count of air, moll
                 internal_energy:
                     name: The internal energy of air, J
+                x_impulse:
+                    name: Horisontal impulse, g*m/c
+                y_impulse:
+                    name: Vertical impulse, g*m/c
             secondary_quantities:
                 pressure:
                     name: Air pressure, N/m^2
                     counting: |
                         pressure = (1.4-1) * internal_energy / space_volume;
+                temperature:
+                    name: Air temperature, K
+                    counting: |
+                        temperature = (1.4-1) * internal_energy / (8.31 * particles_count);
             init_quantities: |
-                particles_count = 1000 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
-                internal_energy = 1/(1.4-1) * particles_count * 8.31*300;
+                particles_count.NEXT = 1000 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
+                internal_energy.NEXT = 1/(1.4-1) * particles_count.NEXT * 8.31*300;
+                x_impulse.NEXT = 0.0;
+                y_impulse.NEXT = - 0.3 * particles_count.NEXT * 29;
             sources: |
-                particles_count.NEXT = particles_count;
-                internal_energy.NEXT = internal_energy;
+                
             space_coords_derivatives: |
-                //x_coord.DER = 0.5;
-                //y_coord.DER = 0.0;
+                if (isNotNull(particles_count)) {
+                    x_coord.DER = x_impulse / (particles_count * 29 /*g/Moll*/);
+                    y_coord.DER = -0.3;//y_impulse / (particles_count * 29 /*g/Moll*/);
+                } else {
+                    x_coord.DER = 0.0;
+                    y_coord.DER = 0.0;
+                }
             fraction_coords_derivatives: |
             boundary_conditions:
-                # Default value is wall
+                # Default value is 'wall', also allowed 'open'
                 x_coord:
                     top: wall
                     bottom: wall
@@ -56,9 +70,9 @@ model:
             diffusion:
                 internal_energy:
                     x_coord: |
-                        diffusion = 1.0;
+                        diffusion = 0.0;
                     y_coord: |
-                        diffusion = 1.0;
+                        diffusion = 0.0;
 output:
     air_count_vs_coords:
         name: Air-count-vs-coords
@@ -72,7 +86,7 @@ output:
                 points_count: 100
             y_coord:
                 points_count: 100
-        time_step: 0.2
+        time_step: 0.5
     
     air_energy_vs_coords:
         name: Air-energy-vs-coords
@@ -86,7 +100,7 @@ output:
                 points_count: 100
             y_coord:
                 points_count: 100
-        time_step: 0.2
+        time_step: 0.5
         
     air_pressure_vs_coords:
         name: Air-pressure-vs-coords
@@ -100,9 +114,36 @@ output:
                 points_count: 100
             y_coord:
                 points_count: 100
-        time_step: 0.2
+        time_step: 0.5
     
+    temperature_vs_coords:
+        name: Temperature-vs-coords
+        fraction: air
+        quantity: temperature
+        space_point:
+            x_coord: 0
+            y_coord: 0
+        output_axis:
+            x_coord:
+                points_count: 100
+            y_coord:
+                points_count: 100
+        time_step: 0.5
+    
+    vertical_impulse_vs_coords:
+        name: Vertical-impulse-vs-coords
+        fraction: air
+        quantity: y_impulse
+        space_point:
+            x_coord: 0
+            y_coord: 0
+        output_axis:
+            x_coord:
+                points_count: 100
+            y_coord:
+                points_count: 100
+        time_step: 0.5
 run_options:
     start_time: 0
-    stop_time: 10
+    stop_time: 4
     time_step: 0.01

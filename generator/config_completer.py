@@ -207,7 +207,15 @@ def completeConfig(configTree):
                         code_utils.createSwitch("axisIndex", axisSwitchCases)
                 diffCountingCode = code_utils.createSwitch("quantity", quantitiesSwitchCases)
         fraction['diffusion_coefficient_counting_code'] = code_utils.indentCode(diffCountingCode, "    ")
-        
+        #
+        # Quantities initialisation code
+        #
+        if not 'init_quantities' in fraction:
+            fraction['init_quantities'] = ""
+        else:
+            if not fraction['init_quantities']:
+                fraction['init_quantities'] = ""
+    
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
     configTree['model']['fraction_sources_list'] = fractionSourcesList
     configTree['model']['fractions_init_code'] = fractionsInitCode
