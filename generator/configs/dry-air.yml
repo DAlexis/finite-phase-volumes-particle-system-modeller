@@ -31,17 +31,17 @@ model:
                 internal_energy:
                     name: The internal energy of air, J
             secondary_quantities:
-                temperature:
-                    name: Air temperature, K
+                pressure:
+                    name: Air pressure, N/m^2
                     counting: |
-                        temperature = (1.4-1) * internal_energy / space_volume;
+                        pressure = (1.4-1) * internal_energy / space_volume;
             sources: |
                 // Generating initial state of particles
                 if (model->time < 0.02) {
                     // Particles! Particles everywhere!
-                    particles_count.NEXT = 1 * space_volume;
+                    particles_count.NEXT = 1000 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
                     internal_energy.NEXT = 1/(1.4-1) * particles_count.NEXT * 8.31*300;
-                    // temperature
+                    // pressure
                 }
             space_coords_derivatives: |
                 //x_coord.DER = 0.5;
@@ -89,7 +89,21 @@ output:
             y_coord:
                 points_count: 100
         time_step: 0.2
-
+        
+    air_pressure_vs_coords:
+        name: Air-pressure-vs-coords
+        fraction: air
+        quantity: pressure
+        space_point:
+            x_coord: 0
+            y_coord: 0
+        output_axis:
+            x_coord:
+                points_count: 100
+            y_coord:
+                points_count: 100
+        time_step: 0.2
+    
 run_options:
     start_time: 0
     stop_time: 10

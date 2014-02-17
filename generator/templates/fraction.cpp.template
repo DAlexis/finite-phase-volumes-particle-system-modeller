@@ -34,7 +34,7 @@ ${diffusion_coefficient_counting_code}
     return diffusion;
 }
 
-void ${fraction_cell_classname}::calculateSecondaryQuantities()
+void ${fraction_cell_classname}::calculateIntensiveQuantities()
 {
 ${secondary_quantities_counting_code}
 }

@@ -21,7 +21,7 @@ public:
     virtual ~${fraction_cell_classname}() { }
     void calculateDerivatives();
     void calculateSourceEvolution(double dt);
-    void calculateSecondaryQuantities();
+    void calculateIntensiveQuantities();
     
 protected:
     double getSpaceDiffusionCoefficient(uint quantity, uint axisIndex);

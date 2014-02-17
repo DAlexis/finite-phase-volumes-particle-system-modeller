@@ -32,18 +32,18 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
                 coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
                 result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
-    # Replacing this fraction's quantities
+    # Replacing this fraction's extensiveQuantities
     for quantityId in thisFraction['quantities']:
-        nextStepQuantityFullName = 'nextStepQuantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+        nextStepQuantityFullName = 'nextStepExtensiveQuantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
         result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*NEXT\b', nextStepQuantityFullName, result)
-        quantityFullName = 'quantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+        quantityFullName = 'extensiveQuantities[' + thisFraction['quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
         result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
     
     # Replacing this fraction's secondary quantities
     if 'secondary_quantities' in thisFraction:
         if thisFraction['secondary_quantities']:
             for secQuantityId in thisFraction['secondary_quantities']:
-                secondaryQuantityFullName = 'secondaryQuantities[' + thisFraction['secondary_quantities'][secQuantityId]['fraction_secondary_quantity_enum_element'] + ']'
+                secondaryQuantityFullName = 'intensiveQuantities[' + thisFraction['secondary_quantities'][secQuantityId]['fraction_secondary_quantity_enum_element'] + ']'
                 result = re.sub(r'\b' + secQuantityId + r'\b', secondaryQuantityFullName, result)
         
     # Replacing space coords and its derivatives
@@ -221,10 +221,10 @@ def completeConfig(configTree):
         instance['fraction_index'] = fraction['fractions_enum_element']
         if instance['quantity'] in fraction['quantities']:
             instance['quantity_index'] = fraction['quantities'][instance['quantity']]['fraction_quantity_enum_element']
-            instance['quantity_type'] = "OCT_PRIMARY_QUANTITY"
+            instance['quantity_type'] = "OCT_EXTENSIVE_QUANTITY"
         else:
             instance['quantity_index'] = fraction['secondary_quantities'][instance['quantity']]['fraction_secondary_quantity_enum_element']
-            instance['quantity_type'] = "OCT_SECONDARY_QUANTITY"
+            instance['quantity_type'] = "OCT_INTENSIVE_QUANTITY"
         
         # Space point config
         spacePointInitCode = ""
@@ -277,7 +277,7 @@ def completeConfig(configTree):
                         + ")\n"
         instance['convolution_configureation'] = code_utils.indentCode(convilutionAddingCode, "    ")
         outputsInitialisationCode = outputsInitialisationCode + \
-            code_utils.indentCode(outputInstanceInitCodeTemplate.substitute(instance), "    ")
+            code_utils.indentCode(outputInstanceInitCodeTemplate.substitute(instance), "    ") + "\n"
     
     configTree['model']['outputs_init_code'] = outputsInitialisationCode
     

@@ -1,7 +1,6 @@
 OutputInstance* ${instance_id} = new OutputInstance;
 ${space_point_init}
 ${fraction_point_init}
-
 ${instance_id}
     ->setFilenamePrefix("${name}")
     ->setFractionAndQuantity(${fraction_index}, ${quantity_index}, ${quantity_type})

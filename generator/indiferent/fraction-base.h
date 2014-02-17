@@ -36,7 +36,7 @@ public:
     void calculateFlowsEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            static_cast<IFractionCell*>( &(this->elements[i]))->calculateSecondaryQuantities();
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateIntensiveQuantities();
         
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateDerivatives();
@@ -66,7 +66,7 @@ public:
     {
         double sum=0;
         for (unsigned int i=0; i<this->elementsCount; i++)
-            sum += this->elements[i].quantities[quantityIndex];
+            sum += this->elements[i].extensiveQuantities[quantityIndex];
         return sum;
     }
     
@@ -129,38 +129,38 @@ public:
     FractionCellBase()
     {
         for (unsigned int i=0; i<QuantitiesCount; i++) {
-            quantitiesBuffer0[i] = 0.0;
-            quantitiesBuffer1[i] = 0.0;
+            extensiveQuantitiesBuffer0[i] = 0.0;
+            extensiveQuantitiesBuffer1[i] = 0.0;
         }
         for (unsigned int i=0; i<SecondaryQuantitiesCount; i++)
-            secondaryQuantities[i] = 0.0;
+            intensiveQuantities[i] = 0.0;
         
-        quantities = quantitiesBuffer0;
-        nextStepQuantities = quantitiesBuffer1;
+        extensiveQuantities = extensiveQuantitiesBuffer0;
+        nextStepExtensiveQuantities = extensiveQuantitiesBuffer1;
     }
     
     virtual ~FractionCellBase() { }
     
     void swapBuffers()
     {
-        if (quantities == quantitiesBuffer0)
+        if (extensiveQuantities == extensiveQuantitiesBuffer0)
         {
-            quantities = quantitiesBuffer1;
-            nextStepQuantities = quantitiesBuffer0;
+            extensiveQuantities = extensiveQuantitiesBuffer1;
+            nextStepExtensiveQuantities = extensiveQuantitiesBuffer0;
         } else {
-            quantities = quantitiesBuffer0;
-            nextStepQuantities = quantitiesBuffer1;
+            extensiveQuantities = extensiveQuantitiesBuffer0;
+            nextStepExtensiveQuantities = extensiveQuantitiesBuffer1;
         }
         for (unsigned int i=0; i<QuantitiesCount; i++)
         {
-            nextStepQuantities[i] = quantities[i];
+            nextStepExtensiveQuantities[i] = extensiveQuantities[i];
         }
     }
     
     void calculateFlowsEvolution(double dt)
     {
         // All calculations below means that particles count in this cell is not zero
-        if (isNull(quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]))
+        if (isNull(extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]))
             return;
         /// @todo Implement here for multi-sign values (like charge)
         /// @todo optimize here?
@@ -220,12 +220,12 @@ public:
             totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
         }
         /////////////////////////
-        // Counting diffusion flows out for other quantities
+        // Counting diffusion flows out for other extensiveQuantities
         // Cache for frequently used q[i]/n
         double quantityOverParticlesCount[QuantitiesCount];
         /// We know that particles count is not null (see function beginning)
         for (unsigned int quantity=0; quantity<QuantitiesCount; quantity++)
-            quantityOverParticlesCount[quantity] = quantities[quantity] / quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
+            quantityOverParticlesCount[quantity] = extensiveQuantities[quantity] / extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
         
         // In fraction space
         for (uint coord=0; coord<FractionSpaceDimension; coord++)
@@ -309,15 +309,15 @@ public:
         // Now we know all flows, but we dont know is it enough each quantity in cell?
         for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX; quantity<QuantitiesCount; quantity++)
         {
-            if (totalFlowOut[quantity] > quantities[quantity])
+            if (totalFlowOut[quantity] > extensiveQuantities[quantity])
             {
-                double renormCoefficient = quantities[quantity] / totalFlowOut[quantity];
+                double renormCoefficient = extensiveQuantities[quantity] / totalFlowOut[quantity];
                 for (uint i=0; i < FractionSpaceDimension + SpaceDimension; i++)
                 {
                     flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + i] *= renormCoefficient;
                     flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + i] *= renormCoefficient;
                 }
-                totalFlowOut[quantity] = quantities[quantity];
+                totalFlowOut[quantity] = extensiveQuantities[quantity];
             }
         }
         
@@ -325,7 +325,7 @@ public:
         // We can remove and add values now
         // Removing values
         for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-            nextStepQuantities[quantity] -= totalFlowOut[quantity];
+            nextStepExtensiveQuantities[quantity] -= totalFlowOut[quantity];
         // Adding values in fraction space
         for (uint coord=0; coord<FractionSpaceDimension; coord++)
         {
@@ -334,11 +334,11 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    next->nextStepQuantities[quantity] += flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
+                    next->nextStepExtensiveQuantities[quantity] += flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    prev->nextStepQuantities[quantity] += flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
+                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
         }
         
         // Adding values in coordinate space
@@ -349,22 +349,22 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    next->nextStepQuantities[quantity] += flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
+                    next->nextStepExtensiveQuantities[quantity] += flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    prev->nextStepQuantities[quantity] += flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
+                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
         }
     }
     
     double getQuantitiesDensity(unsigned int index)
     {
-        return quantities[index] / this->volume;
+        return extensiveQuantities[index] / this->volume;
     }
     
     double getQuantitiesDensityConvolution(unsigned int quantityIndex, const std::vector<unsigned int>& convoluteBy)
     {
-        double result = quantities[quantityIndex];
+        double result = extensiveQuantities[quantityIndex];
         double coefficient = 1 / this->volume;
         for (auto it=convoluteBy.begin(); it != convoluteBy.end(); it++)
         {
@@ -374,13 +374,13 @@ public:
             FractionCellBaseInstance* current = static_cast<FractionCellBaseInstance*>(this->next[quantityIndex]);
             while (current != 0)
             {
-                result += current->quantities[quantityIndex];
+                result += current->extensiveQuantities[quantityIndex];
                 current = static_cast<FractionCellBaseInstance*>(current->next[quantityIndex]);
             }
             current = static_cast<FractionCellBaseInstance*>(this->prev[quantityIndex]);
             while (current != 0)
             {
-                result += current->quantities[quantityIndex];
+                result += current->extensiveQuantities[quantityIndex];
                 current = static_cast<FractionCellBaseInstance*>(current->prev[quantityIndex]);
             }
         }
@@ -388,9 +388,14 @@ public:
         return result;
     }
     
-    double* quantities;
-    double* nextStepQuantities;
-    double secondaryQuantities[SecondaryQuantitiesCount];
+    double getIntensiveQuantity(unsigned int intensiveQuantityIndex)
+    {
+        return intensiveQuantities[intensiveQuantityIndex];
+    }
+    
+    double* extensiveQuantities;
+    double* nextStepExtensiveQuantities;
+    double intensiveQuantities[SecondaryQuantitiesCount];
     
      /// Space coordinates derivatives
     double spaceCoordsDerivatives[SpaceDimension];
@@ -431,8 +436,8 @@ protected:
     virtual double getSpaceDiffusionCoefficient(uint quantity, uint axisIndex) = 0;
     
 private:
-    double quantitiesBuffer0[QuantitiesCount];
-    double quantitiesBuffer1[QuantitiesCount];
+    double extensiveQuantitiesBuffer0[QuantitiesCount];
+    double extensiveQuantitiesBuffer1[QuantitiesCount];
     
     ///////////////////
     // Convective flows couning
@@ -442,14 +447,14 @@ private:
     {
         SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
-        return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
+        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
     }
     
     /// This function calculates flow from lower cell to higher (flow's projection to axis), so to get OUTGOING flow in negative direction it should be multiplied by -1
     inline double getConvectiveFlowInFractionSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         double l1 = this->size[coordinate];
-        return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
+        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
     }
     
     
@@ -496,7 +501,7 @@ private:
         SpaceGridType::GridElementBase* neighborSpaceCell = neighbor->getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
         double l2 = neighborSpaceCell->size[coordinate];
-        double result = (quantities[quantity]/l1 - neighbor->quantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
+        double result = (extensiveQuantities[quantity]/l1 - neighbor->extensiveQuantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
         if (result > 0.0)
             return result;
         else
@@ -513,7 +518,7 @@ private:
                 SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
                 double l1 = thisSpaceCell->size[coordinate];
                 if (spaceCoordsDerivatives[coordinate] > 0)
-                    return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
+                    return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
                 else
                     return 0.0;
             }
@@ -532,7 +537,7 @@ private:
                 SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
                 double l1 = thisSpaceCell->size[coordinate];
                 if (spaceCoordsDerivatives[coordinate] < 0)
-                    return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
+                    return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
                 else
                     return 0.0;
             }
@@ -550,7 +555,7 @@ private:
                 // Case of open border
                 double l1 = this->size[coordinate];
                 if (fractionCoordsDerivatives[coordinate] > 0)
-                    return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
+                    return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
                 else
                     return 0.0;
             }
@@ -568,7 +573,7 @@ private:
                 // Case of open border
                 double l1 = this->size[coordinate];
                 if (fractionCoordsDerivatives[coordinate] < 0)
-                    return quantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
+                    return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
                 else
                     return 0.0;
             }

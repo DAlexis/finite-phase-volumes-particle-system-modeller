@@ -87,7 +87,11 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
         FractionsPool *spaceCell = m_space->accessElement_d(spacePoint);
         IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
         IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-        double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->volume;
+        double result = 0;
+        if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
+            result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->volume;
+        else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
+            result = fractionCell->getIntensiveQuantity(m_quantityId);
         for (uint i=axisIndex-2; i<axisIndex; i++)
         {
             if (axis[i].type == OAT_SPACE_COORDINATE)
