@@ -14,6 +14,7 @@ public:
     virtual void calculateDerivatives() = 0;
     virtual void calculateSourceEvolution(double dt) = 0;
     virtual void calculateFlowsEvolution(double dt) = 0;
+    virtual void calculateQuantitiesDiffusion(double dt) = 0;
     virtual void calculateIntensiveQuantities() = 0;
     virtual void swapBuffers() = 0;
     

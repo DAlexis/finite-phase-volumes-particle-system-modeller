@@ -49,6 +49,9 @@ public:
         
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateFlowsEvolution(dt);
+        
+        for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateQuantitiesDiffusion(dt);
     }
     
     void calculateSourceEvolution(double dt)
@@ -171,12 +174,11 @@ public:
         /// @todo Implement here for multi-sign values (like charge)
         /// @todo optimize here?
         // For each quantity
-        double flowOutUpward[(FractionSpaceDimension + SpaceDimension) * QuantitiesCount];
-        double flowOutDownward[(FractionSpaceDimension + SpaceDimension) * QuantitiesCount];
-        double totalFlowOut[QuantitiesCount];
-        memset( flowOutUpward, 0, sizeof(double) * (FractionSpaceDimension + SpaceDimension) * QuantitiesCount );
-        memset( flowOutDownward, 0, sizeof(double) * (FractionSpaceDimension + SpaceDimension) * QuantitiesCount );
-        memset( totalFlowOut, 0, sizeof(double) * QuantitiesCount );
+        double flowOutUpward[FractionSpaceDimension + SpaceDimension];
+        double flowOutDownward[FractionSpaceDimension + SpaceDimension];
+        double totalFlowOut = 0;
+        memset( flowOutUpward, 0, sizeof(double) * (FractionSpaceDimension + SpaceDimension) );
+        memset( flowOutDownward, 0, sizeof(double) * (FractionSpaceDimension + SpaceDimension) );
         
         // Particles flows in fraction space
         for (uint coord=0; coord<FractionSpaceDimension; coord++)
@@ -190,7 +192,7 @@ public:
                 transfer = getConvectiveFlowOutThroughFractionTopBorder(coord) * dt;
             
             flowOutUpward[coord] = transfer;
-            totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
+            totalFlowOut += transfer;
             
             if (prev)
                 transfer = getConvectiveFlowOutInFractionSpaceDownward(coord, prev)*dt;
@@ -198,7 +200,7 @@ public:
                 transfer = -getConvectiveFlowOutThroughFractionBottomBorder(coord) * dt;
             
             flowOutDownward[coord] = transfer;
-            totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
+            totalFlowOut += transfer;
         }
         
         // Particles flows in coordinate space
@@ -214,7 +216,7 @@ public:
                 transfer = getConvectiveFlowOutThroughCoordinateTopBorder(coord) * dt;
             
             flowOutUpward[FractionSpaceDimension + coord] = transfer;
-            totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
+            totalFlowOut += transfer;
             
             if (prev)
                 transfer = (getConvectiveFlowOutInSpaceDownward(coord, prev)
@@ -223,116 +225,34 @@ public:
                 transfer = -getConvectiveFlowOutThroughCoordinateBottomBorder(coord) * dt;
             
             flowOutDownward[FractionSpaceDimension + coord] = transfer;
-            totalFlowOut[EVERY_FRACTION_COUNT_QUANTITY_INDEX] += transfer;
+            totalFlowOut += transfer;
         }
-        /////////////////////////
-        // Counting diffusion flows out for other extensiveQuantities
+        
         // Cache for frequently used q[i]/n
         double quantityOverParticlesCount[QuantitiesCount];
         /// We know that particles count is not null (see function beginning)
         for (unsigned int quantity=0; quantity<QuantitiesCount; quantity++)
             quantityOverParticlesCount[quantity] = extensiveQuantities[quantity] / extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
         
-        // In fraction space
-        for (uint coord=0; coord<FractionSpaceDimension; coord++)
+        // Check if we trying to remove more particles that we have
+        if (totalFlowOut > extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX])
         {
-            FractionCellBaseInstance* next = nextInFractionSpace(coord);
-            FractionCellBaseInstance* prev = prevInFractionSpace(coord);
-            double transfer = 0;
-            // Upward
-            if (next) {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutUpward[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
-                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
-                    totalFlowOut[quantity] += transfer;
-                }
-            } else {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutUpward[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
-                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
-                    totalFlowOut[quantity] += transfer;
-                }
+            double outTransferRenormCoefficient = extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX] / totalFlowOut;
+            for (uint coord=0; coord < FractionSpaceDimension + SpaceDimension; coord++)
+            {
+                flowOutUpward[coord] *= outTransferRenormCoefficient;
+                flowOutDownward[coord] *= outTransferRenormCoefficient;
             }
-            
-            // Downward
-            if (prev) {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutDownward[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
-                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
-                    totalFlowOut[quantity] += transfer;
-                }
-            } else {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutDownward[coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
-                    // No diffusion out of space
-                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + coord] = transfer;
-                    totalFlowOut[quantity] += transfer;
-                }
-            }
+            totalFlowOut = extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
         }
         
-        // In coordinate space
-        for (uint coord=0; coord<SpaceDimension; coord++)
-        {
-            FractionCellBaseInstance* next = nextInSpace(coord);
-            FractionCellBaseInstance* prev = prevInSpace(coord);
-            double transfer = 0;
-            // Upward
-            if (next) {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity] // Flows out with particles
-                        + getDiffusionFlowOutInSpace(coord, quantity, next) * dt; // Flows out with diffusion
-                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
-                    totalFlowOut[quantity] += transfer;
-                }
-            } else {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
-                    // No diffusion out of space
-                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
-                    totalFlowOut[quantity] += transfer;
-                }
-            }
-            
-            // Downward
-            if (prev) {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity] // Flows out with particles
-                        + getDiffusionFlowOutInSpace(coord, quantity, prev) * dt; // Flows out with diffusion
-                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
-                    totalFlowOut[quantity] += transfer;
-                }
-            } else {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    transfer = flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity]; // Flows out with particles
-                    // No diffusion out of space
-                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord] = transfer;
-                    totalFlowOut[quantity] += transfer;
-                }
-            }
-        }
-        
-        // Now we know all flows, but we dont know is it enough each quantity in cell?
+        // Removing quantities
         for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX; quantity<QuantitiesCount; quantity++)
         {
-            if (totalFlowOut[quantity] > extensiveQuantities[quantity])
-            {
-                double renormCoefficient = extensiveQuantities[quantity] / totalFlowOut[quantity];
-                for (uint i=0; i < FractionSpaceDimension + SpaceDimension; i++)
-                {
-                    flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + i] *= renormCoefficient;
-                    flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + i] *= renormCoefficient;
-                }
-                totalFlowOut[quantity] = extensiveQuantities[quantity];
-            }
+            nextStepExtensiveQuantities[quantity] -= totalFlowOut * quantityOverParticlesCount[quantity];
         }
         
-        // Now we sure that counted flows out are correct
-        // We can remove and add values now
-        // Removing values
-        for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-            nextStepExtensiveQuantities[quantity] -= totalFlowOut[quantity];
-        // Adding values in fraction space
+        // Adding quantities to neighbors
         for (uint coord=0; coord<FractionSpaceDimension; coord++)
         {
             FractionCellBaseInstance* next = nextInFractionSpace(coord);
@@ -340,11 +260,11 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    next->nextStepExtensiveQuantities[quantity] += flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
+                    next->nextStepExtensiveQuantities[quantity] += flowOutUpward[coord] * quantityOverParticlesCount[quantity];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + coord];
+                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[coord] * quantityOverParticlesCount[quantity];
         }
         
         // Adding values in coordinate space
@@ -355,11 +275,45 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    next->nextStepExtensiveQuantities[quantity] += flowOutUpward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
+                    next->nextStepExtensiveQuantities[quantity] += flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[(FractionSpaceDimension + SpaceDimension)*quantity + FractionSpaceDimension + coord];
+                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
+        }
+        
+        // Now all transfer coupled with particles transfer is done
+    }
+    
+    void calculateQuantitiesDiffusion(double dt)
+    {
+        if (isNull(extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]))
+            return;
+        /*
+        double flowOutUpward[SpaceDimension * (QuantitiesCount-1)];
+        double flowOutDownward[SpaceDimension * (QuantitiesCount-1)];
+        double totalFlowOut[QuantitiesCount-1];
+        memset( flowOutUpward, 0, sizeof(double) * SpaceDimension * (QuantitiesCount-1) );
+        memset( flowOutDownward, 0, sizeof(double) * SpaceDimension * (QuantitiesCount-1) );
+        memset( totalFlowOut, 0, sizeof(double) * (QuantitiesCount-1));*/
+        for (uint coord=0; coord<FractionSpaceDimension; coord++)
+        {
+            FractionCellBaseInstance* next = nextInFractionSpace(coord);
+            //FractionCellBaseInstance* prev = prevInFractionSpace(coord);
+            // Upward
+            if (next) {
+                for (uint quantity=0; quantity<QuantitiesCount; quantity++) {
+                    //double diffusion = 
+                    //next->nextStepExtensiveQuantities[quantity] += flowOutUpward[coord] * quantityOverParticlesCount[quantity];
+                }
+            }
+            // Downward
+            /*
+            if (prev) {
+                for (uint quantity=0; quantity<QuantitiesCount; quantity++) {
+                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[coord] * quantityOverParticlesCount[quantity];
+                }
+            }*/
         }
     }
     
@@ -463,7 +417,6 @@ private:
         return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
     }
     
-    
     inline double getConvectiveFlowOutInSpaceUpward(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         double result = getConvectiveFlowInSpace(coordinate, neighbor);
@@ -499,7 +452,15 @@ private:
         else
             return 0.0;
     }
-    
+    /*
+    inline double getDiffusionFlowInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
+    {
+        SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
+        SpaceGridType::GridElementBase* neighborSpaceCell = neighbor->getSpaceCell();
+        double l1 = thisSpaceCell->size[coordinate];
+        double l2 = neighborSpaceCell->size[coordinate];
+        return (extensiveQuantities[quantity]/l1 - neighbor->extensiveQuantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
+    }*/
     /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
     inline double getDiffusionFlowOutInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
     {
