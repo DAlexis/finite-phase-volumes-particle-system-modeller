@@ -41,7 +41,7 @@ model:
                 
             space_coords_derivatives: |
                 // The wind here
-                x_coord.DER = 0.5;
+                x_coord.DER = 1.3;
                 //y_coord.DER = 0.0;
             fraction_coords_derivatives: |
             boundary_conditions:

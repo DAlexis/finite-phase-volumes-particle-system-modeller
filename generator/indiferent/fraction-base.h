@@ -211,7 +211,7 @@ public:
             double transfer = 0;
             if (next)
                 transfer = (getConvectiveFlowOutInSpaceUpward(coord, next)
-                    + getDiffusionFlowOutInSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, next)) * dt;
+                    + getParticlesCountDiffusionFlowOutInSpace(coord, next)) * dt;
             else
                 transfer = getConvectiveFlowOutThroughCoordinateTopBorder(coord) * dt;
             
@@ -220,7 +220,7 @@ public:
             
             if (prev)
                 transfer = (getConvectiveFlowOutInSpaceDownward(coord, prev)
-                    + getDiffusionFlowOutInSpace(coord, EVERY_FRACTION_COUNT_QUANTITY_INDEX, prev)) * dt;
+                    + getParticlesCountDiffusionFlowOutInSpace(coord, prev)) * dt;
             else
                 transfer = -getConvectiveFlowOutThroughCoordinateBottomBorder(coord) * dt;
             
@@ -287,33 +287,17 @@ public:
     
     void calculateQuantitiesDiffusion(double dt)
     {
-        if (isNull(extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]))
-            return;
-        /*
-        double flowOutUpward[SpaceDimension * (QuantitiesCount-1)];
-        double flowOutDownward[SpaceDimension * (QuantitiesCount-1)];
-        double totalFlowOut[QuantitiesCount-1];
-        memset( flowOutUpward, 0, sizeof(double) * SpaceDimension * (QuantitiesCount-1) );
-        memset( flowOutDownward, 0, sizeof(double) * SpaceDimension * (QuantitiesCount-1) );
-        memset( totalFlowOut, 0, sizeof(double) * (QuantitiesCount-1));*/
-        for (uint coord=0; coord<FractionSpaceDimension; coord++)
+        for (uint coord=0; coord<SpaceDimension; coord++)
         {
-            FractionCellBaseInstance* next = nextInFractionSpace(coord);
-            //FractionCellBaseInstance* prev = prevInFractionSpace(coord);
+            FractionCellBaseInstance* next = nextInSpace(coord);
             // Upward
             if (next) {
-                for (uint quantity=0; quantity<QuantitiesCount; quantity++) {
-                    //double diffusion = 
-                    //next->nextStepExtensiveQuantities[quantity] += flowOutUpward[coord] * quantityOverParticlesCount[quantity];
+                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
+                    double diffusionFromThis = getDiffusionFlowInSpace(coord, quantity, next) * dt;
+                    nextStepExtensiveQuantities[quantity] -= diffusionFromThis;
+                    next->nextStepExtensiveQuantities[quantity] += diffusionFromThis;
                 }
             }
-            // Downward
-            /*
-            if (prev) {
-                for (uint quantity=0; quantity<QuantitiesCount; quantity++) {
-                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[coord] * quantityOverParticlesCount[quantity];
-                }
-            }*/
         }
     }
     
@@ -452,7 +436,9 @@ private:
         else
             return 0.0;
     }
-    /*
+    
+    ///////////////////
+    // Diffusion flows couning
     inline double getDiffusionFlowInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
     {
         SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
@@ -460,15 +446,11 @@ private:
         double l1 = thisSpaceCell->size[coordinate];
         double l2 = neighborSpaceCell->size[coordinate];
         return (extensiveQuantities[quantity]/l1 - neighbor->extensiveQuantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
-    }*/
+    }
     /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
-    inline double getDiffusionFlowOutInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
+    inline double getParticlesCountDiffusionFlowOutInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
-        SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
-        SpaceGridType::GridElementBase* neighborSpaceCell = neighbor->getSpaceCell();
-        double l1 = thisSpaceCell->size[coordinate];
-        double l2 = neighborSpaceCell->size[coordinate];
-        double result = (extensiveQuantities[quantity]/l1 - neighbor->extensiveQuantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
+        double result = getDiffusionFlowInSpace(coordinate, EVERY_FRACTION_COUNT_QUANTITY_INDEX, neighbor);
         if (result > 0.0)
             return result;
         else
