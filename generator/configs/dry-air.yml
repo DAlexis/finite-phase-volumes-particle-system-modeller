@@ -11,7 +11,7 @@ model:
                 mode: uniform
                 min: -25.0
                 max: 25.0
-                segments_count: 100
+                segments_count: 2
         y_coord:
             name: Coordinate Y, m
             division:
@@ -98,8 +98,8 @@ output:
             x_coord: 0
             y_coord: 0
         output_axis:
-            x_coord:
-                points_count: 100
+            #x_coord:
+            #    points_count: 4
             y_coord:
                 points_count: 100
         time_step: 0.5
@@ -112,8 +112,8 @@ output:
             x_coord: 0
             y_coord: 0
         output_axis:
-            x_coord:
-                points_count: 100
+            #x_coord:
+            #    points_count: 4
             y_coord:
                 points_count: 100
         time_step: 0.5
@@ -126,8 +126,8 @@ output:
             x_coord: 0
             y_coord: 0
         output_axis:
-            x_coord:
-                points_count: 100
+            #x_coord:
+            #    points_count: 4
             y_coord:
                 points_count: 100
         time_step: 0.5
@@ -140,8 +140,8 @@ output:
             x_coord: 0
             y_coord: 0
         output_axis:
-            x_coord:
-                points_count: 100
+            #x_coord:
+            #    points_count: 4
             y_coord:
                 points_count: 100
         time_step: 0.5
@@ -154,12 +154,12 @@ output:
             x_coord: 0
             y_coord: 0
         output_axis:
-            x_coord:
-                points_count: 100
+            #x_coord:
+            #    points_count: 4
             y_coord:
                 points_count: 100
         time_step: 0.5
 run_options:
     start_time: 0
-    stop_time: 4
-    time_step: 0.001
+    stop_time: 40
+    time_step: 0.0001
