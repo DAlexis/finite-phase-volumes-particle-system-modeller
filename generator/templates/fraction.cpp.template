@@ -1,7 +1,7 @@
 #include "${header_name}"
 #include "model-base.h"
 
-${fraction_space_classname}::${fraction_space_classname}(FractionsPool* parentFractionsPool) :
+${fraction_space_classname}::${fraction_space_classname}(FractionsPoolBase<SPACE_COORDS_COUNT, FRACTIONS_COUNT>* parentFractionsPool) :
     ${fraction_space_base_classname}(parentFractionsPool)
 {
     // Configuring fraction axis

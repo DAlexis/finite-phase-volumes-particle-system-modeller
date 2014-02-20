@@ -11,20 +11,25 @@
 
 #include <string.h>
 
-/// This is a part of FractionSpaceBase that is indifferent to case AxisCount == 0
-template <int AxisCount, class FractionCellType>
-class FractionSpaceBaseIncomplete : public Grid<AxisCount, FractionCellType>, public IFractionSpace
+/// This is a part of FractionSpaceBase that is indifferent to case FractionSpaceDimension == 0
+template <int SpaceDimension,
+    int FractionSpaceDimension,
+    int FractionsCount,
+    class FractionCellType>
+class FractionSpaceBaseIncomplete : public Grid<FractionSpaceDimension, FractionCellType>, public IFractionSpace
 {
 public:
+    typedef Grid<FractionSpaceDimension, FractionCellType> GridInstance;
+    typedef FractionsPoolBase<SpaceDimension, FractionsCount> FractionsPoolBaseInstance;
     
-    FractionSpaceBaseIncomplete(FractionsPoolBase* parentFractionsPool) :
+    FractionSpaceBaseIncomplete(FractionsPoolBaseInstance* parentFractionsPool) :
         parent(parentFractionsPool)
     {
-        for (uint i=0; i<AxisCount; i++)
+        for (uint i=0; i<FractionSpaceDimension; i++)
         {
             fractionTopBorderType[i] = BT_WALL; fractionBottomBorderType[i] = BT_WALL;
         }
-        for (uint i=0; i<SPACE_COORDS_COUNT; i++)
+        for (uint i=0; i<SpaceDimension; i++)
         {
             spaceTopBorderType[i] = BT_WALL; spaceBottomBorderType[i] = BT_WALL;
         }
@@ -80,48 +85,55 @@ public:
     
     //const Axis* getAxisDescription(unsigned int axis);
     
-    FractionsPoolBase* parent;
+    FractionsPoolBaseInstance* parent;
     
-    BorderType fractionTopBorderType[AxisCount], fractionBottomBorderType[AxisCount];
-    BorderType spaceTopBorderType[SPACE_COORDS_COUNT], spaceBottomBorderType[SPACE_COORDS_COUNT];
+    BorderType fractionTopBorderType[FractionSpaceDimension], fractionBottomBorderType[FractionSpaceDimension];
+    BorderType spaceTopBorderType[SpaceDimension], spaceBottomBorderType[SpaceDimension];
     
 protected:
-    typename Grid<AxisCount, FractionCellType>::GridDescription fractionGridDescription;
+    typename Grid<FractionSpaceDimension, FractionCellType>::GridDescription fractionGridDescription;
 };
 
-/// FractionSpaceBase in case AxisCount != 0
-template <int AxisCount, class FractionCellType>
-class FractionSpaceBase : public FractionSpaceBaseIncomplete<AxisCount, FractionCellType>
+/// FractionSpaceBase in case FractionSpaceDimension != 0
+template <int SpaceDimension,
+    int FractionSpaceDimension,
+    int FractionsCount,
+    class FractionCellType>
+class FractionSpaceBase : public FractionSpaceBaseIncomplete<SpaceDimension, FractionSpaceDimension, FractionsCount, FractionCellType>
 {
 public:
-    FractionSpaceBase(FractionsPoolBase* parentFractionsPool) :
-        FractionSpaceBaseIncomplete<AxisCount, FractionCellType>(parentFractionsPool)
+    typedef FractionsPoolBase<SpaceDimension, FractionsCount> FractionsPoolBaseInstance;
+    FractionSpaceBase(FractionsPoolBaseInstance* parentFractionsPool) :
+        FractionSpaceBaseIncomplete<SpaceDimension, FractionSpaceDimension, FractionsCount, FractionCellType>(parentFractionsPool)
     {}
     
     virtual ~FractionSpaceBase() {}
-    typedef FractionSpaceBase<AxisCount, FractionCellType> FractionSpaceBaseInstance;
-    typedef Grid<AxisCount, FractionCellType> GridInstance;
+    typedef FractionSpaceBase<SpaceDimension, FractionSpaceDimension, FractionsCount, FractionCellType> FractionSpaceBaseInstance;
     
     const Axis* getAxisDescription(unsigned int axis) { return &(this->gridDescription->axis[axis]); }
 };
 
-template <class FractionCellType>
-class FractionSpaceBase<0, FractionCellType> : public FractionSpaceBaseIncomplete<0, FractionCellType>
+// Template specification when fraction axis count is 0
+template <int SpaceDimension,
+    int FractionsCount,
+    class FractionCellType>
+class FractionSpaceBase<SpaceDimension, 0,  FractionsCount, FractionCellType> : public FractionSpaceBaseIncomplete<SpaceDimension, 0, FractionsCount, FractionCellType>
 {
 public:
-    FractionSpaceBase(FractionsPoolBase* parentFractionsPool) :
-        FractionSpaceBaseIncomplete<0, FractionCellType>(parentFractionsPool)
+    typedef FractionsPoolBase<SpaceDimension, FractionsCount> FractionsPoolBaseInstance;
+    FractionSpaceBase(FractionsPoolBaseInstance* parentFractionsPool) :
+        FractionSpaceBaseIncomplete<SpaceDimension, 0, FractionsCount, FractionCellType>(parentFractionsPool)
     {}
     
     virtual ~FractionSpaceBase() {}
-    typedef FractionSpaceBase<0, FractionCellType> FractionSpaceBaseInstance;
-    typedef Grid<0, FractionCellType> GridInstance;
+    typedef FractionSpaceBase<SpaceDimension, 0, FractionsCount, FractionCellType> FractionSpaceBaseInstance;
     
     /// This function is not ever called and is here only to prevent compilation errors
     const Axis* getAxisDescription(unsigned int axis) { return NULL; }
 };
 
 template <int FractionIndex,
+          int FractionsCount,
           int SpaceDimension,
           int FractionSpaceDimension,
           int QuantitiesCount,
@@ -131,8 +143,9 @@ class FractionCellBase : public GridElementBase<FractionSpaceDimension>, public 
 {
 public:
     typedef FractionCellBase FractionCellBaseInstance;
-    typedef FractionSpaceBase<FractionSpaceDimension, FractionCellType> FractionSpaceBaseInstance;
+    typedef FractionSpaceBase<SpaceDimension, FractionSpaceDimension, FractionsCount, FractionCellType> FractionSpaceBaseInstance;
     typedef Grid<SpaceDimension, FractionCellType> GridInstance;
+    typedef FractionsPoolBase<SpaceDimension, FractionsCount> FractionsPoolBaseInstance;
     
     FractionCellBase()
     {
@@ -354,21 +367,21 @@ protected:
     
     ////////////////////////
     // Get next/prev/parent functions
-    inline FractionsPoolBase* getSpaceCell()
+    inline FractionsPoolBaseInstance* getSpaceCell()
     {
         return static_cast< FractionSpaceBaseInstance* > (this->parentGrid)->parent;
     }
     
     inline FractionCellBase* nextInSpace(unsigned int coordinate)
     {
-        FractionsPoolBase *nextCellInSpace = static_cast<FractionsPoolBase*>(getSpaceCell()->next[coordinate]);
+        FractionsPoolBaseInstance *nextCellInSpace = static_cast<FractionsPoolBaseInstance*>(getSpaceCell()->next[coordinate]);
         if (!nextCellInSpace) return NULL;
         return &( static_cast<FractionSpaceBaseInstance*> (nextCellInSpace->fractions[FractionIndex])->elements[this->elementIndex] );
     }
     
     inline FractionCellBase* prevInSpace(unsigned int coordinate)
     {
-        FractionsPoolBase *nextCellInSpace = static_cast<FractionsPoolBase*>(getSpaceCell()->prev[coordinate]);
+        FractionsPoolBaseInstance *nextCellInSpace = static_cast<FractionsPoolBaseInstance*>(getSpaceCell()->prev[coordinate]);
         if (!nextCellInSpace) return NULL;
         return &( static_cast<FractionSpaceBaseInstance*> (nextCellInSpace->fractions[FractionIndex])->elements[this->elementIndex] );
     }
@@ -388,7 +401,7 @@ private:
     /// This function calculates flow from lower cell to higher (flow's projection to axis), so to get OUTGOING flow in negative direction it should be multiplied by -1
     inline double getConvectiveFlowInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
-        GridElementBase<SPACE_COORDS_COUNT>* thisSpaceCell = getSpaceCell();
+        GridElementBase<SpaceDimension>* thisSpaceCell = getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
         return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
     }
@@ -440,8 +453,8 @@ private:
     // Diffusion flows couning
     inline double getDiffusionFlowInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
     {
-        GridElementBase<SPACE_COORDS_COUNT>* thisSpaceCell = getSpaceCell();
-        GridElementBase<SPACE_COORDS_COUNT>* neighborSpaceCell = neighbor->getSpaceCell();
+        GridElementBase<SpaceDimension>* thisSpaceCell = getSpaceCell();
+        GridElementBase<SpaceDimension>* neighborSpaceCell = neighbor->getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
         double l2 = neighborSpaceCell->size[coordinate];
         return (extensiveQuantities[quantity]/l1 - neighbor->extensiveQuantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
@@ -463,7 +476,7 @@ private:
         {
             case BT_OPEN: {
                 // Case of open border
-                GridElementBase<SPACE_COORDS_COUNT>* thisSpaceCell = getSpaceCell();
+                GridElementBase<SpaceDimension>* thisSpaceCell = getSpaceCell();
                 double l1 = thisSpaceCell->size[coordinate];
                 if (spaceCoordsDerivatives[coordinate] > 0)
                     return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
@@ -482,7 +495,7 @@ private:
         {
             case BT_OPEN: {
                 // Case of open border
-                GridElementBase<SPACE_COORDS_COUNT>* thisSpaceCell = getSpaceCell();
+                GridElementBase<SpaceDimension>* thisSpaceCell = getSpaceCell();
                 double l1 = thisSpaceCell->size[coordinate];
                 if (spaceCoordsDerivatives[coordinate] < 0)
                     return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;

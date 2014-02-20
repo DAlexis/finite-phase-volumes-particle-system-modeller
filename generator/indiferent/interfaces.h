@@ -49,4 +49,8 @@ public:
     virtual ~IFractionSpace() {}
 };
 
+class IFractionsPool
+{
+};
+
 #endif // FRACTION_CELL_INTERFACE_H_INCLUDED

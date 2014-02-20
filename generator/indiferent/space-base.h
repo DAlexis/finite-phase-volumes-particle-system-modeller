@@ -11,6 +11,7 @@ template<int SpaceDimension, class GridElementType>
 class SpaceBase : public Grid<SpaceDimension, GridElementType>
 {
 public:
+    typedef Grid<SpaceDimension, GridElementType> SpaceGridInstance;
     SpaceBase() { }
     
     virtual ~SpaceBase() {}
@@ -39,7 +40,7 @@ public:
     void setParent(void* model) {parent = model;}
     void* parent;
     
-    typename SpaceGridType::GridDescription spaceGridDescription;
+    typename SpaceGridInstance::GridDescription spaceGridDescription;
     
 };
 

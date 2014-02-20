@@ -1,19 +1,20 @@
 #ifndef ${header_guard}
 #define ${header_guard}
 
-#include "global-defines.h"
+#include "model-defines.h"
 #include "fraction-base.h"
 
 class ${fraction_cell_classname};
 
 typedef FractionCellBase<${fractions_enum_element},
+                     FRACTIONS_COUNT,
                      SPACE_COORDS_COUNT,
                      ${coordinates_enum_prefix}COUNT,
                      ${quantities_enum_prefix}COUNT,
                      ${secondary_quantities_enum_prefix}COUNT,
                      ${fraction_cell_classname}>       ${fraction_cell_base_classname};
 
-typedef FractionSpaceBase<${coordinates_enum_prefix}COUNT, ${fraction_cell_classname}> ${fraction_space_base_classname};
+typedef FractionSpaceBase<SPACE_COORDS_COUNT, ${coordinates_enum_prefix}COUNT, FRACTIONS_COUNT, ${fraction_cell_classname}> ${fraction_space_base_classname};
 
 class ${fraction_cell_classname} : public ${fraction_cell_base_classname}
 {
@@ -34,7 +35,7 @@ private:
 class ${fraction_space_classname} : public ${fraction_space_base_classname}
 {
 public:
-    ${fraction_space_classname}(FractionsPool* parentFractionsPool);
+    ${fraction_space_classname}(FractionsPoolBase<SPACE_COORDS_COUNT, FRACTIONS_COUNT>* parentFractionsPool);
     virtual ~${fraction_space_classname}() { }
     
 private:

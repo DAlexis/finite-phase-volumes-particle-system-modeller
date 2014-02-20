@@ -13,14 +13,7 @@
 
 typedef unsigned int uint;
 
-class FractionsPool;
-
 #include "grid-template.h"
-
-#include "model-defines.h"
-
-// Grid instance type for coordinate space
-typedef Grid<SPACE_COORDS_COUNT, FractionsPool> SpaceGridType;
 
 inline bool isNotNull(double x)
 {

@@ -8,23 +8,54 @@
 #include "global-defines.h"
 #include "interfaces.h"
 
-class FractionsPoolBase : public GridElementBase<SPACE_COORDS_COUNT>
+template<int SpaceDimension, int FractionsCount>
+class FractionsPoolBase : public GridElementBase<SpaceDimension>, public IFractionsPool
 {
 public:
-    FractionsPoolBase();
-    virtual ~FractionsPoolBase();
+    FractionsPoolBase()
+    {
+        for (unsigned int i=0; i<FractionsCount; i++)
+            fractions[i] = NULL;
+    }
     
-    void initQuantities();
-    void calculateSourceEvolution(double dt);
-    void calculateFlowsEvolution(double dt);
-    void swapBuffers();
+    virtual ~FractionsPoolBase()
+    {
+        for (unsigned int i=0; i<FractionsCount; i++)
+            if (fractions[i]) delete fractions[i];
+    }
+    
+    void initQuantities()
+    {
+        for (unsigned int i=0; i<FractionsCount; i++)
+            fractions[i]->initQuantities();
+    }
+
+    void calculateSourceEvolution(double dt)
+    {
+        for (unsigned int i=0; i<FractionsCount; i++)
+            fractions[i]->calculateSourceEvolution(dt);
+    }
+
+    void calculateFlowsEvolution(double dt)
+    {
+        for (unsigned int i=0; i<FractionsCount; i++)
+            fractions[i]->calculateFlowsEvolution(dt);
+    }
+    
+    void swapBuffers()
+    {
+        for (unsigned int i=0; i<FractionsCount; i++)
+            fractions[i]->swapBuffers();
+    }
     
     virtual void createFractions() = 0;
 
-    IFractionSpace *fractions[FRACTIONS_COUNT];
+    IFractionSpace *fractions[FractionsCount];
 
 protected:
-    void initFractionsPoolBase();
+    void initFractionsPoolBase() { createFractions(); }
 };
+
+//class FractionsPoolBase : public FractionsPoolBaseTmp<SPACE_COORDS_COUNT> {};
 
 #endif // FRACTIONS_POOL_TEMPLATE
