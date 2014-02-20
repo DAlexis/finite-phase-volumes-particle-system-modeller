@@ -12,8 +12,7 @@ public:
     virtual ~Space() {}
     
     void initQuantities();
-    void calculateFlowsEvolution(double dt);
-    void calculateSourceEvolution(double dt);
+    void calculateEvolution(double dt);
     void swapBuffers();
     
     void* parent;

@@ -5,19 +5,12 @@
 #ifndef MODEL_H_INCLUDED
 #define MODEL_H_INCLUDED
 
-#include "space.h"
-#include "output.h"
+#include "model-base.h"
 
-class Model
+class Model : public ModelBase
 {
 public:
     Model();
-    Space space;
-    
-    void iterate(double dt);
-    OutputMaker outputMaker;
-    
-    double time;
 };
 
 #endif // MODEL_H_INCLUDED

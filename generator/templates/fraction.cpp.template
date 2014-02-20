@@ -1,5 +1,5 @@
 #include "${header_name}"
-#include "model.h"
+#include "model-base.h"
 
 ${fraction_space_classname}::${fraction_space_classname}(FractionsPool* parentFractionsPool) :
     ${fraction_space_base_classname}(parentFractionsPool)

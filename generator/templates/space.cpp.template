@@ -9,16 +9,13 @@ ${space_axis_configuration}
     constructGrid(spaceGridDescription);
 }
 
-void Space::calculateFlowsEvolution(double dt)
+void Space::calculateEvolution(double dt)
 {
     for (size_t i=0; i<elementsCount; i++)
+    {
          elements[i].calculateFlowsEvolution(dt);
-}
-
-void Space::calculateSourceEvolution(double dt)
-{
-    for (size_t i=0; i<elementsCount; i++)
-        elements[i].calculateSourceEvolution(dt);
+         elements[i].calculateSourceEvolution(dt);
+    }
 }
 
 void Space::swapBuffers()

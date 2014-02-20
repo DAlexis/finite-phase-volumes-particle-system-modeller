@@ -50,6 +50,8 @@ filesAsIs = [
             'fraction-space-interface.h',
             'fractions-pool-base.cpp',
             'fractions-pool-base.h',
+            'model-base.h',
+            'model-base.cpp',
             'global-defines.h',
             'grid-template.h',
             'output.cpp',

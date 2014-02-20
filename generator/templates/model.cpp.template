@@ -1,19 +1,7 @@
 #include "model.h"
 
-Model::Model() :
-    space(this),
-    outputMaker(&space),
-    time(0)
+Model::Model()
 {
 ${outputs_init_code}
     space.initQuantities();
-}
-
-void Model::iterate(double dt)
-{
-    outputMaker.output(time);
-    space.calculateFlowsEvolution(dt);
-    space.calculateSourceEvolution(dt);
-    space.swapBuffers();
-    time += dt;
 }
