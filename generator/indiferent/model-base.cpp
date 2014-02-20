@@ -5,10 +5,10 @@
 #include "model-base.h"
 
 ModelBase::ModelBase() :
-    space(this),
     outputMaker(&space),
     time(0)
 {
+    space.setParent(this);
     space.initQuantities();
 }
 

@@ -7,8 +7,7 @@
 
 #include "global-defines.h"
 #include "fractions-pool-base.h"
-#include "fraction-cell-interface.h"
-#include "fraction-space-interface.h"
+#include "interfaces.h"
 
 #include <string.h>
 
@@ -128,7 +127,7 @@ template <int FractionIndex,
           int QuantitiesCount,
           int SecondaryQuantitiesCount,
           class FractionCellType>
-class FractionCellBase : public Grid<FractionSpaceDimension, FractionCellType>::GridElementBase, public IFractionCell
+class FractionCellBase : public GridElementBase<FractionSpaceDimension>, public IFractionCell
 {
 public:
     typedef FractionCellBase FractionCellBaseInstance;
@@ -389,7 +388,7 @@ private:
     /// This function calculates flow from lower cell to higher (flow's projection to axis), so to get OUTGOING flow in negative direction it should be multiplied by -1
     inline double getConvectiveFlowInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
-        SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
+        GridElementBase<SPACE_COORDS_COUNT>* thisSpaceCell = getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
         return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
     }
@@ -441,8 +440,8 @@ private:
     // Diffusion flows couning
     inline double getDiffusionFlowInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
     {
-        SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
-        SpaceGridType::GridElementBase* neighborSpaceCell = neighbor->getSpaceCell();
+        GridElementBase<SPACE_COORDS_COUNT>* thisSpaceCell = getSpaceCell();
+        GridElementBase<SPACE_COORDS_COUNT>* neighborSpaceCell = neighbor->getSpaceCell();
         double l1 = thisSpaceCell->size[coordinate];
         double l2 = neighborSpaceCell->size[coordinate];
         return (extensiveQuantities[quantity]/l1 - neighbor->extensiveQuantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
@@ -464,7 +463,7 @@ private:
         {
             case BT_OPEN: {
                 // Case of open border
-                SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
+                GridElementBase<SPACE_COORDS_COUNT>* thisSpaceCell = getSpaceCell();
                 double l1 = thisSpaceCell->size[coordinate];
                 if (spaceCoordsDerivatives[coordinate] > 0)
                     return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;
@@ -483,7 +482,7 @@ private:
         {
             case BT_OPEN: {
                 // Case of open border
-                SpaceGridType::GridElementBase* thisSpaceCell = getSpaceCell();
+                GridElementBase<SPACE_COORDS_COUNT>* thisSpaceCell = getSpaceCell();
                 double l1 = thisSpaceCell->size[coordinate];
                 if (spaceCoordsDerivatives[coordinate] < 0)
                     return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*spaceCoordsDerivatives[coordinate]/l1;

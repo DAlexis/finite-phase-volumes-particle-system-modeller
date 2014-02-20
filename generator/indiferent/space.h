@@ -1,24 +1,15 @@
-#ifndef LOCATION_SPACE_H_INCLUDED
-#define LOCATION_SPACE_H_INCLUDED
+#ifndef SPACE_H_INCLUDED
+#define SPACE_H_INCLUDED
 
 #include "global-defines.h"
 #include "fractions-pool.h"
+#include "space-base.h"
 
-class Space : public SpaceGridType
+class Space : public SpaceBase<SPACE_COORDS_COUNT, FractionsPool>
 {
 public:
-    Space(void* model);
-    
-    virtual ~Space() {}
-    
-    void initQuantities();
-    void calculateEvolution(double dt);
-    void swapBuffers();
-    
-    void* parent;
-    
-private:
-    typename SpaceGridType::GridDescription spaceGridDescription;
+    Space();
+
 };
 
-#endif // LOCATION_SPACE_H_INCLUDED
+#endif // SPACE_H_INCLUDED

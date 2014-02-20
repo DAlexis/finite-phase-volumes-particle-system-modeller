@@ -7,13 +7,52 @@
 
 #include "axis.h"
 
+class AnyGrid {};
+
+template<int AxisCount>
+class GridElementBase
+{
+public:
+    /// Fraction coordinates
+    double coordinates[AxisCount];
+    double size[AxisCount];
+    double volume;
+    
+    /// Neighbors pointers
+    GridElementBase* prev[AxisCount];
+    GridElementBase* next[AxisCount];
+    
+    AnyGrid* parentGrid;
+    size_t elementIndex;
+    
+    GridElementBase() : parentGrid(0), elementIndex(0)
+    {
+        for (unsigned int i=0; i<AxisCount; i++)
+        {
+            prev[i] = 0; next[i] = 0; size[i] = 0; coordinates[i] = 0;
+        }
+        volume = 1.0;
+        // Tell associated data where it associated to
+    }
+    
+    virtual ~GridElementBase()
+    {}
+    
+    void init(AnyGrid* parent, size_t index)
+    {
+        parentGrid = parent;
+        elementIndex = index;
+    }
+};
+
 /** @brief This is a grid contains elements that are inherited from GridElementType
  */ 
 template <int AxisCount, class ElementType>
-class Grid
+class Grid : public AnyGrid
 {
 public:
     typedef Grid<AxisCount, ElementType> GridInstance;
+    typedef GridElementBase<AxisCount> GridElementBaseInstance;
     
     class GridDescription
     {
@@ -21,40 +60,7 @@ public:
         Axis axis[AxisCount];
     };
     
-    class GridElementBase
-    {
-    public:
-        /// Fraction coordinates
-        double coordinates[AxisCount];
-        double size[AxisCount];
-        double volume;
-        
-        /// Neighbors pointers
-        GridElementBase* prev[AxisCount];
-        GridElementBase* next[AxisCount];
-        
-        Grid* parentGrid;
-        size_t elementIndex;
-        
-        GridElementBase() : parentGrid(0), elementIndex(0)
-        {
-            for (unsigned int i=0; i<AxisCount; i++)
-            {
-                prev[i] = 0; next[i] = 0; size[i] = 0; coordinates[i] = 0;
-            }
-            volume = 1.0;
-            // Tell associated data where it associated to
-        }
-        
-        virtual ~GridElementBase()
-        {}
-        
-        void init(Grid* parent, size_t index)
-        {
-            parentGrid = parent;
-            elementIndex = index;
-        }
-    };
+    
     
     void constructGrid(const GridDescription& description)
     {
@@ -129,7 +135,7 @@ protected:
             }
         } else {
             // Initialising GridElement
-            GridElementBase *currentElement = accessElement_ui(currentCoords_ui);
+            GridElementBaseInstance *currentElement = accessElement_ui(currentCoords_ui);
             currentElement->volume = 1;
             for (uint i=0; i!=AxisCount; i++)
             {
@@ -166,37 +172,41 @@ protected:
     }
 };
 
+///////////////////////
+// Template specification when axis count is zero
+template<>
+class GridElementBase<0>
+{
+public:
+    /// Fraction coordinates
+    double *coordinates;
+    double *size;
+    double volume;
+    
+    /// Neighbors pointers
+    GridElementBase** prev;
+    GridElementBase** next;
+    
+    AnyGrid* parentGrid;
+    size_t elementIndex;
+    
+    GridElementBase() : coordinates(0), size(0), volume(1.0), prev(0), next(0), parentGrid(0), elementIndex(0) {}
+    virtual ~GridElementBase() {}
+    void init(AnyGrid* parent, size_t index)
+    {
+        parentGrid = parent;
+        elementIndex = index;
+    }
+};
+
 template <class ElementType>
-class Grid<0, ElementType>
+class Grid<0, ElementType> : public AnyGrid
 {
 public:
     typedef Grid<0, ElementType> GridInstance;
+    typedef GridElementBase<0> GridElementBaseInstance;
     
     class GridDescription {};
-    
-    class GridElementBase
-    {
-    public:
-        /// Fraction coordinates
-        double *coordinates;
-        double *size;
-        double volume;
-        
-        /// Neighbors pointers
-        GridElementBase** prev;
-        GridElementBase** next;
-        
-        Grid* parentGrid;
-        size_t elementIndex;
-        
-        GridElementBase() : coordinates(0), size(0), volume(1.0), prev(0), next(0), parentGrid(0), elementIndex(0) {}
-        virtual ~GridElementBase() {}
-        void init(Grid* parent, size_t index)
-        {
-            parentGrid = parent;
-            elementIndex = index;
-        }
-    };
     
     void constructGrid(const GridDescription& description)
     {

@@ -1,31 +1,7 @@
 #include "space.h"
 
-#include "fractions-pool.h"
-
-Space::Space(void* model) :
-    parent(model)
+Space::Space()
 {
 ${space_axis_configuration}
     constructGrid(spaceGridDescription);
-}
-
-void Space::calculateEvolution(double dt)
-{
-    for (size_t i=0; i<elementsCount; i++)
-    {
-         elements[i].calculateFlowsEvolution(dt);
-         elements[i].calculateSourceEvolution(dt);
-    }
-}
-
-void Space::swapBuffers()
-{
-    for (size_t i=0; i<elementsCount; i++)
-        elements[i].swapBuffers();
-}
-
-void Space::initQuantities()
-{
-    for (size_t i=0; i<elementsCount; i++)
-        elements[i].initQuantities();
 }
