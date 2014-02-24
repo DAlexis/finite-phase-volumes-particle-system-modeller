@@ -18,6 +18,7 @@ public:
     OutputMaker outputMaker;
     
     double time;
+    void setThreadsCount(unsigned int count);
 };
 
 #endif // MODEL_BASE_H_INCLUDED

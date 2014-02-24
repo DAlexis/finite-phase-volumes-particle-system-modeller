@@ -4,7 +4,6 @@ sources_dir = .
 project = hand-written-sample
 exe_name = sample
 cpp_sources =   main.cpp \
-                fractions-pool-base.cpp \
                 model-base.cpp \
                 output.cpp \
                 space.cpp \

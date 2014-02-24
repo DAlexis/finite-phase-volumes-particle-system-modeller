@@ -47,7 +47,6 @@ filesAsIs = [
             'axis.h',
             'fraction-base.h',
             'interfaces.h',
-            'fractions-pool-base.cpp',
             'fractions-pool-base.h',
             'model-base.h',
             'model-base.cpp',

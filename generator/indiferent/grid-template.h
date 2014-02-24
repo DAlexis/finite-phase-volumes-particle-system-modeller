@@ -91,14 +91,19 @@ public:
         if (elements) delete[] elements;
     }
     
-    ElementType* accessElement_ui(const uint* coords)
+    uint getElementIndex_ui(const uint* coords)
     {
         size_t resInd = 0;
         for (uint i=0; i!=AxisCount; i++)
         {
             resInd += offsets[i]*coords[i];
         }
-        return &(elements[resInd]);
+        return resInd;
+    }
+    
+    ElementType* accessElement_ui(const uint* coords)
+    {
+        return &(elements[getElementIndex_ui(coords)]);
     }
 
     ElementType* accessElement_d(const double* coords)

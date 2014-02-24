@@ -30,16 +30,12 @@ public:
             fractions[i]->initQuantities();
     }
 
-    void calculateSourceEvolution(double dt)
+    void calculateEvolution(double dt)
     {
-        for (unsigned int i=0; i<FractionsCount; i++)
+        for (unsigned int i=0; i<FractionsCount; i++) {
             fractions[i]->calculateSourceEvolution(dt);
-    }
-
-    void calculateFlowsEvolution(double dt)
-    {
-        for (unsigned int i=0; i<FractionsCount; i++)
             fractions[i]->calculateFlowsEvolution(dt);
+        }
     }
     
     void swapBuffers()

@@ -19,3 +19,8 @@ void ModelBase::iterate(double dt)
     space.swapBuffers();
     time += dt;
 }
+
+void ModelBase::setThreadsCount(unsigned int count)
+{
+    space.initThreads(count);
+}
