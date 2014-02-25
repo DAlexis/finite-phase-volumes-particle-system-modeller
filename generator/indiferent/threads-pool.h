@@ -9,51 +9,111 @@
 #include <atomic>
 #include <semaphore.h>
 
+#include <list>
+#include <iostream>
+
 template <class FunctionObject>
 class ThreadsPool
 {
 public:
     ThreadsPool() :
-        m_functionToRun(0),
-        m_threads(0),
-        m_runningThreads(0)
-    {}
+        m_runningThreadsCount(0)
+    {
+        sem_init(&threadsDone, 0, 1);
+        shouldStopThreads = false;
+    }
     
     ~ThreadsPool()
     {
-        if (m_threads) delete[] m_threads;
-        if (m_functionToRun) delete[] m_functionToRun;
+        sem_destroy(&threadsDone);
     }
     
-    void init(unsigned int threadsCount)
+    void wait()
     {
-        m_threadsCount = threadsCount;
-        m_threads = new std::thread[m_threadsCount];
-        m_functionToRun = new FunctionObject[m_threadsCount];
-        threadCanStart = new sem_t[m_threadsCount];
-        
-        sem_init(&threadsDone, 0, 1);
-        for (uint i=0; i<threadsCount; i++)
-            sem_init(&(threadCanStart[i]), 0, 0);
+        std::cout << "== Waiting threads to be done..." << std::endl;
+        sem_wait(&threadsDone);
+        sem_post(&threadsDone);
+        std::cout << "== Yes, done..." << std::endl;
     }
     
-    void run()
+    void unlockThreads()
     {
-        m_runningThreads = m_threadsCount;
+        sem_wait(&threadsDone);
+        m_runningThreadsCount = threads.size();
+        for (auto it = threads.begin(); it != threads.end(); it++)
+            sem_post(&(it->threadCanStart));
+    }
+    
+    void stopThreads()
+    {
+        shouldStopThreads = true;
+        unlockThreads();
+    }
+    
+    void addThread(FunctionObject& function)
+    {
+        threads.push_back(ThreadData());
+        threads.back().startThread(m_runningThreadsCount, threadsDone, function, shouldStopThreads);
     }
     
 private:
-    static void threadFunction()
+    typedef std::atomic<int> DoneThreadsCounterType;
+    class ThreadData
     {
+    public:
+        ThreadData() :
+            m_thread(0)
+        { }
         
-    }
+        ~ThreadData()
+        {
+            if (m_thread) {
+                sem_destroy(&threadCanStart);
+                m_thread->join();
+                delete m_thread;
+            }
+        }
+        
+        void startThread(DoneThreadsCounterType& counter, sem_t& threadsDone, FunctionObject &function, bool& shouldStop)
+        {
+            m_pCounter = &counter;
+            m_pThreadsDone = &threadsDone;
+            m_pShouldStop = &shouldStop;
+            sem_init(&threadCanStart, 0, 0);
+            m_function = function;
+            m_thread = new std::thread(&ThreadData::threadFunction, this);
+        }
+        
+        void threadFunction()
+        {
+            for (;;)
+            {
+                //std::cout << "I'm waiting for signal to start job..." << std::endl;
+                sem_wait(&threadCanStart);
+                //std::cout << "Hm. ";
+                if (*m_pShouldStop) return;
+                //std::cout << "Yes, I'm going to do job." << std::endl;
+                m_function();
+                (*m_pCounter)--;
+                if (*m_pCounter == 0)
+                    sem_post(m_pThreadsDone);
+            }
+        }
+        
+        sem_t threadCanStart;
+        
+    private:
+        std::thread *m_thread;
+        FunctionObject m_function;
+        DoneThreadsCounterType *m_pCounter;
+        sem_t *m_pThreadsDone;
+        bool *m_pShouldStop;
+    };
     
-    int m_threadsCount;
-    FunctionObject *m_functionToRun;
-    std::thread *m_threads;
-    std::atomic<int> m_runningThreads;
+    std::atomic<int> m_runningThreadsCount;
     sem_t threadsDone;
-    sem_t *threadCanStart;
+    std::list<ThreadData> threads;
+    bool shouldStopThreads;
 };
 
 #endif
