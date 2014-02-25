@@ -12,7 +12,7 @@
 #include <list>
 #include <iostream>
 
-template <class FunctionObject>
+template <class FunctionObject, class FunctionArgType>
 class ThreadsPool
 {
 public:
@@ -30,24 +30,29 @@ public:
     
     void wait()
     {
-        std::cout << "== Waiting threads to be done..." << std::endl;
+        //std::cout << "== Waiting threads to be done..." << std::endl;
         sem_wait(&threadsDone);
         sem_post(&threadsDone);
-        std::cout << "== Yes, done..." << std::endl;
+        //std::cout << "== Yes, done..." << std::endl;
     }
     
-    void unlockThreads()
+    void unlockThreads(FunctionArgType functionArg)
     {
         sem_wait(&threadsDone);
         m_runningThreadsCount = threads.size();
         for (auto it = threads.begin(); it != threads.end(); it++)
+        {
+            it->currentFunctionArg = functionArg;
             sem_post(&(it->threadCanStart));
+        }
     }
     
     void stopThreads()
     {
         shouldStopThreads = true;
-        unlockThreads();
+        sem_wait(&threadsDone);
+        for (auto it = threads.begin(); it != threads.end(); it++)
+            sem_post(&(it->threadCanStart));
     }
     
     void addThread(FunctionObject& function)
@@ -93,7 +98,7 @@ private:
                 //std::cout << "Hm. ";
                 if (*m_pShouldStop) return;
                 //std::cout << "Yes, I'm going to do job." << std::endl;
-                m_function();
+                m_function(currentFunctionArg);
                 (*m_pCounter)--;
                 if (*m_pCounter == 0)
                     sem_post(m_pThreadsDone);
@@ -101,6 +106,7 @@ private:
         }
         
         sem_t threadCanStart;
+        FunctionArgType currentFunctionArg;
         
     private:
         std::thread *m_thread;
@@ -108,6 +114,7 @@ private:
         DoneThreadsCounterType *m_pCounter;
         sem_t *m_pThreadsDone;
         bool *m_pShouldStop;
+        
     };
     
     std::atomic<int> m_runningThreadsCount;

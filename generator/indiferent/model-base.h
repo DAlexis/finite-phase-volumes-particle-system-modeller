@@ -12,6 +12,7 @@ class ModelBase
 {
 public:
     ModelBase();
+    ~ModelBase();
     Space space;
     
     void iterate(double dt);

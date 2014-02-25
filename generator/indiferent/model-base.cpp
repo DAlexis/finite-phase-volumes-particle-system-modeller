@@ -12,6 +12,11 @@ ModelBase::ModelBase() :
     space.initQuantities();
 }
 
+ModelBase::~ModelBase()
+{
+    space.stopThreads();
+}
+
 void ModelBase::iterate(double dt)
 {
     outputMaker.output(time);

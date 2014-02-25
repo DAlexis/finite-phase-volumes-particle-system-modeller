@@ -36,8 +36,13 @@ public:
     
     void calculateEvolution(double dt)
     {
-        for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].calculateEvolution(dt);
+        if (m_threadsCount == 1) {
+            for (size_t i=0; i<this->elementsCount; i++)
+                this->elements[i].calculateEvolution(dt);
+            return;
+        }
+        threadsPool.unlockThreads(dt);
+        threadsPool.wait();
     }
     
     void swapBuffers()
@@ -51,6 +56,9 @@ public:
     void initThreads(uint threadsCount)
     {
         m_threadsCount = threadsCount;
+        if (m_threadsCount == 1)
+            return;
+        
         threadsControls = new ThreadControlStructure[m_threadsCount];
         // First space axis is devided
         // @todo Optimal is when 'longest' axis is devided to threads.
@@ -64,11 +72,14 @@ public:
         
         borderMutexes = new std::mutex[m_threadsCount-1];
         
+        threadsControls[0].begin = 0;
+        threadsControls[m_threadsCount-1].end = this->elementsCount-1;
+        
         for (uint i=0; i<m_threadsCount-1; i++) {
             threadsControls[i].rightBorderMutex = &(borderMutexes[i]);
-            threadsControls[i+1].rightBorderMutex = &(borderMutexes[i]);
+            threadsControls[i+1].leftBorderMutex = &(borderMutexes[i]);
             
-            uint borderAxisIndex = this->gridDescription->axis[0].getSegmentsCount() / m_threadsCount * i;
+            uint borderAxisIndex = this->gridDescription->axis[0].getSegmentsCount() / m_threadsCount * (i+1);
             
             borderBeginCoords_ui[0] = borderAxisIndex;
             borderEndCoords_ui[0]   = borderAxisIndex;
@@ -79,7 +90,18 @@ public:
             borderEndCoords_ui[0]   = borderAxisIndex+1;
             threadsControls[i+1].begin         = this->getElementIndex_ui(borderBeginCoords_ui);
             threadsControls[i+1].leftBorderEnd = this->getElementIndex_ui(borderEndCoords_ui);
+            
+            std::function<void(double)> functionForThisBlock = std::bind(miltithreadedCalculateEvolution, this, &(threadsControls[i]), std::placeholders::_1);
+            threadsPool.addThread(functionForThisBlock);
         }
+        
+        std::function<void(double)> functionForLastBlock = std::bind(miltithreadedCalculateEvolution, this, &(threadsControls[m_threadsCount-1]), std::placeholders::_1);
+        threadsPool.addThread(functionForLastBlock);
+    }
+    
+    void stopThreads()
+    {
+        threadsPool.stopThreads();
     }
     
     typename SpaceGridInstance::GridDescription spaceGridDescription;
@@ -94,8 +116,8 @@ private:
             leftBorderEnd(-1),
             rightBorderBegin(-1)
             {}
-        uint begin;
-        uint end;
+        int begin;
+        int end;
         int leftBorderEnd;
         int rightBorderBegin;
         
@@ -105,7 +127,8 @@ private:
     
     static void miltithreadedCalculateEvolution(SpaceBase* object, ThreadControlStructure *threadControl, double dt)
     {
-        size_t i = threadControl->begin;
+        int i = threadControl->begin;
+        //std::cout << "begin: " << threadControl->begin << " end: " << threadControl->end << std::endl;
         if (threadControl->leftBorderEnd != -1) // If we have left border
         {
             threadControl->leftBorderMutex->lock();
@@ -122,19 +145,19 @@ private:
             
             // Right border
             threadControl->rightBorderMutex->lock();
-            for (; i<threadControl->end; i++)
+            for (; i<=threadControl->end; i++)
                 object->elements[i].calculateEvolution(dt);
             threadControl->rightBorderMutex->unlock();
         } else {
             // No right border, simply iterating to end
-            for (; i<threadControl->end; i++)
+            for (; i<=threadControl->end; i++)
                 object->elements[i].calculateEvolution(dt);
         }
         
         if (threadControl->rightBorderBegin != -1)
         {
             threadControl->rightBorderMutex->lock();
-            for (; i<threadControl->end; i++)
+            for (; i<=threadControl->end; i++)
                 object->elements[i].calculateEvolution(dt);
             threadControl->rightBorderMutex->unlock();
         }
@@ -143,6 +166,8 @@ private:
     uint m_threadsCount;
     ThreadControlStructure *threadsControls;
     std::mutex* borderMutexes;
+    //std::function<void(SpaceBase*, ThreadControlStructure*, double)> 
+    ThreadsPool<std::function<void(double)>, double> threadsPool;
 };
 
 

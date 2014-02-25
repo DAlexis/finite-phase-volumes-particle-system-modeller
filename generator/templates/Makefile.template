@@ -12,4 +12,6 @@ cpp_sources =   main.cpp \
                 fractions-pool.cpp \
                 ${fraction_sources_list} \
 
+LDFLAGS += -lpthread
+
 include $$(HOME_DIR)/Makefile.inc
