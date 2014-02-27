@@ -16,10 +16,12 @@ public:
     Space space;
     
     void iterate(double dt);
-    OutputMaker outputMaker;
-    
-    double time;
     void setThreadsCount(unsigned int count);
+    void run(double stopTime, double timeStep);
+
+protected:
+    OutputMaker outputMaker;
+    double time;
 };
 
 #endif // MODEL_BASE_H_INCLUDED

@@ -10,6 +10,7 @@ int main()
     try {
         cout << "Initialising model... ";
         model = new Model;
+        model->setThreadsCount(${threads_count});
         cout << "Done." << endl;
     }
     catch (const exception& ex) {
@@ -19,9 +20,7 @@ int main()
     
     try {
         cout << "Starting modelling" << endl;
-        const double dt = ${time_step};
-        while (model->time < ${stop_time})
-            model->iterate(dt);
+        model->run(${stop_time}, ${time_step});
         cout << "Modelling done." << endl;
     }
     catch (const exception& ex) {

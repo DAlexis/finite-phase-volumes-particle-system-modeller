@@ -10,7 +10,6 @@
 #include <semaphore.h>
 
 #include <list>
-#include <iostream>
 
 template <class FunctionObject, class FunctionArgType>
 class ThreadsPool
@@ -30,9 +29,7 @@ public:
     
     void wait()
     {
-        //std::cout << "== Waiting threads to be done..." << std::endl;
         sem_wait(&threadsDone);
-        //std::cout << "== Yes, done..." << std::endl;
     }
     
     void unlockThreads(FunctionArgType functionArg)
@@ -91,11 +88,8 @@ private:
         {
             for (;;)
             {
-                //std::cout << "I'm waiting for signal to start job..." << std::endl;
                 sem_wait(&threadCanStart);
-                //std::cout << "Hm. ";
                 if (*m_pShouldStop) return;
-                //std::cout << "Yes, I'm going to do job." << std::endl;
                 m_function(currentFunctionArg);
                 
                 m_doneThreadsCounterMutex->lock();

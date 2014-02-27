@@ -18,6 +18,7 @@ public:
     typedef GridElementBase<SpaceDimension> SpaceGridElementInstance;
     
     SpaceBase() :
+        m_threadsCount(1),
         threadsControls(0),
         borderMutexes(0)
         {}

@@ -4,6 +4,10 @@
  
 #include "model-base.h"
 
+#include <math.h>
+#include <iostream>
+#include <iomanip>
+
 ModelBase::ModelBase() :
     outputMaker(&space),
     time(0)
@@ -28,4 +32,19 @@ void ModelBase::iterate(double dt)
 void ModelBase::setThreadsCount(unsigned int count)
 {
     space.initThreads(count);
+}
+
+void ModelBase::run(double stopTime, double timeStep)
+{
+    int lastProgress = -10;
+    while (time < stopTime)
+    {
+        iterate(timeStep);
+        double progress = floor(time / stopTime * 100);
+        if ((progress - lastProgress) >= 1)
+        {
+            lastProgress = progress;
+            std::cout << '\r' << std::setw ( 4 ) << progress << "  %" << std::flush;
+        }
+    }
 }
