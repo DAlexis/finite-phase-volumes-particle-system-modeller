@@ -3,15 +3,20 @@
 
 #include <iostream>
 
+unsigned int threadsCount = ${threads_count};
+double timeStep = ${time_step};
+double stopTime = ${stop_time};
+
 int main()
 {
     using namespace std;
     Model *model;
     try {
-        cout << "Initialising model... ";
+        cout << "Model initialisation... ";
         model = new Model;
-        model->setThreadsCount(${threads_count});
-        cout << "Done." << endl;
+        cout << "Will be used " << threadsCount << " threads." << endl;
+        model->setThreadsCount(threadsCount);
+        cout << "Initialisation done." << endl;
     }
     catch (const exception& ex) {
         cout << endl << "Exception handled during model initialisation: " << ex.what();
@@ -19,8 +24,8 @@ int main()
     }
     
     try {
-        cout << "Starting modelling" << endl;
-        model->run(${stop_time}, ${time_step});
+        cout << "Starting modelling with time from 0 to " << stopTime << ":" << endl;
+        model->run(stopTime, timeStep);
         cout << "Modelling done." << endl;
     }
     catch (const exception& ex) {
