@@ -8,8 +8,6 @@ class FractionsPool : public FractionsPoolBase<SPACE_COORDS_COUNT, FRACTIONS_COU
 {
 public:
     FractionsPool();
-    virtual ~FractionsPool();
-    virtual void createFractions();
 };
 
 #endif // FRACTIONS_POOL_H_INCLUDED

@@ -49,7 +49,6 @@ filesAsIs = [
             'fraction-base.h',
             'fractions-pool-base.h',
             'model-base.h',
-            'model-base.cpp',
             'space-base.h',
             'interfaces.h',
             'global-defines.h',

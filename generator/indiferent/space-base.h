@@ -11,7 +11,7 @@
 #include <functional>
 
 template<int SpaceDimension, class GridElementType>
-class SpaceBase : public Grid<SpaceDimension, GridElementType>
+class SpaceBase : public Grid<SpaceDimension, GridElementType>, public ISpace
 {
 public:
     typedef Grid<SpaceDimension, GridElementType> SpaceGridInstance;
@@ -104,6 +104,10 @@ public:
     {
         threadsPool.stopThreads();
     }
+    
+    // Realisation of ISapce interface
+    IFractionsPool* getCell_d(const double* coords) { return this->accessElement_d(coords); }
+    IFractionsPool* getCell_ui(const uint* coords) { return this->accessElement_ui(coords); }
     
     typename SpaceGridInstance::GridDescription spaceGridDescription;
     void* parent;

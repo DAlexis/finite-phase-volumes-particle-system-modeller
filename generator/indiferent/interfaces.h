@@ -53,4 +53,11 @@ class IFractionsPool
 {
 };
 
+class ISpace
+{
+public:
+    virtual IFractionsPool* getCell_d(const double* coords) = 0;
+    virtual IFractionsPool* getCell_ui(const unsigned int* coords) = 0;
+};
+
 #endif // FRACTION_CELL_INTERFACE_H_INCLUDED

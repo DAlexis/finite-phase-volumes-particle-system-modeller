@@ -44,12 +44,8 @@ public:
             fractions[i]->swapBuffers();
     }
     
-    virtual void createFractions() = 0;
-
     IFractionSpace *fractions[FractionsCount];
-
 protected:
-    void initFractionsPoolBase() { createFractions(); }
 };
 
 //class FractionsPoolBase : public FractionsPoolBaseTmp<SPACE_COORDS_COUNT> {};

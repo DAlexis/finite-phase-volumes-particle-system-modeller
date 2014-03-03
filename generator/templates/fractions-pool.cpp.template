@@ -3,14 +3,5 @@
 
 FractionsPool::FractionsPool()
 {
-    initFractionsPoolBase();
-}
-
-FractionsPool::~FractionsPool()
-{
-}
-
-void FractionsPool::createFractions()
-{
 ${fractions_init_code}
 }

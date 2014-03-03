@@ -8,16 +8,57 @@
 #include "space.h"
 #include "output.h"
 
+#include <math.h>
+#include <iostream>
+#include <iomanip>
+
+template <class SpaceType>
 class ModelBase
 {
 public:
-    ModelBase();
-    ~ModelBase();
-    Space space;
+    ModelBase() :
+        outputMaker(&space),
+        time(0)
+    {
+        space.setParent(this);
+        space.initQuantities();
+    }
     
-    void iterate(double dt);
-    void setThreadsCount(unsigned int count);
-    void run(double stopTime, double timeStep);
+    ~ModelBase()
+    {
+        space.stopThreads();
+    }
+
+    SpaceType space;
+    
+    void iterate(double dt)
+    {
+        outputMaker.output(time);
+        space.calculateEvolution(dt);
+        space.swapBuffers();
+        time += dt;
+    }
+
+    void setThreadsCount(unsigned int count)
+    {
+        space.initThreads(count);
+    }
+    
+    void run(double stopTime, double timeStep)
+    {
+        int lastProgress = -10;
+        while (time < stopTime)
+        {
+            iterate(timeStep);
+            double progress = floor(time / stopTime * 100);
+            if ((progress - lastProgress) >= 1)
+            {
+                lastProgress = progress;
+                std::cout << '\r' << std::setw ( 4 ) << progress << "  %" << std::flush;
+            }
+        }
+        std::cout << std::endl;
+    }
 
 protected:
     OutputMaker outputMaker;

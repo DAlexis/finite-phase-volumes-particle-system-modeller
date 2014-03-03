@@ -7,7 +7,7 @@
 
 #include "model-base.h"
 
-class Model : public ModelBase
+class Model : public ModelBase<Space>
 {
 public:
     Model();
