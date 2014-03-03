@@ -52,23 +52,23 @@ def generate(destinationDir, config, generatedFileHeadComment):
         # Fraction's quantities enum
         #
         enumElements = []
-        enumElements.append(currentFraction['quantities']['particles_count']['fraction_quantity_enum_element'])
-        for quantityId in currentFraction['quantities']:
+        enumElements.append(currentFraction['extensive_quantities']['particles_count']['fraction_quantity_enum_element'])
+        for quantityId in currentFraction['extensive_quantities']:
             if not quantityId == 'particles_count':
-                enumElements.append(currentFraction['quantities'][quantityId]['fraction_quantity_enum_element'])
-        enumElements.append(currentFraction['quantities_enum_prefix'] + 'COUNT')
+                enumElements.append(currentFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'])
+        enumElements.append(currentFraction['extensive_quantities_enum_prefix'] + 'COUNT')
         modDef_h.write(code_utils.createEnum(currentFraction['fraction_quantity_enum'], enumElements) + "\n");
         
         #
         # Fraction's secondary quantities enum
         #
         enumElements = []
-        if 'secondary_quantities' in currentFraction:
-            if currentFraction['secondary_quantities']:
-                for seqQuantityId in currentFraction['secondary_quantities']:
-                    enumElements.append(currentFraction['secondary_quantities'][seqQuantityId]['fraction_secondary_quantity_enum_element'])
+        if 'intensive_quantities' in currentFraction:
+            if currentFraction['intensive_quantities']:
+                for seqQuantityId in currentFraction['intensive_quantities']:
+                    enumElements.append(currentFraction['intensive_quantities'][seqQuantityId]['fraction_secondary_quantity_enum_element'])
         
-        enumElements.append(currentFraction['secondary_quantities_enum_prefix'] + 'COUNT')
+        enumElements.append(currentFraction['intensive_quantities_enum_prefix'] + 'COUNT')
         modDef_h.write(code_utils.createEnum(currentFraction['fraction_secondary_quantity_enum'], enumElements) + "\n");
         
     modDef_h.write(code_utils.headerGuardBottom("model-defines.h"))
