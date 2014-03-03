@@ -44,6 +44,9 @@ public:
             fractions[i]->swapBuffers();
     }
     
+    IFractionSpace* getFraction(unsigned int fractionId) { return fractions[fractionId]; }
+    double getVolume() { return this->volume; }
+    
     IFractionSpace *fractions[FractionsCount];
 protected:
 };

@@ -1,5 +1,4 @@
-#include "model-base.h"
-#include "fractions-pool.h"
+#include "model.h"
 
 FractionsPool::FractionsPool()
 {

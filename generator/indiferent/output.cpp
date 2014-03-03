@@ -17,7 +17,7 @@ OutputInstance::OutputInstance() :
 {
     for (uint i=0; i<MAX_FRACTION_DIMENSION; i++)
         fractionPoint[i] = 0;
-    for (uint i=0; i<SPACE_COORDS_COUNT; i++)
+    for (uint i=0; i<MAX_SPACE_DIMENSION; i++)
         spacePoint[i] = 0;
 }
 
@@ -84,12 +84,12 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
 {
     if (axisIndex == axis.size())
     {
-        FractionsPool *spaceCell = m_space->accessElement_d(spacePoint);
-        IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
+        IFractionsPool *spaceCell = m_space->getCell_d(spacePoint);
+        IFractionSpace *fractionSpace = spaceCell->getFraction(m_fractionId);
         IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
         double result = 0;
         if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
-            result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->volume;
+            result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
         else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
             result = fractionCell->getIntensiveQuantity(m_quantityId);
         for (uint i=axisIndex-2; i<axisIndex; i++)
@@ -114,11 +114,11 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
         // May be little optimized
         if (axis[axisIndex].type == OAT_SPACE_COORDINATE)
             fileName +=
-                "-" + m_space->gridDescription->axis[axis[axisIndex].axisIndex].getId()
+                "-" + m_space->getAxisDescription(axis[axisIndex].axisIndex)->getId()
                 + "=" + std::to_string(spacePoint[axis[axisIndex].axisIndex]);
         else
             fileName += 
-                "-" + m_space->accessElement_d(spacePoint)->fractions[m_fractionId]->getAxisDescription(axis[axisIndex].axisIndex)->getId()
+                "-" + m_space->getCell_d(spacePoint)->getFraction(m_fractionId)->getAxisDescription(axis[axisIndex].axisIndex)->getId()
                 + "=" + std::to_string(spacePoint[axis[axisIndex].axisIndex]);
     }
     
@@ -126,8 +126,8 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
     switch(axis[axisIndex].type)
     {
         case OAT_SPACE_COORDINATE: {
-            double maxVal = m_space->gridDescription->axis[axis[axisIndex].axisIndex].getMaxValue();
-            double minVal = m_space->gridDescription->axis[axis[axisIndex].axisIndex].getMinValue();
+            double maxVal = m_space->getAxisDescription(axis[axisIndex].axisIndex)->getMaxValue();
+            double minVal = m_space->getAxisDescription(axis[axisIndex].axisIndex)->getMinValue();
             for (uint i=0; i<axis[axisIndex].pointsCount; i++)
             {
                 spacePoint[axis[axisIndex].axisIndex] = minVal + (maxVal-minVal) * i / (axis[axisIndex].pointsCount-1);
@@ -135,8 +135,8 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
             }
         } break;
         case OAT_FRACTION_COORDINATE: {
-            FractionsPool *spaceCell = m_space->accessElement_d(spacePoint);
-            IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
+            IFractionsPool *spaceCell = m_space->getCell_d(spacePoint);
+            IFractionSpace *fractionSpace = spaceCell->getFraction(m_fractionId);
             double maxVal = fractionSpace->getAxisDescription(axis[axisIndex].axisIndex)->getMaxValue();
             double minVal = fractionSpace->getAxisDescription(axis[axisIndex].axisIndex)->getMinValue();
             for (uint i=0; i<axis[axisIndex].pointsCount; i++)
@@ -179,23 +179,23 @@ void OutputInstance::output(double time)
         switch (axis[0].type)
         {
             case OAT_SPACE_COORDINATE: {
-                Space& space = *(m_parent->m_space);
-                double maxVal = space.gridDescription->axis[axis[0].axisIndex].getMaxValue();
-                double minVal = space.gridDescription->axis[axis[0].axisIndex].getMinValue();
+                ISpace *space = m_parent->m_space;
+                double maxVal = m_space->getAxisDescription(axis[0].axisIndex)->getMaxValue();
+                double minVal = m_space->getAxisDescription(axis[0].axisIndex)->getMinValue();
                 for (unsigned int pointNumber=0; pointNumber<axis[0].pointsCount; pointNumber++)
                 {
                     spacePoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / (axis[0].pointsCount-1);
-                    FractionsPool *spaceCell = space.accessElement_d(spacePoint);
-                    IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
+                    IFractionsPool *spaceCell = space->getCell_d(spacePoint);
+                    IFractionSpace *fractionSpace = spaceCell->getFraction(m_fractionId);
                     IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-                    double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->volume;
+                    double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
                     (*m_file) << time << " " << spacePoint[axis[0].axisIndex] << " "<< result << std::endl;
                 }
             } break;
             case OAT_FRACTION_COORDINATE: {
-                Space& space = *(m_parent->m_space);
-                FractionsPool *spaceCell = space.accessElement_d(spacePoint);
-                IFractionSpace *fractionSpace = spaceCell->fractions[m_fractionId];
+                ISpace *space = m_parent->m_space;
+                IFractionsPool *spaceCell = space->getCell_d(spacePoint);
+                IFractionSpace *fractionSpace = spaceCell->getFraction(m_fractionId);
                 double maxVal = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMaxValue();
                 double minVal = fractionSpace->getAxisDescription(axis[0].axisIndex)->getMinValue();
                 
@@ -203,7 +203,7 @@ void OutputInstance::output(double time)
                 {
                     fractionPoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / (axis[0].pointsCount-1);
                     IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-                    double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->volume;
+                    double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
                     (*m_file) << time << " " << fractionPoint[axis[0].axisIndex] << " "<< result << std::endl;
                 }
             } break;
@@ -218,7 +218,7 @@ void OutputInstance::output(double time)
 
 //////////////////////
 // OutputMaker
-OutputMaker::OutputMaker(Space* space) :
+OutputMaker::OutputMaker(ISpace* space) :
     m_space(space)
 {
 }

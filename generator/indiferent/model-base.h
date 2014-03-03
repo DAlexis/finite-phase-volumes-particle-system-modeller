@@ -5,7 +5,7 @@
 #ifndef MODEL_BASE_H_INCLUDED
 #define MODEL_BASE_H_INCLUDED
 
-#include "space.h"
+#include "space-base.h"
 #include "output.h"
 
 #include <math.h>

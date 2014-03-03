@@ -6,6 +6,7 @@
 #define SPACE_BASE_H_INCLUDED
 
 #include "global-defines.h"
+#include "interfaces.h"
 #include "threads-pool.h"
 #include <mutex>
 #include <functional>
@@ -108,6 +109,7 @@ public:
     // Realisation of ISapce interface
     IFractionsPool* getCell_d(const double* coords) { return this->accessElement_d(coords); }
     IFractionsPool* getCell_ui(const uint* coords) { return this->accessElement_ui(coords); }
+    const Axis* getAxisDescription(unsigned int axis) { return &(this->gridDescription->axis[axis]); }
     
     typename SpaceGridInstance::GridDescription spaceGridDescription;
     void* parent;

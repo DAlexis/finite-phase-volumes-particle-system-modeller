@@ -1,0 +1,27 @@
+#ifndef MODEL_H_INCLUDED
+#define MODEL_H_INCLUDED
+
+${all_fraction_headers}
+
+#include "global-defines.h"
+#include "model-base.h"
+
+class FractionsPool : public FractionsPoolBase<SPACE_COORDS_COUNT, FRACTIONS_COUNT>
+{
+public:
+    FractionsPool();
+};
+
+class Space : public SpaceBase<SPACE_COORDS_COUNT, FractionsPool>
+{
+public:
+    Space();
+};
+
+class Model : public ModelBase<Space>
+{
+public:
+    Model();
+};
+
+#endif // MODEL_H_INCLUDED

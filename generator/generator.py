@@ -55,8 +55,6 @@ filesAsIs = [
             'grid-template.h',
             'output.cpp',
             'output.h',
-            'space.h',
-            'model.h'
             ]
 
 for fileName in filesAsIs:
@@ -87,9 +85,9 @@ for fractionId in config['model']['fractions']:
                                 fraction,
                                 generatedFileHeadComment)
 
-print "Generating fractions-pool.h"
-code_utils.genFileByTemplate(os.path.join(destinationDir, 'fractions-pool.h'),
-                                'templates/fractions-pool.h.template',
+print "Generating model.h"
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'model.h'),
+                                'templates/model.h.template',
                                 config['model'],
                                 generatedFileHeadComment)
 

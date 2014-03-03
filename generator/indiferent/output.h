@@ -5,7 +5,7 @@
 #ifndef OUTPUT_H_INCLUDED
 #define OUTPUT_H_INCLUDED
 
-#include "space.h"
+#include "space-base.h"
 #include <vector>
 #include <string>
 #include <fstream>
@@ -27,6 +27,7 @@ enum OutputQuantityType
 };
 
 #define MAX_FRACTION_DIMENSION  15
+#define MAX_SPACE_DIMENSION     15
 
 class OutputInstance
 {
@@ -67,7 +68,7 @@ private:
     std::vector<OutputAxisDescription> axis;
     std::vector<uint> convolutionAxis;
     OutputMaker* m_parent;
-    Space* m_space;
+    ISpace* m_space;
     
     double m_period;
     std::string m_filenamePrefix;
@@ -81,7 +82,7 @@ private:
     OutputQuantityType m_quantityType;
     
     double fractionPoint[MAX_FRACTION_DIMENSION];
-    double spacePoint[SPACE_COORDS_COUNT];
+    double spacePoint[MAX_SPACE_DIMENSION];
     
     double m_currentTime;
 };
@@ -89,14 +90,14 @@ private:
 class OutputMaker
 {
 public:
-    OutputMaker(Space* space);
+    OutputMaker(ISpace* space);
     ~OutputMaker();
     
     void addInstance(OutputInstance* instance);
     
     void output(double time);
     
-    Space* m_space;
+    ISpace* m_space;
     
 private:
     std::vector<OutputInstance*> m_instances;
