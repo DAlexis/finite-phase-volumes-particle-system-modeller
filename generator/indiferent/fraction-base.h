@@ -150,31 +150,21 @@ public:
     FractionCellBase()
     {
         for (unsigned int i=0; i<QuantitiesCount; i++) {
-            extensiveQuantitiesBuffer0[i] = 0.0;
-            extensiveQuantitiesBuffer1[i] = 0.0;
+            extensiveQuantities[i] = 0.0;
+            extensiveQuantitiesDelta[i] = 0.0;
         }
         for (unsigned int i=0; i<SecondaryQuantitiesCount; i++)
             intensiveQuantities[i] = 0.0;
-        
-        extensiveQuantities = extensiveQuantitiesBuffer0;
-        nextStepExtensiveQuantities = extensiveQuantitiesBuffer1;
     }
     
     virtual ~FractionCellBase() { }
     
     void swapBuffers()
     {
-        if (extensiveQuantities == extensiveQuantitiesBuffer0)
-        {
-            extensiveQuantities = extensiveQuantitiesBuffer1;
-            nextStepExtensiveQuantities = extensiveQuantitiesBuffer0;
-        } else {
-            extensiveQuantities = extensiveQuantitiesBuffer0;
-            nextStepExtensiveQuantities = extensiveQuantitiesBuffer1;
-        }
         for (unsigned int i=0; i<QuantitiesCount; i++)
         {
-            nextStepExtensiveQuantities[i] = extensiveQuantities[i];
+            extensiveQuantities[i] += extensiveQuantitiesDelta[i];
+            extensiveQuantitiesDelta[i] = 0.0;
         }
     }
     
@@ -261,7 +251,7 @@ public:
         // Removing quantities
         for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX; quantity<QuantitiesCount; quantity++)
         {
-            nextStepExtensiveQuantities[quantity] -= totalFlowOut * quantityOverParticlesCount[quantity];
+            extensiveQuantitiesDelta[quantity] -= totalFlowOut * quantityOverParticlesCount[quantity];
         }
         
         // Adding quantities to neighbors
@@ -272,11 +262,11 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    next->nextStepExtensiveQuantities[quantity] += flowOutUpward[coord] * quantityOverParticlesCount[quantity];
+                    next->extensiveQuantitiesDelta[quantity] += flowOutUpward[coord] * quantityOverParticlesCount[quantity];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[coord] * quantityOverParticlesCount[quantity];
+                    prev->extensiveQuantitiesDelta[quantity] += flowOutDownward[coord] * quantityOverParticlesCount[quantity];
         }
         
         // Adding values in coordinate space
@@ -287,11 +277,11 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    next->nextStepExtensiveQuantities[quantity] += flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
+                    next->extensiveQuantitiesDelta[quantity] += flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<QuantitiesCount; quantity++)
-                    prev->nextStepExtensiveQuantities[quantity] += flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
+                    prev->extensiveQuantitiesDelta[quantity] += flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
         }
         
         // Now all transfer coupled with particles transfer is done
@@ -306,8 +296,8 @@ public:
             if (next) {
                 for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
                     double diffusionFromThis = getDiffusionFlowInSpace(coord, quantity, next) * dt;
-                    nextStepExtensiveQuantities[quantity] -= diffusionFromThis;
-                    next->nextStepExtensiveQuantities[quantity] += diffusionFromThis;
+                    extensiveQuantitiesDelta[quantity] -= diffusionFromThis;
+                    next->extensiveQuantitiesDelta[quantity] += diffusionFromThis;
                 }
             }
         }
@@ -349,8 +339,9 @@ public:
         return intensiveQuantities[intensiveQuantityIndex];
     }
     
-    double* extensiveQuantities;
-    double* nextStepExtensiveQuantities;
+    double extensiveQuantities[QuantitiesCount];
+    double extensiveQuantitiesDelta[QuantitiesCount];
+    
     double intensiveQuantities[SecondaryQuantitiesCount];
     
      /// Space coordinates derivatives
@@ -392,8 +383,6 @@ protected:
     virtual double getSpaceDiffusionCoefficient(uint quantity, uint axisIndex) = 0;
     
 private:
-    double extensiveQuantitiesBuffer0[QuantitiesCount];
-    double extensiveQuantitiesBuffer1[QuantitiesCount];
     
     ///////////////////
     // Convective flows couning

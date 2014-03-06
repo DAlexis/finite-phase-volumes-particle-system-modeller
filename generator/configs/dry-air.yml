@@ -34,6 +34,7 @@ model:
                     name: Horisontal impulse, g*m/c
                 y_impulse:
                     name: Vertical impulse, g*m/c
+            
             intensive_quantities:
                 pressure:
                     name: Air pressure, N/m^2
@@ -47,11 +48,12 @@ model:
                     name: Thermal conduction coefficient, 
                     counting: |
                         thermal_conduction_coefficient = 0;
+            
             init_quantities: |
-                particles_count.NEXT = 1000 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
-                internal_energy.NEXT = 1/(1.4-1) * particles_count.NEXT * 8.31*300;
-                x_impulse.NEXT = 0.0;
-                y_impulse.NEXT = 0; // -8 * particles_count.NEXT * 29 /*g/Moll*/;
+                particles_count = 1000 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
+                internal_energy = 1/(1.4-1) * particles_count * 8.31*300;
+                x_impulse = 0.0;
+                y_impulse = 0; // -8 * particles_count * 29 /*g/Moll*/;
                 
             sources: |
                 AirCell* next = static_cast<AirCell*>(nextInSpace(SPACE_COORDS_Y_COORD));
@@ -61,7 +63,7 @@ model:
                 if (!prev)
                     prev = this;
                 
-                y_impulse.NEXT += (-9.8 * particles_count * 29 /*g/Moll*/ 
+                y_impulse.DELTA += (-9.8 * particles_count * 29 /*g/Moll*/ 
                     + (prev->pressure - next->pressure) * getSpaceCell()->size[SPACE_COORDS_X_COORD]
                     ) * dt;
                 
@@ -73,6 +75,7 @@ model:
                     x_coord.DER = 0.0;
                     y_coord.DER = 0.0;
                 }
+            
             #fraction_coords_derivatives: |
             boundary_conditions:
                 # Default value is 'wall', also allowed 'open'
@@ -87,6 +90,11 @@ model:
                     #top: open
                     #bottom: open
             diffusion:
+                particles_count:
+                    x_coord: |
+                        diffusion = 0.0;
+                    y_coord: |
+                        diffusion = 10.0;
                 internal_energy:
                     x_coord: |
                         diffusion = 0.0;
@@ -165,5 +173,5 @@ output:
 run_options:
     start_time: 0
     stop_time: 40
-    time_step: 0.0001
-    threads_count: 2
+    time_step: 0.001
+    threads_count: 3

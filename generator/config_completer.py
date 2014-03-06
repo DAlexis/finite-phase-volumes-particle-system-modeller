@@ -34,8 +34,8 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     
     # Replacing this fraction's extensiveQuantities
     for quantityId in thisFraction['extensive_quantities']:
-        nextStepQuantityFullName = 'nextStepExtensiveQuantities[' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
-        result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*NEXT\b', nextStepQuantityFullName, result)
+        nextStepQuantityFullName = 'extensiveQuantitiesDelta[' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
+        result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*DELTA\b', nextStepQuantityFullName, result)
         quantityFullName = 'extensiveQuantities[' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
         result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
     
@@ -146,7 +146,7 @@ def completeConfig(configTree):
             currentQuantity = fraction['extensive_quantities'][quantityId]
             currentQuantity['fraction_quantity_enum_element'] = fraction['extensive_quantities_enum_prefix'] + quantityId.upper()
         #
-        # Secondary quantities
+        # Intensive quantities
         #
         secQuantitiesCountingCode = ""
         if 'intensive_quantities' in fraction:
@@ -215,6 +215,11 @@ def completeConfig(configTree):
         else:
             if not fraction['init_quantities']:
                 fraction['init_quantities'] = ""
+        #
+        # Filling some fields if not specified in config file
+        #
+        if not 'fraction_coords_derivatives' in fraction:
+            fraction['fraction_coords_derivatives'] = ""
     
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
     configTree['model']['fraction_sources_list'] = fractionSourcesList
