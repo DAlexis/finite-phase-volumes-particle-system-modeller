@@ -92,12 +92,13 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
             result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
         else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
             result = fractionCell->getIntensiveQuantity(m_quantityId);
+        
         for (uint i=axisIndex-2; i<axisIndex; i++)
         {
             if (axis[i].type == OAT_SPACE_COORDINATE)
                 (*m_file) << spacePoint[axis[i].axisIndex] << " ";
             else
-                (*m_file) <<  fractionPoint[axis[i].axisIndex] << " ";
+                (*m_file) << fractionPoint[axis[i].axisIndex] << " ";
         }
         (*m_file) << result << std::endl;
         return;
@@ -166,7 +167,9 @@ void OutputInstance::output(double time)
         return;
     m_currentTime = time;
     
-    // When one axis is time
+    /* If axis count is 1, we should plot 3d graph (axis, time, quantity)
+     * in other cases time will be in a file name
+     */
     if (axis.size() == 1)
     {
         if (isFirstTime) {
@@ -188,7 +191,11 @@ void OutputInstance::output(double time)
                     IFractionsPool *spaceCell = space->getCell_d(spacePoint);
                     IFractionSpace *fractionSpace = spaceCell->getFraction(m_fractionId);
                     IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-                    double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
+                    double result = 0;
+                    if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
+                        result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
+                    else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
+                        result = fractionCell->getIntensiveQuantity(m_quantityId);
                     (*m_file) << time << " " << spacePoint[axis[0].axisIndex] << " "<< result << std::endl;
                 }
             } break;
@@ -203,13 +210,18 @@ void OutputInstance::output(double time)
                 {
                     fractionPoint[axis[0].axisIndex] = minVal + (maxVal-minVal) * pointNumber / (axis[0].pointsCount-1);
                     IFractionCell *fractionCell = fractionSpace->getCell(fractionPoint);
-                    double result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
+                    double result = 0;
+                    if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
+                        result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
+                    else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
+                        result = fractionCell->getIntensiveQuantity(m_quantityId);
                     (*m_file) << time << " " << fractionPoint[axis[0].axisIndex] << " "<< result << std::endl;
                 }
             } break;
             default: break;
         }
     } else
+        // Output axis count is more than 1
         recursiveIterate(0, m_filenamePrefix);
     
     isFirstTime = false;

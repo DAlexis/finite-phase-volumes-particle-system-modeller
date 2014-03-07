@@ -41,8 +41,11 @@ public:
     {
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->initQuantities();
+        
+        for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateIntensiveQuantities();
     }
-    
+        
     void calculateFlowsEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
@@ -334,10 +337,7 @@ public:
         return result;
     }
     
-    double getIntensiveQuantity(unsigned int intensiveQuantityIndex)
-    {
-        return intensiveQuantities[intensiveQuantityIndex];
-    }
+    double getIntensiveQuantity(unsigned int intensiveQuantityIndex) { return intensiveQuantities[intensiveQuantityIndex]; }
     
     double extensiveQuantities[QuantitiesCount];
     double extensiveQuantitiesDelta[QuantitiesCount];
