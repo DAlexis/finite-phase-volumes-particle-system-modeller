@@ -48,7 +48,15 @@ model:
                     name: Thermal conduction coefficient, 
                     counting: |
                         thermal_conduction_coefficient = 0;
-            
+                velocity_x:
+                    name: Particles velocity in X direction, m/s
+                    counting: |
+                        velocity_x = x_impulse / (particles_count * 29 /*g/Moll*/);
+                velocity_y:
+                    name: Particles velocity in Y direction, m/s
+                    counting: |
+                        velocity_y = y_impulse / (particles_count * 29 /*g/Moll*/);
+                        
             init_quantities: |
                 particles_count = 1000 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
                 internal_energy = 1/(1.4-1) * particles_count * 8.31*300;
@@ -63,18 +71,23 @@ model:
                 if (!prev)
                     prev = this;
                 
+                double sizeX = getSpaceCell()->size[SPACE_COORDS_X_COORD];
+                
                 y_impulse.DELTA += (-9.8 * particles_count * 29 /*g/Moll*/ 
-                    + (prev->pressure - next->pressure) * getSpaceCell()->size[SPACE_COORDS_X_COORD]
+                    + (prev->pressure - next->pressure) * sizeX
                     ) * dt;
                 
+                //internal_energy.DELTA += pressure * sizeX * 
+                
+                //double prevSurfPressure = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_PRESSURE, prev, SPACE_COORDS_Y_COORD);
+                //double nextSurfPressure = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_PRESSURE, next, SPACE_COORDS_Y_COORD);
+                //extensiveQuantitiesDelta[AIR_EXTENSIVE_QUANTITIES_Y_IMPULSE] += (-9.8 * extensiveQuantities[AIR_EXTENSIVE_QUANTITIES_PARTICLES_COUNT] * 29 /*g/Moll*/ 
+                //    + (prevSurfPressure/*prev->intensiveQuantities[AIR_INTENSIVE_QUANTITIES_PRESSURE]*/ - nextSurfPressure/*next->intensiveQuantities[AIR_INTENSIVE_QUANTITIES_PRESSURE]*/) * getSpaceCell()->size[SPACE_COORDS_X_COORD]
+                //    ) * dt;
+                
             space_coords_derivatives: |
-                if (isNotNull(particles_count)) {
-                    x_coord.DER = x_impulse / (particles_count * 29 /*g/Moll*/);
-                    y_coord.DER = y_impulse / (particles_count * 29 /*g/Moll*/);
-                } else {
-                    x_coord.DER = 0.0;
-                    y_coord.DER = 0.0;
-                }
+                x_coord.DER = velocity_x;
+                y_coord.DER = velocity_y;
             
             #fraction_coords_derivatives: |
             boundary_conditions:

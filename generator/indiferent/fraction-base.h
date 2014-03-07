@@ -377,6 +377,13 @@ protected:
         return &( static_cast<FractionSpaceBaseInstance*> (nextCellInSpace->fractions[FractionIndex])->elements[this->elementIndex] );
     }
     
+    inline double interpolateIntensiveQunatityOnSpaceCellsContact(unsigned int quantityId, FractionCellBaseInstance* neighbor, unsigned int spaceCoordinate)
+    {
+        double l1 = getSpaceCell()->size[spaceCoordinate];
+        double l2 = getSpaceCell()->size[spaceCoordinate];
+        return (intensiveQuantities[quantityId]*l1 + neighbor->intensiveQuantities[quantityId]*l2) / (l1+l2);
+    }
+    
     inline FractionCellBase* nextInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->next[coordinate]); }
     inline FractionCellBase* prevInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->prev[coordinate]); }
     
