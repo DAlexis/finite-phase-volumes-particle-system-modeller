@@ -38,10 +38,10 @@ public:
         }
     }
     
-    void swapBuffers()
+    void addDelta()
     {
         for (unsigned int i=0; i<FractionsCount; i++)
-            fractions[i]->swapBuffers();
+            fractions[i]->addDelta();
     }
     
     IFractionSpace* getFraction(unsigned int fractionId) { return fractions[fractionId]; }

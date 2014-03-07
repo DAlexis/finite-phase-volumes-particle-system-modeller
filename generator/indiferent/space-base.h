@@ -47,10 +47,10 @@ public:
         threadsPool.wait();
     }
     
-    void swapBuffers()
+    void addDelta()
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            this->elements[i].swapBuffers();
+            this->elements[i].addDelta();
     }
     
     void setParent(void* model) { parent = model; }

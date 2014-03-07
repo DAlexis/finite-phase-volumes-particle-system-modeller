@@ -64,10 +64,10 @@ public:
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateSourceEvolution(dt);
     }
     
-    void swapBuffers()
+    void addDelta()
     {
         for (size_t i=0; i<this->elementsCount; i++)
-            static_cast<IFractionCell*>( &(this->elements[i]))->swapBuffers();
+            static_cast<IFractionCell*>( &(this->elements[i]))->addDelta();
     }
     
     IFractionCell* getCell(const double* coords)
@@ -159,7 +159,7 @@ public:
     
     virtual ~FractionCellBase() { }
     
-    void swapBuffers()
+    void addDelta()
     {
         for (unsigned int i=0; i<QuantitiesCount; i++)
         {

@@ -35,7 +35,7 @@ public:
     {
         outputMaker.output(time);
         space.calculateEvolution(dt);
-        space.swapBuffers();
+        space.addDelta();
         time += dt;
     }
 
