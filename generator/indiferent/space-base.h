@@ -83,13 +83,13 @@ public:
             
             uint borderAxisIndex = this->gridDescription->axis[0].getSegmentsCount() / m_threadsCount * (i+1);
             
-            borderBeginCoords_ui[0] = borderAxisIndex;
+            borderBeginCoords_ui[0] = borderAxisIndex-1;
             borderEndCoords_ui[0]   = borderAxisIndex;
             threadsControls[i].rightBorderBegin = this->getElementIndex_ui(borderBeginCoords_ui);
             threadsControls[i].end              = this->getElementIndex_ui(borderEndCoords_ui);
             
             borderBeginCoords_ui[0] = borderAxisIndex+1;
-            borderEndCoords_ui[0]   = borderAxisIndex+1;
+            borderEndCoords_ui[0]   = borderAxisIndex+2;
             threadsControls[i+1].begin         = this->getElementIndex_ui(borderBeginCoords_ui);
             threadsControls[i+1].leftBorderEnd = this->getElementIndex_ui(borderEndCoords_ui);
             
