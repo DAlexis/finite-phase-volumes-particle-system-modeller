@@ -1,0 +1,80 @@
+#
+# This is a simple sample config
+#
+# Note: particles count quantity synonim is 'particles_count'
+model:
+    name: 2D diffusion simply
+    cordinate_space_grid:
+        x_coord:
+            name: Coordinate X, m
+            division:
+                mode: uniform
+                min: -25.0
+                max: 25.0
+                segments_count: 100
+        y_coord:
+            name: Coordinate Y, m
+            division:
+                # mode: specific
+                # filename: test.txt
+                mode: uniform
+                min: -25.0
+                max: 25.0
+                segments_count: 100
+    fractions:
+        gas:
+            name: Some substraction
+            #fraction_space_grid:
+            extensive_quantities:
+                particles_count:
+                    name: Count of air, moll
+                
+            init_quantities: |
+                if (fabs(x_coord) < 3 && fabs(y_coord) < 3)
+                    particles_count = 1;
+                
+            sources: |
+                
+            space_coords_derivatives: |
+                x_coord.DER = 0;
+                y_coord.DER = 0;
+            
+            #fraction_coords_derivatives: |
+            boundary_conditions:
+                # Default value is 'wall', also allowed 'open'
+                x_coord:
+                    top: wall
+                    bottom: wall
+                    #top: open
+                    #bottom: open
+                y_coord:
+                    top: wall
+                    bottom: wall
+                    #top: open
+                    #bottom: open
+            diffusion:
+                particles_count:
+                    x_coord: |
+                        diffusion = 1.0;
+                    y_coord: |
+                        diffusion = 2.0;
+output:
+    air_count_vs_coords:
+        name: gas-concentration
+        fraction: gas
+        quantity: particles_count
+        space_point:
+            x_coord: 0
+            y_coord: 0
+        output_axis:
+            x_coord:
+                points_count: 50
+            y_coord:
+                points_count: 50
+        time_step: 0.5
+
+run_options:
+    start_time: 0
+    stop_time: 40
+    time_step: 0.001
+    threads_count: 3
