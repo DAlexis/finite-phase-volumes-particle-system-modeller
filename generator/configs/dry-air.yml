@@ -77,7 +77,9 @@ model:
                     + (prev->pressure - next->pressure) * sizeX
                     ) * dt;
                 
-                //internal_energy.DELTA += pressure * sizeX * 
+                // This is a testing code. Now do nothing
+                if (isNotNull(particles_count))
+                    internal_energy.DELTA += 0 * volume * pressure / particles_count * particles_count.DELTA;
                 
                 //double prevSurfPressure = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_PRESSURE, prev, SPACE_COORDS_Y_COORD);
                 //double nextSurfPressure = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_PRESSURE, next, SPACE_COORDS_Y_COORD);
@@ -186,5 +188,5 @@ output:
 run_options:
     start_time: 0
     stop_time: 40
-    time_step: 0.001
+    time_step: 0.0005
     threads_count: 3

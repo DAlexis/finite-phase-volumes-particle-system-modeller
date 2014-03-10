@@ -1,0 +1,47 @@
+#!/bin/bash
+
+currentProcedure=""
+
+function enterProcedure
+{
+    echo "  + $1"
+    currentProcedure=$1
+}
+
+function checkExitCode 
+{
+    if [ "$?" != "0" ];
+    then
+        echo "  ! Error while $currentProcedure. Stopping."
+        exit -1
+    fi
+}
+
+enterProcedure "Clearing old generated files"
+rm ./test/*
+
+enterProcedure "Generating code"
+(cd ./generator && ./generator.py --config=./configs/$1 )
+checkExitCode
+
+
+
+if [ "$2" == "release" ]
+then
+    enterProcedure "Building release version"
+    make -C test cfg=release
+    checkExitCode
+    
+    enterProcedure "Running release version"
+    (cd ./build/release && time ./sample)
+else
+    enterProcedure "Building debug version"
+    make -C test cfg=debug
+    checkExitCode
+    
+    enterProcedure "Running debug version"
+    (cd ./build/debug && time ./sample)
+fi
+
+checkExitCode
+echo "  = Testing script done."
