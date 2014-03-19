@@ -32,7 +32,7 @@ void ${fraction_cell_classname}::calculateSourceEvolution(double dt)
 ${sources}
 }
 
-double ${fraction_cell_classname}::getSpaceDiffusionCoefficient(uint quantity, uint axisIndex)
+double ${fraction_cell_classname}::getSpaceDiffusionCoefficient(uint axisIndex)
 {
     double diffusion = 0.0;
 ${diffusion_coefficient_counting_code}

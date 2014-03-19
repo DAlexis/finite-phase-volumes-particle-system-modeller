@@ -55,9 +55,6 @@ public:
         
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateFlowsEvolution(dt);
-        
-        for (size_t i=0; i<this->elementsCount; i++)
-            static_cast<IFractionCell*>( &(this->elements[i]))->calculateQuantitiesDiffusion(dt);
     }
     
     void calculateSourceEvolution(double dt)

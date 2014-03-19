@@ -47,6 +47,8 @@ filesAsIs = [
             'axis.h',
             'threads-pool.h',
             'fraction-base.h',
+            'fraction-space-base.h',
+            'fraction-cell-base.h',
             'fractions-pool-base.h',
             'model-base.h',
             'space-base.h',

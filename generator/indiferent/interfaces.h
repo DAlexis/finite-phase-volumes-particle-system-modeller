@@ -21,7 +21,6 @@ public:
      *          in positive axis direction from this cell to next. 
      *          This and next cells are changed.
      */
-    virtual void calculateQuantitiesDiffusion(double dt) = 0;
     virtual void calculateIntensiveQuantities() = 0;
     virtual void addDelta() = 0;
     

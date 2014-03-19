@@ -112,16 +112,10 @@ model:
                     #top: open
                     #bottom: open
             diffusion:
-                particles_count:
-                    x_coord: |
-                        diffusion = 0.0;
-                    y_coord: |
-                        diffusion = 10.0;
-                internal_energy:
-                    x_coord: |
-                        diffusion = 0.0;
-                    y_coord: |
-                        diffusion = 0.0;
+                x_coord: |
+                    diffusion = 0.0;
+                y_coord: |
+                    diffusion = 10.0;
 output:
     air_count_vs_coords:
         name: Air-count-vs-coords

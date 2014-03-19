@@ -166,22 +166,6 @@ public:
         // Now all transfer coupled with particles transfer is done
     }
     
-    void calculateQuantitiesDiffusion(double dt)
-    {/*
-        for (uint coord=0; coord<SpaceDimension; coord++)
-        {
-            FractionCellBaseInstance* next = nextInSpace(coord);
-            // Upward
-            if (next) {
-                for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX+1; quantity<QuantitiesCount; quantity++) {
-                    double diffusionFromThis = getDiffusionFlowInSpace(coord, quantity, next) * dt;
-                    extensiveQuantitiesDelta[quantity] -= diffusionFromThis;
-                    next->extensiveQuantitiesDelta[quantity] += diffusionFromThis;
-                }
-            }
-        }*/
-    }
-    
     double getQuantitiesDensity(unsigned int index)
     {
         return extensiveQuantities[index] / this->volume;
@@ -263,7 +247,7 @@ protected:
     inline FractionCellBase* nextInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->next[coordinate]); }
     inline FractionCellBase* prevInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->prev[coordinate]); }
     
-    virtual double getSpaceDiffusionCoefficient(uint quantity, uint axisIndex) = 0;
+    virtual double getSpaceDiffusionCoefficient(uint axisIndex) = 0;
     
 private:
     
@@ -323,16 +307,6 @@ private:
     
     ///////////////////
     // Diffusion flows couning
-    /*
-    inline double getDiffusionFlowInSpace(unsigned int coordinate, unsigned int quantity, FractionCellBaseInstance* neighbor)
-    {
-        GridElementBase<SpaceDimension>* thisSpaceCell = getSpaceCell();
-        GridElementBase<SpaceDimension>* neighborSpaceCell = neighbor->getSpaceCell();
-        double l1 = thisSpaceCell->size[coordinate];
-        double l2 = neighborSpaceCell->size[coordinate];
-        //return (extensiveQuantities[quantity]/l1 - neighbor->extensiveQuantities[quantity]/l2) / (l1+l2)*2 * getSpaceDiffusionCoefficient(quantity, coordinate);
-        return extensiveQuantities[quantity]/l1 / ((l1+l2) / 2) * getSpaceDiffusionCoefficient(quantity, coordinate);
-    }*/
     
     /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
     inline double getParticlesCountDiffusionFlowOutInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
@@ -342,7 +316,7 @@ private:
         double l1 = thisSpaceCell->size[coordinate];
         double l2 = neighborSpaceCell->size[coordinate];
         
-        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * getSpaceDiffusionCoefficient(EVERY_FRACTION_COUNT_QUANTITY_INDEX, coordinate);
+        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * getSpaceDiffusionCoefficient(coordinate);
     }
     
     /// @todo May be optimexed checking of velocity sign. Now sign is sign of flow projection.
