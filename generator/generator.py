@@ -40,6 +40,13 @@ generatedFileHeadCommentForMake = """#
 #
 # Copying files that should not be modified
 #
+
+print "Creating directories..."
+
+fvmDirectory = os.path.join(destinationDir, "fvm")
+if not os.path.exists(fvmDirectory):
+    os.makedirs(fvmDirectory)
+
 print ""
 print "Copying model-indiferent files"
 filesAsIs = [
@@ -61,8 +68,8 @@ filesAsIs = [
 
 for fileName in filesAsIs:
     target = os.path.join(indiferentDir, fileName)
-    print "Copying " + target + " to " + destinationDir
-    shutil.copy(target, destinationDir)
+    print "Copying " + target + " to " + fvmDirectory
+    shutil.copy(target, fvmDirectory)
 
 config_completer.completeConfig(config)
 

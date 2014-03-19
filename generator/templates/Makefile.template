@@ -1,15 +1,17 @@
 HOME_DIR = ..
 sources_dir = .
 
-project = hand-written-sample
+project = generated-modeller
 exe_name = sample
-cpp_sources =   main.cpp \
-                output.cpp \
+cpp_sources =   fvm/axis.cpp \
+                fvm/output.cpp \
+                main.cpp \
                 space.cpp \
                 model.cpp \
-                axis.cpp \
                 fractions-pool.cpp \
                 ${fraction_sources_list} \
+
+CXXFLAGS += -Ifvm
 
 LDFLAGS += -lpthread
 
