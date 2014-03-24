@@ -11,11 +11,11 @@
 #include <mutex>
 #include <functional>
 
-template<int SpaceDimension, class GridElementType>
-class SpaceBase : public Grid<SpaceDimension, GridElementType>, public ISpace
+template<int SpaceDimension, class FractionPoolType>
+class SpaceBase : public Grid<SpaceDimension, FractionPoolType>, public ISpace
 {
 public:
-    typedef Grid<SpaceDimension, GridElementType> SpaceGridInstance;
+    typedef Grid<SpaceDimension, FractionPoolType> SpaceGridInstance;
     typedef GridElementBase<SpaceDimension> SpaceGridElementInstance;
     
     SpaceBase() :
@@ -106,6 +106,11 @@ public:
         threadsPool.stopThreads();
     }
     
+    void doPairAveraging()
+    {
+        recursivePairAveragingIterate(0);
+    }
+    
     // Realisation of ISapce interface
     IFractionsPool* getCell_d(const double* coords) { return this->accessElement_d(coords); }
     IFractionsPool* getCell_ui(const uint* coords) { return this->accessElement_ui(coords); }
@@ -115,6 +120,21 @@ public:
     void* parent;
     
 private:
+    
+    void recursivePairAveragingIterate(int depth)
+    {
+        if (depth == SpaceDimension) {
+            this->accessElement_ui(cursor)->averageWithNext();
+            return;
+        }
+        
+        uint maxIndex = spaceGridDescription.axis[depth].getSegmentsCount();
+        for (cursor[depth] = 0; cursor[depth] != maxIndex; cursor[depth] += 2)
+        {
+            recursivePairAveragingIterate(depth + 1);
+        }
+    }
+    
     struct ThreadControlStructure
     {
         ThreadControlStructure() :
@@ -173,6 +193,8 @@ private:
     uint m_threadsCount;
     ThreadControlStructure *threadsControls;
     std::mutex* borderMutexes;
+    /// Static vector for operating with uint coords
+    uint cursor[SpaceDimension];
     //std::function<void(SpaceBase*, ThreadControlStructure*, double)> 
     ThreadsPool<std::function<void(double)>, double> threadsPool;
 };

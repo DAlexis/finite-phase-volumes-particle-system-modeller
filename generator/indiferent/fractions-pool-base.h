@@ -48,6 +48,11 @@ public:
     double getVolume() { return this->volume; }
     
     IFractionSpace *fractions[FractionsCount];
+    
+    void averageWithNext()
+    {
+    }
+    
 protected:
 };
 

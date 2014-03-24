@@ -52,6 +52,7 @@ class IFractionsPool
 {
 public:
     virtual IFractionSpace* getFraction(unsigned int fractionId) = 0;
+    virtual void averageWithNext() = 0;
     virtual double getVolume() = 0;
 };
 
@@ -61,6 +62,7 @@ public:
     virtual IFractionsPool* getCell_d(const double* coords) = 0;
     virtual IFractionsPool* getCell_ui(const unsigned int* coords) = 0;
     virtual const Axis* getAxisDescription(unsigned int axis) = 0;
+    virtual void doPairAveraging() = 0;
 };
 
 #endif // FRACTION_CELL_INTERFACE_H_INCLUDED

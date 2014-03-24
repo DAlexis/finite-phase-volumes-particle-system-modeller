@@ -36,6 +36,7 @@ public:
         outputMaker.output(time);
         space.calculateEvolution(dt);
         space.addDelta();
+        space.doPairAveraging();
         time += dt;
     }
 
