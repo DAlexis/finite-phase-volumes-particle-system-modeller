@@ -36,7 +36,10 @@ public:
         outputMaker.output(time);
         space.calculateEvolution(dt);
         space.addDelta();
-        space.doPairAveraging();
+        if (counter++ == 10) {
+            counter = 0;
+            space.averageWithNeighbours();
+        }
         time += dt;
     }
 
@@ -47,6 +50,7 @@ public:
     
     void run(double stopTime, double timeStep)
     {
+        counter=0;
         int lastProgress = -10;
         while (time < stopTime)
         {
@@ -64,6 +68,7 @@ public:
 protected:
     OutputMaker outputMaker;
     double time;
+    int counter;
 };
 
 #endif // MODEL_BASE_H_INCLUDED

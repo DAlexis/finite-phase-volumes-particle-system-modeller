@@ -60,6 +60,8 @@ public:
     void calculateSourceEvolution(double dt)
     {
         for (size_t i=0; i<this->elementsCount; i++)
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateIntensiveQuantities();
+        for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateSourceEvolution(dt);
     }
     
@@ -114,6 +116,7 @@ public:
     int getAveragingBufferSize() { return 1; }
     void storeDataToAveragingBuffer(double* buffer) {}
     void restoreDataFromAveragingBuffer(const double* buffer) {}
+    void averageWithNeighbours() {}
 };
 
 // Template specification when fraction axis count is 0
@@ -147,6 +150,11 @@ public:
     void restoreDataFromAveragingBuffer(const double* buffer)
     {
         this->elements->getExtensiveQuantitiesFromBuffer(buffer);
+    }
+    
+    void averageWithNeighbours()
+    {
+        this->elements->averageWithNeighbours();
     }
 };
 

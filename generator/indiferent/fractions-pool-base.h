@@ -67,7 +67,7 @@ public:
         }
         
         memset(quantitiesAveragingBuffer, 0, sizeof(double)*quantitiesAveragingBufferSize);
-        /*
+        
         for (int i=0; i<averagingBlockSize; i++)
             averagingBlockElements[i]->fractions[0]->storeDataToAveragingBuffer(quantitiesAveragingBuffer);
             
@@ -75,8 +75,9 @@ public:
             quantitiesAveragingBuffer[i] /= averagingBlockSize;
         
         for (int i=0; i<averagingBlockSize; i++)
-            averagingBlockElements[i]->fractions[0]->restoreDataFromAveragingBuffer(quantitiesAveragingBuffer);*/
+            averagingBlockElements[i]->fractions[0]->restoreDataFromAveragingBuffer(quantitiesAveragingBuffer);
     }
+    
     
 protected:
 private:
@@ -92,6 +93,8 @@ private:
             FractionsPoolBase* current = this;
             for (int axisIndex=0; axisIndex<SpaceDimension; axisIndex++)
             {
+                /* This is not magic, i is from 0b000 ~ (this, this, this) to 0b111 ~ (next, next, next).
+                 * Here 1 means next for this dimension and 0 means do not move in this dimension */
                 if ( i & (1 << axisIndex) ) current = static_cast<FractionsPoolBase*>( current->next[axisIndex] );
             }
             averagingBlockElements[i] = current;

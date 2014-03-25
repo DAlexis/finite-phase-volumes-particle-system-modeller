@@ -211,6 +211,33 @@ public:
             extensiveQuantities[i] = buffer[i];
     }
     
+    void getDeltaFromBuffer(const double* buffer)
+    {
+        for (int i=0; i<ExtensiveQuantitiesCount; i++)
+            extensiveQuantitiesDelta[i] = buffer[i] - extensiveQuantities[i];
+    }
+    
+    void averageWithNeighbours()
+    {
+        double buffer[ExtensiveQuantitiesCount];
+        memset(buffer, 0, sizeof(double) * ExtensiveQuantitiesCount);
+        addExtensiveQuantitiesToBuffer(buffer);
+        for (int i=0; i<SpaceDimension; i++)
+        {
+            FractionCellBase* prev = prevInSpace(i);
+            if (prev == NULL) prev = this;
+            FractionCellBase* next = nextInSpace(i);
+            if (next == NULL) next = this;
+            
+            prev->addExtensiveQuantitiesToBuffer(buffer);
+            next->addExtensiveQuantitiesToBuffer(buffer);
+        }
+        for (int i=0; i<ExtensiveQuantitiesCount; i++)
+        {
+            buffer[i] /= (1+2*SpaceDimension);
+        }
+        getDeltaFromBuffer(buffer);
+    }
     
     double extensiveQuantities[ExtensiveQuantitiesCount];
     double extensiveQuantitiesDelta[ExtensiveQuantitiesCount];

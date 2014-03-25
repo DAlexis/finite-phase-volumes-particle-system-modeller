@@ -48,6 +48,7 @@ public:
     virtual int getAveragingBufferSize() = 0;
     virtual void storeDataToAveragingBuffer(double* buffer) = 0;
     virtual void restoreDataFromAveragingBuffer(const double* buffer) = 0;
+    virtual void averageWithNeighbours() = 0;
     
     virtual ~IFractionSpace() {}
 };
