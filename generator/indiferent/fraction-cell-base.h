@@ -15,8 +15,8 @@ template <int FractionIndex,
           int FractionsCount,
           int SpaceDimension,
           int FractionSpaceDimension,
-          int QuantitiesCount,
-          int SecondaryQuantitiesCount,
+          int ExtensiveQuantitiesCount,
+          int IntensiveQuantitiesCount,
           class FractionCellType>
 class FractionCellBase : public GridElementBase<FractionSpaceDimension>, public IFractionCell
 {
@@ -28,11 +28,11 @@ public:
     
     FractionCellBase()
     {
-        for (unsigned int i=0; i<QuantitiesCount; i++) {
+        for (unsigned int i=0; i<ExtensiveQuantitiesCount; i++) {
             extensiveQuantities[i] = 0.0;
             extensiveQuantitiesDelta[i] = 0.0;
         }
-        for (unsigned int i=0; i<SecondaryQuantitiesCount; i++)
+        for (unsigned int i=0; i<IntensiveQuantitiesCount; i++)
             intensiveQuantities[i] = 0.0;
     }
     
@@ -40,7 +40,7 @@ public:
     
     void addDelta()
     {
-        for (unsigned int i=0; i<QuantitiesCount; i++)
+        for (unsigned int i=0; i<ExtensiveQuantitiesCount; i++)
         {
             extensiveQuantities[i] += extensiveQuantitiesDelta[i];
             extensiveQuantitiesDelta[i] = 0.0;
@@ -110,9 +110,9 @@ public:
         }
         
         // Cache for frequently used q[i]/n
-        double quantityOverParticlesCount[QuantitiesCount];
+        double quantityOverParticlesCount[ExtensiveQuantitiesCount];
         /// We know that particles count is not null (see function beginning)
-        for (unsigned int quantity=0; quantity<QuantitiesCount; quantity++)
+        for (unsigned int quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
             quantityOverParticlesCount[quantity] = extensiveQuantities[quantity] / extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX];
         
         // Check if we trying to remove more particles that we have
@@ -128,7 +128,7 @@ public:
         }
         
         // Removing quantities
-        for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX; quantity<QuantitiesCount; quantity++)
+        for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX; quantity<ExtensiveQuantitiesCount; quantity++)
         {
             extensiveQuantitiesDelta[quantity] -= totalFlowOut * quantityOverParticlesCount[quantity];
         }
@@ -140,11 +140,11 @@ public:
             FractionCellBaseInstance* prev = prevInFractionSpace(coord);
             // Upward
             if (next)
-                for (uint quantity=0; quantity<QuantitiesCount; quantity++)
+                for (uint quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
                     next->extensiveQuantitiesDelta[quantity] += flowOutUpward[coord] * quantityOverParticlesCount[quantity];
             // Downward
             if (prev)
-                for (uint quantity=0; quantity<QuantitiesCount; quantity++)
+                for (uint quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
                     prev->extensiveQuantitiesDelta[quantity] += flowOutDownward[coord] * quantityOverParticlesCount[quantity];
         }
         
@@ -155,11 +155,11 @@ public:
             FractionCellBaseInstance* prev = prevInSpace(coord);
             // Upward
             if (next)
-                for (uint quantity=0; quantity<QuantitiesCount; quantity++)
+                for (uint quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
                     next->extensiveQuantitiesDelta[quantity] += flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
             // Downward
             if (prev)
-                for (uint quantity=0; quantity<QuantitiesCount; quantity++)
+                for (uint quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
                     prev->extensiveQuantitiesDelta[quantity] += flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
         }
         
@@ -199,10 +199,23 @@ public:
     
     double getIntensiveQuantity(unsigned int intensiveQuantityIndex) { return intensiveQuantities[intensiveQuantityIndex]; }
     
-    double extensiveQuantities[QuantitiesCount];
-    double extensiveQuantitiesDelta[QuantitiesCount];
+    void addExtensiveQuantitiesToBuffer(double* buffer)
+    {
+        for (int i=0; i<ExtensiveQuantitiesCount; i++)
+            buffer[i] += extensiveQuantities[i];
+    }
     
-    double intensiveQuantities[SecondaryQuantitiesCount];
+    void getExtensiveQuantitiesFromBuffer(const double* buffer)
+    {
+        for (int i=0; i<ExtensiveQuantitiesCount; i++)
+            extensiveQuantities[i] = buffer[i];
+    }
+    
+    
+    double extensiveQuantities[ExtensiveQuantitiesCount];
+    double extensiveQuantitiesDelta[ExtensiveQuantitiesCount];
+    
+    double intensiveQuantities[IntensiveQuantitiesCount];
     
      /// Space coordinates derivatives
     double spaceCoordsDerivatives[SpaceDimension];

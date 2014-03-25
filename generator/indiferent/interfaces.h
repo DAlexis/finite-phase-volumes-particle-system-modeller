@@ -42,8 +42,12 @@ public:
     virtual IFractionCell* getCell(const double* coords) = 0;
     
     virtual double getQuantitiesSum(unsigned int quantityIndex) = 0;
-    
+
     virtual const Axis* getAxisDescription(unsigned int axis) = 0;
+    
+    virtual int getAveragingBufferSize() = 0;
+    virtual void storeDataToAveragingBuffer(double* buffer) = 0;
+    virtual void restoreDataFromAveragingBuffer(const double* buffer) = 0;
     
     virtual ~IFractionSpace() {}
 };

@@ -11,7 +11,7 @@ model:
                 mode: uniform
                 min: -25.0
                 max: 25.0
-                segments_count: 1
+                segments_count: 2
         y_coord:
             name: Coordinate Y, m
             division:
@@ -136,7 +136,7 @@ model:
                 x_coord: |
                     diffusion = 0.0;
                 y_coord: |
-                    diffusion = 90.0;
+                    diffusion = 10.0;
 output:
     air_count_vs_coords:
         name: Air-count-vs-coords
@@ -223,6 +223,6 @@ output:
         time_step: 0.01
 run_options:
     start_time: 0
-    stop_time: 5
+    stop_time: 1
     time_step: 0.00001
     threads_count: 3

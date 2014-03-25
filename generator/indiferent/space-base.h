@@ -10,6 +10,7 @@
 #include "threads-pool.h"
 #include <mutex>
 #include <functional>
+#include <memory>
 
 template<int SpaceDimension, class FractionPoolType>
 class SpaceBase : public Grid<SpaceDimension, FractionPoolType>, public ISpace
@@ -108,7 +109,7 @@ public:
     
     void doPairAveraging()
     {
-        recursivePairAveragingIterate(0);
+        recursiveDoPairAveraging(0);
     }
     
     // Realisation of ISapce interface
@@ -120,21 +121,6 @@ public:
     void* parent;
     
 private:
-    
-    void recursivePairAveragingIterate(int depth)
-    {
-        if (depth == SpaceDimension) {
-            this->accessElement_ui(cursor)->averageWithNext();
-            return;
-        }
-        
-        uint maxIndex = spaceGridDescription.axis[depth].getSegmentsCount();
-        for (cursor[depth] = 0; cursor[depth] != maxIndex; cursor[depth] += 2)
-        {
-            recursivePairAveragingIterate(depth + 1);
-        }
-    }
-    
     struct ThreadControlStructure
     {
         ThreadControlStructure() :
@@ -151,6 +137,35 @@ private:
         std::mutex* leftBorderMutex;
         std::mutex* rightBorderMutex;
     };
+    
+    /*
+    struct AveragingBlock
+    {
+        AveragingBlock() : size(0), cells(0) {
+            size = 1;
+            for (int i=0; i<SpaceDimension; i++) size *= 2;
+            cells = new FractionPoolType*[size];
+        }
+        ~AveragingBlock() { if (cells) delete[] cells; }
+        int size;
+        FractionPoolType **cells;
+    };*/
+    
+    void recursiveDoPairAveraging(int depth)
+    {
+        if (depth == SpaceDimension) {
+            // Creating elements list in AveragingBlock
+            //averagingBlocks.push_back(AveragingBlock());
+            this->accessElement_ui(cursor)->averageWithNext();
+            return;
+        }
+        
+        uint maxIndex = spaceGridDescription.axis[depth].getSegmentsCount();
+        for (cursor[depth] = 0; cursor[depth] < maxIndex; cursor[depth] += 2)
+        {
+            recursiveDoPairAveraging(depth + 1);
+        }
+    }
     
     static void miltithreadedCalculateEvolution(SpaceBase* object, ThreadControlStructure *threadControl, double dt)
     {
@@ -197,6 +212,7 @@ private:
     uint cursor[SpaceDimension];
     //std::function<void(SpaceBase*, ThreadControlStructure*, double)> 
     ThreadsPool<std::function<void(double)>, double> threadsPool;
+    //std::vector<AveragingBlock> averagingBlocks;
 };
 
 

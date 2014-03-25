@@ -7,12 +7,20 @@
 
 #include "global-defines.h"
 #include "interfaces.h"
+#include <string.h>
+
+/// @todo Remove this magic constant
+#define MAX_EXTENSIVE_QUANTITIES_COUNT  20
 
 template<int SpaceDimension, int FractionsCount>
 class FractionsPoolBase : public GridElementBase<SpaceDimension>, public IFractionsPool
 {
 public:
-    FractionsPoolBase()
+    FractionsPoolBase() :
+        averagingBlockSize(0),
+        quantitiesAveragingBufferSize(0),
+        averagingBlockElements(0),
+        quantitiesAveragingBuffer(0)
     {
         for (unsigned int i=0; i<FractionsCount; i++)
             fractions[i] = NULL;
@@ -20,6 +28,8 @@ public:
     
     virtual ~FractionsPoolBase()
     {
+        if (averagingBlockElements) delete[] averagingBlockElements;
+        if (quantitiesAveragingBuffer) delete[] quantitiesAveragingBuffer;
         for (unsigned int i=0; i<FractionsCount; i++)
             if (fractions[i]) delete fractions[i];
     }
@@ -49,11 +59,49 @@ public:
     
     IFractionSpace *fractions[FractionsCount];
     
+    // Works now for fraction #0
     void averageWithNext()
     {
+        if (averagingBlockElements == 0) {
+            initAveragingBlock();
+        }
+        
+        memset(quantitiesAveragingBuffer, 0, sizeof(double)*quantitiesAveragingBufferSize);
+        /*
+        for (int i=0; i<averagingBlockSize; i++)
+            averagingBlockElements[i]->fractions[0]->storeDataToAveragingBuffer(quantitiesAveragingBuffer);
+            
+        for (int i=0; i<quantitiesAveragingBufferSize; i++)
+            quantitiesAveragingBuffer[i] /= averagingBlockSize;
+        
+        for (int i=0; i<averagingBlockSize; i++)
+            averagingBlockElements[i]->fractions[0]->restoreDataFromAveragingBuffer(quantitiesAveragingBuffer);*/
     }
     
 protected:
+private:
+    void initAveragingBlock()
+    {
+        averagingBlockSize = 1;
+        for (int i=0; i<SpaceDimension; i++) averagingBlockSize *= 2;
+        averagingBlockElements = new FractionsPoolBase*[averagingBlockSize];
+        quantitiesAveragingBufferSize = MAX_EXTENSIVE_QUANTITIES_COUNT;
+        quantitiesAveragingBuffer = new double[quantitiesAveragingBufferSize];
+        // Filling averagingBlockElements
+        for (int i=0; i<averagingBlockSize; i++) {
+            FractionsPoolBase* current = this;
+            for (int axisIndex=0; axisIndex<SpaceDimension; axisIndex++)
+            {
+                if ( i & (1 << axisIndex) ) current = static_cast<FractionsPoolBase*>( current->next[axisIndex] );
+            }
+            averagingBlockElements[i] = current;
+        }
+    }
+    
+    int averagingBlockSize;
+    int quantitiesAveragingBufferSize;
+    FractionsPoolBase** averagingBlockElements;
+    double* quantitiesAveragingBuffer;
 };
 
 //class FractionsPoolBase : public FractionsPoolBaseTmp<SPACE_COORDS_COUNT> {};

@@ -110,6 +110,10 @@ public:
     typedef FractionSpaceBase<SpaceDimension, FractionSpaceDimension, FractionsCount, FractionCellType> FractionSpaceBaseInstance;
     
     const Axis* getAxisDescription(unsigned int axis) { return &(this->gridDescription->axis[axis]); }
+    
+    int getAveragingBufferSize() { return 1; }
+    void storeDataToAveragingBuffer(double* buffer) {}
+    void restoreDataFromAveragingBuffer(const double* buffer) {}
 };
 
 // Template specification when fraction axis count is 0
@@ -129,6 +133,21 @@ public:
     
     /// This function is not ever called and is here only to prevent compilation errors
     const Axis* getAxisDescription(unsigned int axis) { return NULL; }
+    
+    int getAveragingBufferSize()
+    {
+        return 20; /// @todo Remove this magic constant
+    }
+    
+    void storeDataToAveragingBuffer(double* buffer)
+    {
+        this->elements->addExtensiveQuantitiesToBuffer(buffer);
+    }
+    
+    void restoreDataFromAveragingBuffer(const double* buffer)
+    {
+        this->elements->getExtensiveQuantitiesFromBuffer(buffer);
+    }
 };
 
 #endif // FRACTION_SPACE_BASE_INCLUDED
