@@ -78,6 +78,10 @@ public:
             averagingBlockElements[i]->fractions[0]->restoreDataFromAveragingBuffer(quantitiesAveragingBuffer);
     }
     
+    void averageWithNeighbours()
+    {
+        fractions[0]->averageWithNeighbours();
+    }
     
 protected:
 private:

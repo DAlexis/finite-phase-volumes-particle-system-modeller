@@ -112,6 +112,12 @@ public:
         recursiveDoPairAveraging(0);
     }
     
+    void averageWithNeighbours()
+    {
+        for (uint i=0; i < this->elementsCount; i++)
+            this->elements[i].averageWithNeighbours();
+    }
+    
     // Realisation of ISapce interface
     IFractionsPool* getCell_d(const double* coords) { return this->accessElement_d(coords); }
     IFractionsPool* getCell_ui(const uint* coords) { return this->accessElement_ui(coords); }

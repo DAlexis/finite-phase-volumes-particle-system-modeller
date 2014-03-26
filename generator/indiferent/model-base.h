@@ -36,7 +36,7 @@ public:
         outputMaker.output(time);
         space.calculateEvolution(dt);
         space.addDelta();
-        if (counter++ == 10) {
+        if (counter++ == 300) {
             counter = 0;
             space.averageWithNeighbours();
         }
