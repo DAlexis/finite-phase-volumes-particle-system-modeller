@@ -199,29 +199,26 @@ public:
     
     double getIntensiveQuantity(unsigned int intensiveQuantityIndex) { return intensiveQuantities[intensiveQuantityIndex]; }
     
-    void addExtensiveQuantitiesToBuffer(double* buffer)
+    void addExtesiveQuantitiesToAveragingBuffer(double &bufferVolume, double *extensiveQunatitiesTotalBuffer)
     {
+        bufferVolume += getSpaceCell()->volume;
         for (int i=0; i<ExtensiveQuantitiesCount; i++)
-            buffer[i] += extensiveQuantities[i];
+            extensiveQunatitiesTotalBuffer[i] += extensiveQuantities[i];
     }
     
-    void getExtensiveQuantitiesFromBuffer(const double* buffer)
+    void getExtesiveQuantitiesDeltaFromAveragingBuffer(double bufferVolume, double *extensiveQunatitiesTotalBuffer)
     {
+        double thisVolOverBufferVol = getSpaceCell()->volume / bufferVolume;
         for (int i=0; i<ExtensiveQuantitiesCount; i++)
-            extensiveQuantities[i] = buffer[i];
-    }
-    
-    void getDeltaFromBuffer(const double* buffer)
-    {
-        for (int i=0; i<ExtensiveQuantitiesCount; i++)
-            extensiveQuantitiesDelta[i] = buffer[i] - extensiveQuantities[i];
+            extensiveQuantitiesDelta[i] = extensiveQunatitiesTotalBuffer[i]*thisVolOverBufferVol - extensiveQuantities[i];
     }
     
     void averageWithNeighbours()
     {
         double buffer[ExtensiveQuantitiesCount];
+        double bufferVolume = 0;
         memset(buffer, 0, sizeof(double) * ExtensiveQuantitiesCount);
-        addExtensiveQuantitiesToBuffer(buffer);
+        addExtesiveQuantitiesToAveragingBuffer(bufferVolume, buffer);
         for (int i=0; i<SpaceDimension; i++)
         {
             FractionCellBase* prev = prevInSpace(i);
@@ -229,14 +226,10 @@ public:
             FractionCellBase* next = nextInSpace(i);
             if (next == NULL) next = this;
             
-            prev->addExtensiveQuantitiesToBuffer(buffer);
-            next->addExtensiveQuantitiesToBuffer(buffer);
+            prev->addExtesiveQuantitiesToAveragingBuffer(bufferVolume, buffer);
+            next->addExtesiveQuantitiesToAveragingBuffer(bufferVolume, buffer);
         }
-        for (int i=0; i<ExtensiveQuantitiesCount; i++)
-        {
-            buffer[i] /= (1+2*SpaceDimension);
-        }
-        getDeltaFromBuffer(buffer);
+        getExtesiveQuantitiesDeltaFromAveragingBuffer(bufferVolume, buffer);
     }
     
     double extensiveQuantities[ExtensiveQuantitiesCount];
