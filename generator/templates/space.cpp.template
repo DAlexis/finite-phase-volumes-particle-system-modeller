@@ -4,4 +4,5 @@ Space::Space()
 {
 ${space_axis_configuration}
     constructGrid(spaceGridDescription);
+${averaging_enabling_code}
 }

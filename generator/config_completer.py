@@ -92,6 +92,7 @@ def completeConfig(configTree):
     #
     # Configuring fractions
     #
+    averagingEnablingCode = ""
     allFractionHeadersInclude = ""
     fractionsInitCode = ""
     fractionSourcesList = ""
@@ -210,11 +211,18 @@ def completeConfig(configTree):
             if not fraction['init_quantities']:
                 fraction['init_quantities'] = ""
         #
+        # Enabling averaging stabilisation if needed
+        #
+        if 'stabilisation' in fraction:
+            if fraction['stabilisation']:
+                averagingEnablingCode = averagingEnablingCode + "turnOnAveraging(" + fraction['fractions_enum_element'] + ");\n";
+        #
         # Filling some fields if not specified in config file
         #
         if not 'fraction_coords_derivatives' in fraction:
             fraction['fraction_coords_derivatives'] = ""
     
+    configTree['model']['averaging_enabling_code'] = code_utils.indentCode(averagingEnablingCode, "    ")
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
     configTree['model']['fraction_sources_list'] = fractionSourcesList
     configTree['model']['fractions_init_code'] = fractionsInitCode
