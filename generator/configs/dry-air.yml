@@ -24,6 +24,7 @@ model:
     fractions:
         air:
             name: Air
+            stabilisation: on
             #fraction_space_grid:
             extensive_quantities:
                 particles_count:
@@ -47,7 +48,7 @@ model:
                 thermal_conduction_coefficient:
                     name: Thermal conduction coefficient, 
                     counting: |
-                        thermal_conduction_coefficient = 100000;//0.026;
+                        thermal_conduction_coefficient = 0;//100000;//0.026;
                 diffusion_coefficient:
                     name: Air steady-state diffusion coefficient, m^2/s
                     counting: |
@@ -136,7 +137,7 @@ model:
                 x_coord: |
                     diffusion = 0.0;
                 y_coord: |
-                    diffusion = 90.0;
+                    diffusion = 0.0;
 output:
     air_count_vs_coords:
         name: Air-count-vs-coords
@@ -223,6 +224,7 @@ output:
         time_step: 0.01
 run_options:
     start_time: 0
-    stop_time: 5
+    stop_time: 1
     time_step: 0.00001
+    stabilisation_period: 0.00300
     threads_count: 3

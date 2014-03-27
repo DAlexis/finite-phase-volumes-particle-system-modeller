@@ -217,7 +217,7 @@ def completeConfig(configTree):
             if fraction['stabilisation']:
                 averagingEnablingCode = averagingEnablingCode + "turnOnAveraging(" + fraction['fractions_enum_element'] + ");\n";
         #
-        # Filling some fields if not specified in config file
+        # Filling some fraction fields if not specified in config file
         #
         if not 'fraction_coords_derivatives' in fraction:
             fraction['fraction_coords_derivatives'] = ""
@@ -298,6 +298,11 @@ def completeConfig(configTree):
     
     configTree['model']['outputs_init_code'] = outputsInitialisationCode
     
+    #
+    # Filling some run options fields if not specified in config file
+    #
+    if not 'stabilisation_period' in configTree['run_options']:
+        configTree['run_options']['stabilisation_period'] = configTree['run_options']['stop_time']
     #
     # Resolving macro symbols in code fragments
     #

@@ -6,6 +6,7 @@
 unsigned int threadsCount = ${threads_count};
 double timeStep = ${time_step};
 double stopTime = ${stop_time};
+double stabilisationPeriod = ${stabilisation_period};
 
 int main()
 {
@@ -14,8 +15,9 @@ int main()
     try {
         cout << "Model initialisation... ";
         model = new Model;
-        cout << "Will be used " << threadsCount << " threads." << endl;
+        cout << "Using " << threadsCount << " threads" << endl;
         model->setThreadsCount(threadsCount);
+        model->setStabilisationPeriod(stabilisationPeriod);
         cout << "Initialisation done." << endl;
     }
     catch (const exception& ex) {

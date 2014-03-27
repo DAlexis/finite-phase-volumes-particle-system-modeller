@@ -18,7 +18,8 @@ class ModelBase
 public:
     ModelBase() :
         outputMaker(&space),
-        time(0)
+        time(0),
+        lastStabilisationTime(0)
     {
         space.setParent(this);
         space.initQuantities();
@@ -36,8 +37,9 @@ public:
         outputMaker.output(time);
         space.calculateEvolution(dt);
         space.addDelta();
-        if (counter++ == 300) {
-            counter = 0;
+        if ( time-lastStabilisationTime >= stabilisationPeriod )
+        {
+            lastStabilisationTime = time;
             space.averageWithNeighbours();
         }
         time += dt;
@@ -48,9 +50,13 @@ public:
         space.initThreads(count);
     }
     
+    void setStabilisationPeriod(const double period)
+    {
+        stabilisationPeriod = period;
+    }
+    
     void run(double stopTime, double timeStep)
     {
-        counter=0;
         int lastProgress = -10;
         while (time < stopTime)
         {
@@ -68,7 +74,8 @@ public:
 protected:
     OutputMaker outputMaker;
     double time;
-    int counter;
+    double lastStabilisationTime;
+    double stabilisationPeriod;
 };
 
 #endif // MODEL_BASE_H_INCLUDED
