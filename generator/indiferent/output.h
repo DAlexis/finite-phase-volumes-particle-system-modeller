@@ -49,8 +49,10 @@ public:
     
     void setParent(OutputMaker* parent);
     void output(double time);
+    void finalise();
     
 private:
+    void quantityVsAxisAndTimeIterate();
     void recursiveIterate(uint axisIndex, std::string fileName);
     
     struct OutputAxisDescription
@@ -76,7 +78,8 @@ private:
     bool isFirstTime;
     double lastOutputTime;
     
-    std::ofstream* m_file;
+    std::ofstream* m_dataFile;
+    std::ofstream* m_gnuplotFile;
     
     uint m_fractionId, m_quantityId;
     OutputQuantityType m_quantityType;
@@ -96,6 +99,7 @@ public:
     void addInstance(OutputInstance* instance);
     
     void output(double time);
+    void finalise();
     
     ISpace* m_space;
     
