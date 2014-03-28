@@ -210,7 +210,7 @@ def completeConfig(configTree):
                     axisSwitchCases[ configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] ] = \
                         fraction['diffusion'][axisId] # Adding code to cases dictionary
                 diffCountingCode = code_utils.createSwitch("axisIndex", axisSwitchCases)
-        fraction['diffusion_coefficient_counting_code'] = code_utils.indentCode(diffCountingCode, "    ")
+        fraction['diffusion_coefficient_counting_code'] = diffCountingCode
         #
         # Quantities initialisation code
         #
@@ -323,3 +323,4 @@ def completeConfig(configTree):
         fraction['fraction_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction), "    ")
         fraction['intensive_quantities_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['intensive_quantities_counting_code'], configTree, fraction), "    ")
         fraction['init_quantities'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['init_quantities'], configTree, fraction), "    ")
+        fraction['diffusion_coefficient_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['diffusion_coefficient_counting_code'], configTree, fraction), "    ")

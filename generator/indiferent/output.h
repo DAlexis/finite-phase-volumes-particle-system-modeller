@@ -52,6 +52,7 @@ public:
     void finalise();
     
 private:
+    void createGnuplotFile(const std::string& filenamePrefix);
     void quantityVsAxisAndTimeIterate();
     void recursiveIterate(uint axisIndex, std::string fileName);
     
@@ -79,7 +80,6 @@ private:
     double lastOutputTime;
     
     std::ofstream* m_dataFile;
-    std::ofstream* m_gnuplotFile;
     
     uint m_fractionId, m_quantityId;
     OutputQuantityType m_quantityType;

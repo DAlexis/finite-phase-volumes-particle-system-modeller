@@ -9,12 +9,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-std::string gnuplotHead = "#!/usr/bin/gnuplot\n\
-\
-set terminal qt\n";
-
-std::string gnuplotFoot = "pause -1";
-
 OutputInstance::OutputInstance() :
     m_parent(NULL),
     m_space(NULL),
@@ -33,11 +27,6 @@ OutputInstance::~OutputInstance()
     if (m_dataFile) {
         m_dataFile->close();
         delete m_dataFile;
-    }
-    if (m_gnuplotFile) {
-        (*m_gnuplotFile) << gnuplotFoot << std::endl;
-        m_gnuplotFile->close();
-        delete m_gnuplotFile;
     }
 }
 
@@ -122,8 +111,7 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
         std::string fullFilenameWithoutExt = fileName + "-t=" + std::to_string(m_currentTime);
         m_dataFile = new std::ofstream(fullFilenameWithoutExt +".txt");
         (*m_dataFile) << std::setprecision (std::numeric_limits<double>::digits10 + 1);
-        m_gnuplotFile = new std::ofstream(fullFilenameWithoutExt+".plt");
-        (*m_gnuplotFile) << gnuplotHead << std::endl;
+        createGnuplotFile(fullFilenameWithoutExt);
     }
     else if (axisIndex < axis.size()-2)
     {
@@ -173,34 +161,16 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
         m_dataFile->close();
         delete m_dataFile;
         m_dataFile = NULL;
-        
-        (*m_gnuplotFile) << gnuplotFoot << std::endl;
-        m_gnuplotFile->close();
-        delete m_gnuplotFile;
-        m_gnuplotFile = NULL;
     }
 }
 
 void OutputInstance::quantityVsAxisAndTimeIterate()
 {
     if (isFirstTime) {
-        std::string dataFileName = m_filenamePrefix+".txt";
-        m_dataFile = new std::ofstream(dataFileName);
+        m_dataFile = new std::ofstream(m_filenamePrefix+".txt");
         (*m_dataFile) << std::setprecision (std::numeric_limits<double>::digits10 + 1);
+        createGnuplotFile(m_filenamePrefix);
         
-        std::string gnuplotFileName = m_filenamePrefix+".plt";
-        m_gnuplotFile = new std::ofstream(gnuplotFileName);
-        (*m_gnuplotFile) << gnuplotHead << std::endl;
-        chmod(gnuplotFileName.c_str(), S_IRWXU | S_IRGRP | S_IROTH);
-        (*m_gnuplotFile) << "set title \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->name << "\"" << std::endl;
-        (*m_gnuplotFile) << "set xlabel \"Time, sec\"" << std::endl;
-        (*m_gnuplotFile) << "set ylabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
-        if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
-            (*m_gnuplotFile) << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->extensiveQuantitiesNames[m_quantityId] << "\"";
-        else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
-            (*m_gnuplotFile) << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->intensiveQuantitiesNames[m_quantityId] << "\"";
-        (*m_gnuplotFile) << " rotate by 90 offset -2,0" << std::endl;
-        (*m_gnuplotFile) << "splot \"" << dataFileName << "\" with pm3d" << std::endl;
     }
     if (not isFirstTime)
         (*m_dataFile) << std::endl;
@@ -270,6 +240,26 @@ void OutputInstance::output(double time)
 void OutputInstance::finalise()
 {
     
+}
+
+void OutputInstance::createGnuplotFile(const std::string& filenamePrefix)
+{
+    std::string filename = filenamePrefix + ".plt";
+    std::ofstream gnuplotFile(filename);
+    chmod(filename.c_str(), S_IRWXU | S_IRGRP | S_IROTH);
+    gnuplotFile << "#!/usr/bin/gnuplot" << std::endl << std::endl;
+    gnuplotFile << "set terminal qt" << std::endl;
+    gnuplotFile << "set title \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->name << "\"" << std::endl;
+    gnuplotFile << "set xlabel \"Time, sec\"" << std::endl;
+    gnuplotFile << "set ylabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
+    if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
+        gnuplotFile << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->extensiveQuantitiesNames[m_quantityId] << "\"";
+    else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
+        gnuplotFile << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->intensiveQuantitiesNames[m_quantityId] << "\"";
+    gnuplotFile << " rotate by 90 offset -2,0" << std::endl;
+    gnuplotFile << "splot \"" << filenamePrefix + ".txt" << "\" with pm3d" << std::endl;
+    gnuplotFile << "pause -1" << std::endl;
+    gnuplotFile.close();
 }
 
 //////////////////////
