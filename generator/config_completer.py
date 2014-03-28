@@ -112,6 +112,7 @@ def completeConfig(configTree):
         
         fraction['fraction_cell_classname'] = fractionId.title() + 'Cell'
         fraction['fraction_cell_base_classname'] = fractionId.title() + 'CellBase'
+        fraction['fraction_description_classname'] = fractionId.title() + 'Description'
         fraction['fraction_space_classname'] = fractionId.title() + 'Space'
         fraction['fraction_space_base_classname'] = fractionId.title() + 'SpaceBase'
         fraction['fractions_quantities_count_enum_element'] = fraction['extensive_quantities_enum_prefix'] + 'COUNT'
@@ -135,6 +136,7 @@ def completeConfig(configTree):
         #
         # Fraction's quantities configuration
         #
+        fractionQuantitiesNamesInitCode = ""
         # Adding particles_count quantity declared implicitly
         if not 'extensive_quantities' in fraction:
             fraction['extensive_quantities'] = {}
@@ -146,9 +148,12 @@ def completeConfig(configTree):
         for quantityId in fraction['extensive_quantities']:
             currentQuantity = fraction['extensive_quantities'][quantityId]
             currentQuantity['fraction_quantity_enum_element'] = fraction['extensive_quantities_enum_prefix'] + quantityId.upper()
+            fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + 'extensiveQuantitiesNames[' + currentQuantity['fraction_quantity_enum_element'] + '] = "' \
+             + currentQuantity['name'] + '";\n'
         #
         # Intensive quantities
         #
+        fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + "\n"
         secQuantitiesCountingCode = ""
         if 'intensive_quantities' in fraction:
             if fraction['intensive_quantities']:
@@ -156,7 +161,11 @@ def completeConfig(configTree):
                     currentSecQuantity = fraction['intensive_quantities'][secQuantityId]
                     currentSecQuantity['fraction_secondary_quantity_enum_element'] = fraction['intensive_quantities_enum_prefix'] + secQuantityId.upper()
                     secQuantitiesCountingCode = secQuantitiesCountingCode + currentSecQuantity['counting'] + '\n'
+                    fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + 'intensiveQuantitiesNames[' + currentSecQuantity['fraction_secondary_quantity_enum_element'] + '] = "' \
+                     + currentSecQuantity['name'] + '";\n'
         fraction['intensive_quantities_counting_code'] = secQuantitiesCountingCode
+        
+        fraction['quantities_names_init_code'] = code_utils.indentCode(fractionQuantitiesNamesInitCode, "    ");
         #
         # Boundary conditions configuration
         #

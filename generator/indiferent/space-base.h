@@ -17,6 +17,7 @@ template<int SpaceDimension, class FractionPoolType>
 class SpaceBase : public Grid<SpaceDimension, FractionPoolType>, public ISpace
 {
 public:
+    typedef FractionPoolType FractionsPoolInstance;
     typedef Grid<SpaceDimension, FractionPoolType> SpaceGridInstance;
     typedef GridElementBase<SpaceDimension> SpaceGridElementInstance;
     
@@ -61,6 +62,8 @@ public:
     }
     
     void setParent(void* model) { parent = model; }
+    
+    IFractionsPool* getCellByIndex(const unsigned int index) { return &(this->elements[index]); }
     
     void initThreads(uint threadsCount)
     {

@@ -8,9 +8,8 @@
 #include "global-defines.h"
 #include "interfaces.h"
 #include <string.h>
-
-/// @todo Remove this magic constant
-#define MAX_EXTENSIVE_QUANTITIES_COUNT  20
+#include <string>
+#include <vector>
 
 template<int SpaceDimension, int FractionsCount>
 class FractionsPoolBase : public GridElementBase<SpaceDimension>, public IFractionsPool
@@ -48,18 +47,17 @@ public:
             fractions[i]->addDelta();
     }
     
+    void averageWithNeighbours(unsigned int fractionId)
+    {
+        fractions[fractionId]->averageWithNeighbours();
+    }
+    
     IFractionSpace* getFraction(unsigned int fractionId) { return fractions[fractionId]; }
     double getVolume() { return this->volume; }
     
     IFractionSpace *fractions[FractionsCount];
     
-    // Works now for fraction #0
-    void averageWithNeighbours(unsigned int fractionId)
-    {
-        fractions[fractionId]->averageWithNeighbours();
-    }
 };
 
-//class FractionsPoolBase : public FractionsPoolBaseTmp<SPACE_COORDS_COUNT> {};
 
 #endif // FRACTIONS_POOL_TEMPLATE

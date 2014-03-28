@@ -192,8 +192,14 @@ void OutputInstance::quantityVsAxisAndTimeIterate()
         m_gnuplotFile = new std::ofstream(gnuplotFileName);
         (*m_gnuplotFile) << gnuplotHead << std::endl;
         chmod(gnuplotFileName.c_str(), S_IRWXU | S_IRGRP | S_IROTH);
+        (*m_gnuplotFile) << "set title \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->name << "\"" << std::endl;
         (*m_gnuplotFile) << "set xlabel \"Time, sec\"" << std::endl;
         (*m_gnuplotFile) << "set ylabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
+        if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
+            (*m_gnuplotFile) << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->extensiveQuantitiesNames[m_quantityId] << "\"";
+        else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
+            (*m_gnuplotFile) << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->intensiveQuantitiesNames[m_quantityId] << "\"";
+        (*m_gnuplotFile) << " rotate by 90 offset -2,0" << std::endl;
         (*m_gnuplotFile) << "splot \"" << dataFileName << "\" with pm3d" << std::endl;
     }
     if (not isFirstTime)

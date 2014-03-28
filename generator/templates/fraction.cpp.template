@@ -1,6 +1,18 @@
 #include "${header_name}"
 #include "model.h"
 
+//////////////////////////
+// AirDescription
+${fraction_description_classname}::${fraction_description_classname}()
+{
+    name = "${name}";
+    extensiveQuantitiesNames.resize(${extensive_quantities_enum_prefix}COUNT);
+    intensiveQuantitiesNames.resize(${intensive_quantities_enum_prefix}COUNT);
+${quantities_names_init_code}
+}
+
+//////////////////////////
+// ${fraction_space_classname}
 ${fraction_space_classname}::${fraction_space_classname}(FractionsPoolBase<SPACE_COORDS_COUNT, FRACTIONS_COUNT>* parentFractionsPool) :
     ${fraction_space_base_classname}(parentFractionsPool)
 {
@@ -11,6 +23,14 @@ ${axis_configuration}
 ${boundary_conditions_config}
 }
 
+const FractionDescription* ${fraction_space_classname}::getFractionDescription()
+{
+    static ${fraction_description_classname} descriptionOfThis;
+    return static_cast<FractionDescription*>(&descriptionOfThis);
+}
+
+//////////////////////////
+// ${fraction_cell_classname}
 void* ${fraction_cell_classname}::getModel()
 {
     return static_cast<Space*>(getSpaceCell()->parentGrid)->parent;

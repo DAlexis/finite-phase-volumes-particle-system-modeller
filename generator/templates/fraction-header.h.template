@@ -32,12 +32,18 @@ private:
     void* getModel();
 };
 
+class ${fraction_description_classname} : public FractionDescription
+{
+public:
+    ${fraction_description_classname}();
+};
+
 class ${fraction_space_classname} : public ${fraction_space_base_classname}
 {
 public:
     ${fraction_space_classname}(FractionsPoolBase<SPACE_COORDS_COUNT, FRACTIONS_COUNT>* parentFractionsPool);
     virtual ~${fraction_space_classname}() { }
-    
+    const FractionDescription* getFractionDescription();
 private:
 };
 
