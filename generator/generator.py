@@ -62,8 +62,9 @@ filesAsIs = [
             'interfaces.h',
             'global-defines.h',
             'grid-template.h',
-            'output.cpp',
+            'descriptions.h',
             'output.h',
+            'output.cpp'
             ]
 
 for fileName in filesAsIs:
@@ -93,6 +94,13 @@ for fractionId in config['model']['fractions']:
                                 'templates/fraction.cpp.template',
                                 fraction,
                                 generatedFileHeadComment)
+
+print "Generating constants.h"
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'constants.h'),
+                                'templates/constants.h.template',
+                                config['model'],
+                                generatedFileHeadComment)
+
 
 print "Generating model.h"
 code_utils.genFileByTemplate(os.path.join(destinationDir, 'model.h'),

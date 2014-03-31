@@ -52,7 +52,7 @@ model:
                 diffusion_coefficient:
                     name: Air steady-state diffusion coefficient, m^2/s
                     counting: |
-                        diffusion_coefficient = 1.0/3.0*sqrt(8.0*8.31*temperature/M_PI/0.029)  *  1/(sqrt(2.0) * M_PI * (3e-10)*(3e-10) * particles_count * 6e23);
+                        diffusion_coefficient = /*1.0/3.0*sqrt(8.0*8.31*temperature/M_PI/0.029) *  */ 1/(sqrt(2.0) * M_PI * (3e-10)*(3e-10) * particles_count * Na);
                 velocity_x:
                     name: Particles velocity in X direction, m/s
                     counting: |
@@ -135,9 +135,9 @@ model:
                     #bottom: open
             diffusion:
                 x_coord: |
-                    diffusion = diffusion_coefficient;
+                    diffusion = 0;//diffusion_coefficient;
                 y_coord: |
-                    diffusion = diffusion_coefficient;
+                    diffusion = 0;//diffusion_coefficient;
 output:
     air_count_vs_coords:
         name: Air-count-vs-coords
@@ -228,3 +228,7 @@ run_options:
     time_step:            0.00001
     stabilisation_period: 0.00150
     threads_count: 3
+
+constants:
+    Na: 6.02e23
+    Mair: 0.029

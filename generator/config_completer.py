@@ -11,7 +11,18 @@ axisSpecificConfigTemplate = code_utils.readTemplate("fragments/axis-specific-co
 fractionInitCodeTemplate = code_utils.readTemplate("fragments/fraction-init-code.template")
 outputInstanceInitCodeTemplate = code_utils.readTemplate("fragments/output-instance-config.template")
 
+def resolveConstants(code, configTree):
+    if not 'constants' in configTree:
+        return code
+    if not configTree['constants']:
+        return code
+    for constantId in configTree['constants']:
+        print "Replacing " + constantId + " with " + configTree['constants'][constantId]['name']
+        code = re.sub(r'\b' + constantId + r'\b', configTree['constants'][constantId]['name'], code)
+        return code
+
 def resolveSymbolsInFractionCode(code, configTree, thisFraction):
+    code = resolveConstants(code, configTree)
     result = code
     # Replacing simple words
     result = re.sub(r'\bmodel\b', 'static_cast<Model*>(getModel())', result)
@@ -312,6 +323,18 @@ def completeConfig(configTree):
     #
     if not 'stabilisation_period' in configTree['run_options']:
         configTree['run_options']['stabilisation_period'] = configTree['run_options']['stop_time']
+    #
+    # Generating constants initialisation code
+    #
+    constantsInitCode = ""
+    if 'constants' in configTree:
+        if configTree['constants']:
+            for constName in configTree['constants']:
+                value = configTree['constants'][constName]
+                configTree['constants'][constName] = {'name': "CONST_"+constName.upper(), 'value': str(value)}
+                currentConst = configTree['constants'][constName]
+                constantsInitCode = constantsInitCode + "#define " + currentConst['name'] + "    " + currentConst['value'] + "\n"
+    configTree['model']['constants_defines'] = constantsInitCode
     #
     # Resolving macro symbols in code fragments
     #

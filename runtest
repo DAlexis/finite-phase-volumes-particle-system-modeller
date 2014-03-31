@@ -18,7 +18,8 @@ function checkExitCode
 }
 
 enterProcedure "Clearing old generated files"
-rm ./test/*
+rm -rf ./test/fvm
+rm -f ./test/*
 
 enterProcedure "Generating code"
 (cd ./generator && ./generator.py --config=./configs/$1 )

@@ -3,6 +3,7 @@
 
 #include "model-defines.h"
 #include "fraction-base.h"
+#include "constants.h"
 
 class ${fraction_cell_classname};
 
