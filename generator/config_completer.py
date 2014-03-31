@@ -17,9 +17,8 @@ def resolveConstants(code, configTree):
     if not configTree['constants']:
         return code
     for constantId in configTree['constants']:
-        print "Replacing " + constantId + " with " + configTree['constants'][constantId]['name']
         code = re.sub(r'\b' + constantId + r'\b', configTree['constants'][constantId]['name'], code)
-        return code
+    return code
 
 def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     code = resolveConstants(code, configTree)

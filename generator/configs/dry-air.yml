@@ -44,7 +44,7 @@ model:
                 temperature:
                     name: Air temperature, K
                     counting: |
-                        temperature = (1.4-1) * internal_energy / (8.31 * particles_count);
+                        temperature = (1.4-1) * internal_energy / (R * particles_count);
                 thermal_conduction_coefficient:
                     name: Thermal conduction coefficient, 
                     counting: |
@@ -52,19 +52,19 @@ model:
                 diffusion_coefficient:
                     name: Air steady-state diffusion coefficient, m^2/s
                     counting: |
-                        diffusion_coefficient = /*1.0/3.0*sqrt(8.0*8.31*temperature/M_PI/0.029) *  */ 1/(sqrt(2.0) * M_PI * (3e-10)*(3e-10) * particles_count * Na);
+                        diffusion_coefficient = 1.0/3.0*sqrt(8.0*R*temperature/M_PI/Mair) * 1/(sqrt(2.0) * M_PI * (3e-10)*(3e-10) * particles_count * Na);
                 velocity_x:
                     name: Particles velocity in X direction, m/s
                     counting: |
-                        velocity_x = x_impulse / (particles_count * 0.029 /*kg/Moll*/);
+                        velocity_x = x_impulse / (particles_count * Mair );
                 velocity_y:
                     name: Particles velocity in Y direction, m/s
                     counting: |
-                        velocity_y = y_impulse / (particles_count * 0.029 /*kg/Moll*/);
+                        velocity_y = y_impulse / (particles_count * Mair );
                         
             init_quantities: |
                 particles_count = 1000.0 /*L*/ / 22.4 /*L/Moll*/ * space_volume;
-                internal_energy = 1/(1.4-1) * particles_count * 8.31*300;
+                internal_energy = 1/(1.4-1) * particles_count * R *300;
                 x_impulse = 0.0;
                 y_impulse = 0.0; 
                 
@@ -79,27 +79,14 @@ model:
                 double sizeX = getSpaceCell()->size[SPACE_COORDS_X_COORD];
                 double sizeY = getSpaceCell()->size[SPACE_COORDS_Y_COORD];
                 double nextSizeY = next->getSpaceCell()->size[SPACE_COORDS_Y_COORD];
-                /*
-                double prevSurfPressure = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_PRESSURE, prev, SPACE_COORDS_Y_COORD);
-                double nextSurfPressure = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_PRESSURE, next, SPACE_COORDS_Y_COORD);
-                */
+               
                 AirCell* pressureNext = next;
                 AirCell* pressurePrev = prev;
-                /*
-                if (y_impulse < 0)
-                    pressurePrev = this;
-                else
-                    pressureNext = this;
-                */
-                y_impulse.DELTA += (-9.8 * particles_count * 0.029 /*kg/Moll*/ 
+                
+                y_impulse.DELTA += (gy * particles_count * Mair 
                     + (pressurePrev->pressure - pressureNext->pressure) * sizeX
-                    //+ (prevSurfPressure - nextSurfPressure) * sizeX
                     ) * dt;
                 
-                /*
-                if (next == this || prev == this)
-                    y_impulse.DELTA = 0;
-                */
                 
                 if (isNotNull(particles_count)) {
                     // internal_energy.DELTA += 8e-3 * volume * pressure / particles_count * particles_count.DELTA;
@@ -230,5 +217,7 @@ run_options:
     threads_count: 3
 
 constants:
-    Na: 6.02e23
-    Mair: 0.029
+    Mair: 0.029 // kg / Moll 
+    Na: 6.02e23 // particles / Moll
+    R: 8.3144 // J / Moll*K
+    gy: -9.8 // m / s^2
