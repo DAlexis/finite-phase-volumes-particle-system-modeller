@@ -11,7 +11,7 @@ model:
                 mode: uniform
                 min: -25.0
                 max: 25.0
-                segments_count: 1
+                segments_count: 50
         y_coord:
             name: Coordinate Y, m
             division:
@@ -20,7 +20,7 @@ model:
                 mode: uniform
                 min: -25.0
                 max: 25.0
-                segments_count: 100
+                segments_count: 50
     fractions:
         air:
             name: Air
@@ -69,22 +69,33 @@ model:
                 y_impulse = 0.0; 
                 
             sources: |
-                AirCell* next = static_cast<AirCell*>(nextInSpace(SPACE_COORDS_Y_COORD));
-                AirCell* prev = static_cast<AirCell*>(prevInSpace(SPACE_COORDS_Y_COORD));
-                if (!next)
-                    next = this;
-                if (!prev)
-                    prev = this;
+                AirCell* nextY = static_cast<AirCell*>(nextInSpace(SPACE_COORDS_Y_COORD));
+                AirCell* prevY = static_cast<AirCell*>(prevInSpace(SPACE_COORDS_Y_COORD));
+                if (!nextY)
+                    nextY = this;
+                if (!prevY)
+                    prevY = this;
+                
+                AirCell* nextX = static_cast<AirCell*>(nextInSpace(SPACE_COORDS_X_COORD));
+                AirCell* prevX = static_cast<AirCell*>(prevInSpace(SPACE_COORDS_X_COORD));
+                
+                if (!nextX)
+                    nextX = this;
+                if (!prevX)
+                    prevX = this;
                 
                 double sizeX = getSpaceCell()->size[SPACE_COORDS_X_COORD];
                 double sizeY = getSpaceCell()->size[SPACE_COORDS_Y_COORD];
-                double nextSizeY = next->getSpaceCell()->size[SPACE_COORDS_Y_COORD];
-               
-                AirCell* pressureNext = next;
-                AirCell* pressurePrev = prev;
                 
-                y_impulse.DELTA += (gy * particles_count * Mair 
-                    + (pressurePrev->pressure - pressureNext->pressure) * sizeX
+                double nextYSizeY = nextY->getSpaceCell()->size[SPACE_COORDS_Y_COORD];
+                double nextXSizeX = nextX->getSpaceCell()->size[SPACE_COORDS_X_COORD];
+                
+                x_impulse.DELTA += (//gy * particles_count * Mair 
+                    + (prevX->pressure - nextX->pressure) * sizeY
+                    ) * dt;
+                
+                y_impulse.DELTA += (//gy * particles_count * Mair 
+                    + (prevY->pressure - nextY->pressure) * sizeX
                     ) * dt;
                 
                 
@@ -92,16 +103,26 @@ model:
                     // internal_energy.DELTA += 8e-3 * volume * pressure / particles_count * particles_count.DELTA;
                     double prevSurfVelocity = 0;
                     double nextSurfVelocity = 0;
-                    if (prev != this)
-                        prevSurfVelocity = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_VELOCITY_Y, prev, SPACE_COORDS_Y_COORD);
-                    if (next != this)
-                        nextSurfVelocity = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_VELOCITY_Y, next, SPACE_COORDS_Y_COORD);
+                    if (prevY != this)
+                        prevSurfVelocity = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_VELOCITY_Y, prevY, SPACE_COORDS_Y_COORD);
+                    if (nextY != this)
+                        nextSurfVelocity = interpolateIntensiveQunatityOnSpaceCellsContact(AIR_INTENSIVE_QUANTITIES_VELOCITY_Y, nextY, SPACE_COORDS_Y_COORD);
                     internal_energy.DELTA -= pressure * (nextSurfVelocity - prevSurfVelocity) * sizeX * dt;
                 }
                 
-                double heatTransfer = thermal_conduction_coefficient * (temperature - next->temperature) / ((sizeY + nextSizeY) / 2) * sizeX * dt;
-                internal_energy.DELTA -= heatTransfer;
-                next->internal_energy.DELTA += heatTransfer;
+                double heatTransferY = thermal_conduction_coefficient * (temperature - nextY->temperature) / ((sizeY + nextYSizeY) / 2) * sizeX * dt;
+                double heatTransferX = thermal_conduction_coefficient * (temperature - nextX->temperature) / ((sizeX + nextXSizeX) / 2) * sizeY * dt;
+                
+                internal_energy.DELTA -= heatTransferY + heatTransferX;
+                nextY->internal_energy.DELTA += heatTransferY;
+                nextX->internal_energy.DELTA += heatTransferX;
+                
+                
+                // Heating source at center
+                if (fabs(x_coord) < 1 && fabs(y_coord) < 1 /* && prevY == this*/ && temperature < 400) {
+                    // Heating up to 400 during time ~ 10s
+                    internal_energy += 1/(1.4-1) * particles_count * R * (400-temperature)/10 * dt;
+                }
                 
             space_coords_derivatives: |
                 x_coord.DER = velocity_x;
@@ -126,8 +147,8 @@ model:
                 y_coord: |
                     diffusion = 0;//diffusion_coefficient;
 output:
-    air_count_vs_coords:
-        name: Air-count-vs-coords
+    air_count_y_slice:
+        name: Air-count-y-slice
         fraction: air
         quantity: particles_count
         space_point:
@@ -140,75 +161,62 @@ output:
                 points_count: 100
         time_step: 0.01
     
-    air_energy_vs_coords:
-        name: Air-energy-vs-coords
+    air_count_distribution:
+        name: Air-count
         fraction: air
-        quantity: internal_energy
+        quantity: particles_count
         space_point:
             x_coord: 0
             y_coord: 0
         output_axis:
-            #x_coord:
-            #    points_count: 4
+            x_coord:
+                points_count: 50
             y_coord:
-                points_count: 100
-        time_step: 0.01
-        
-    air_pressure_vs_coords:
-        name: Air-pressure-vs-coords
-        fraction: air
-        quantity: pressure
-        space_point:
-            x_coord: 0
-            y_coord: 0
-        output_axis:
-            #x_coord:
-            #    points_count: 4
-            y_coord:
-                points_count: 100
-        time_step: 0.01
+                points_count: 50
+        time_step: 0.1
     
-    air_temperature_vs_coords:
-        name: Air-temperature-vs-coords
+    air_temperature_distribution:
+        name: Air-temperature
         fraction: air
         quantity: temperature
         space_point:
             x_coord: 0
             y_coord: 0
         output_axis:
-            #x_coord:
-            #    points_count: 4
+            x_coord:
+                points_count: 50
             y_coord:
-                points_count: 100
-        time_step: 0.01
+                points_count: 50
+        time_step: 0.1
     
-    diffusion_coefficient:
-        name: Air-diffusion-coefficient-vs-coords
+    air_vx_distribution:
+        name: Air-vx
         fraction: air
-        quantity: diffusion_coefficient
+        quantity: velocity_x
         space_point:
             x_coord: 0
             y_coord: 0
         output_axis:
-            #x_coord:
-            #    points_count: 4
+            x_coord:
+                points_count: 50
             y_coord:
-                points_count: 100
-        time_step: 0.01
+                points_count: 50
+        time_step: 0.1
     
-    vertical_impulse_vs_coords:
-        name: Air-vertical-impulse-vs-coords
+    air_vy_distribution:
+        name: Air-vy
         fraction: air
-        quantity: y_impulse
+        quantity: velocity_y
         space_point:
             x_coord: 0
             y_coord: 0
         output_axis:
-            #x_coord:
-            #    points_count: 4
+            x_coord:
+                points_count: 50
             y_coord:
-                points_count: 100
-        time_step: 0.01
+                points_count: 50
+        time_step: 0.1
+    
 run_options:
     start_time: 0
     stop_time: 1
@@ -220,4 +228,5 @@ constants:
     Mair: 0.029 // kg / Moll 
     Na: 6.02e23 // particles / Moll
     R: 8.3144 // J / Moll*K
-    gy: -9.8 // m / s^2
+    #gy: -9.8 // m / s^2
+    gy: -4.8 // m / s^2
