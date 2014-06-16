@@ -250,8 +250,13 @@ void OutputInstance::createGnuplotFile(const std::string& filenamePrefix)
     gnuplotFile << "#!/usr/bin/gnuplot" << std::endl << std::endl;
     gnuplotFile << "set terminal qt" << std::endl;
     gnuplotFile << "set title \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->name << "\"" << std::endl;
-    gnuplotFile << "set xlabel \"Time, sec\"" << std::endl;
-    gnuplotFile << "set ylabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
+    if (axis.size() == 1) {
+        gnuplotFile << "set xlabel \"Time, sec\"" << std::endl;
+        gnuplotFile << "set ylabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
+    } else {
+        gnuplotFile << "set xlabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
+        gnuplotFile << "set ylabel \"" << m_space->getAxisDescription(axis[1].axisIndex)->getName() << "\"" << std::endl;
+    }
     if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
         gnuplotFile << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->extensiveQuantitiesNames[m_quantityId] << "\"";
     else if (m_quantityType == OCT_INTENSIVE_QUANTITY)

@@ -23,11 +23,12 @@ model:
                 segments_count: 100
     fractions:
         gas:
-            name: Some substraction
+            name: Abstract fraction
+            stabilisation: off
             #fraction_space_grid:
             extensive_quantities:
                 particles_count:
-                    name: Count of air, moll
+                    name: Concentration
                 
             init_quantities: |
                 if (fabs(x_coord) < 3 && fabs(y_coord) < 3)
@@ -53,11 +54,10 @@ model:
                     #top: open
                     #bottom: open
             diffusion:
-                particles_count:
-                    x_coord: |
-                        diffusion = 1.0;
-                    y_coord: |
-                        diffusion = 2.0;
+                x_coord: |
+                    diffusion = 10.0;
+                y_coord: |
+                    diffusion = 10.0;
 output:
     air_count_vs_coords:
         name: gas-concentration
@@ -77,4 +77,5 @@ run_options:
     start_time: 0
     stop_time: 40
     time_step: 0.001
+    stabilisation_period: 0.150
     threads_count: 3
