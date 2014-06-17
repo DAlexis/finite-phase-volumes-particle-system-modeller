@@ -251,6 +251,7 @@ void OutputInstance::createGnuplotFile(const std::string& filenamePrefix)
     gnuplotFile << "set terminal qt" << std::endl;
     gnuplotFile << "set title \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->name << "\"" << std::endl;
     if (axis.size() == 1) {
+        /// @bug if it is not space coordinate, this code is not correct
         gnuplotFile << "set xlabel \"Time, sec\"" << std::endl;
         gnuplotFile << "set ylabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
     } else {
