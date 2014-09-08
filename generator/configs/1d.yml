@@ -23,14 +23,10 @@ model:
                         min: -40.0
                         max: 30.0
                         segments_count: 50
-            quantities:
-                testQuantity1:
-                    name: Test quantity 1
             init_quantities: |
                 if (fabs(x_speed+10) < 2 || fabs(x_speed-10) < 2)
                     if (fabs(x_coord) < 4) {
                         particles_count = 1;
-                        //testQuantity1 = 1;
                     }
             sources: |
                     
