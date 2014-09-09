@@ -15,8 +15,7 @@ int main()
     try {
         cout << "Model initialisation... ";
         model = new Model;
-        cout << "Using " << threadsCount << " threads" << endl;
-        model->setThreadsCount(threadsCount);
+        cout << "Using " << THREADS_COUNT << " threads" << endl;
         model->setStabilisationPeriod(stabilisationPeriod);
         cout << "Initialisation done." << endl;
     }

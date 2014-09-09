@@ -64,6 +64,17 @@ public:
         for (size_t i=0; i<this->elementsCount; i++)
             static_cast<IFractionCell*>( &(this->elements[i]))->calculateSourceEvolution(dt);
     }
+    /*
+    void calculateEvolution(double dt)
+    {
+    * // In general it is not correct: we need actual intensive quantities
+        for (size_t i=0; i<this->elementsCount; i++) {
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateIntensiveQuantities();
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateDerivatives();
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateFlowsEvolution(dt);
+            static_cast<IFractionCell*>( &(this->elements[i]))->calculateSourceEvolution(dt);
+        }
+    }*/
     
     void addDelta()
     {
@@ -82,6 +93,12 @@ public:
         for (unsigned int i=0; i<this->elementsCount; i++)
             sum += this->elements[i].extensiveQuantities[quantityIndex];
         return sum;
+    }
+    
+    void addElements(std::vector<IFractionCell*>& allCells)
+    {
+        for (size_t i=0; i<this->elementsCount; i++)
+            allCells.push_back(&(this->elements[i]));
     }
     
     //const Axis* getAxisDescription(unsigned int axis);

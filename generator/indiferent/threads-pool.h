@@ -9,12 +9,14 @@
 #include <atomic>
 #include <semaphore.h>
 #include <mutex>
+#include <condition_variable>
 #include <list>
 
-template <class FunctionObject, class FunctionArgType>
+template <class FunctionArgType>
 class ThreadsPool
 {
 public:
+    using FunctionObject = std::function<void(FunctionArgType)>;
     ThreadsPool() :
         m_runningThreadsCount(0)
     {
@@ -49,7 +51,7 @@ public:
             sem_post(&(it->threadCanStart));
     }
     
-    void addThread(FunctionObject& function)
+    void addThread(FunctionObject&& function)
     {
         threads.push_back(ThreadData());
         threads.back().startThread(threadsDone, function, shouldStopThreads, m_doneThreadsCounterMutex, m_runningThreadsCount);

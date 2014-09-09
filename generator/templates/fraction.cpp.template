@@ -47,7 +47,7 @@ ${space_coords_derivatives}
 ${fraction_coords_derivatives}
 }
 
-void ${fraction_cell_classname}::calculateSourceEvolution(double dt)
+void ${fraction_cell_classname}::calculateSourceEvolution(double dt, unsigned int currentThread)
 {
 ${sources}
 }

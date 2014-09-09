@@ -23,6 +23,7 @@ public:
     {
         space.setParent(this);
         space.initQuantities();
+        space.indexateCells();
     }
     
     ~ModelBase()
@@ -45,11 +46,6 @@ public:
         time += dt;
     }
 
-    void setThreadsCount(unsigned int count)
-    {
-        space.initThreads(count);
-    }
-    
     void setStabilisationPeriod(const double period)
     {
         stabilisationPeriod = period;

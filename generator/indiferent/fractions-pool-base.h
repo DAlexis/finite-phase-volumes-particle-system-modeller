@@ -52,6 +52,12 @@ public:
         fractions[fractionId]->averageWithNeighbours();
     }
     
+    void addElements(std::vector<IFractionCell*>& allCells)
+    {
+        for (unsigned int i=0; i<FractionsCount; i++)
+            fractions[i]->addElements(allCells);        
+    }
+    
     IFractionSpace* getFraction(unsigned int fractionId) { return fractions[fractionId]; }
     double getVolume() { return this->volume; }
     

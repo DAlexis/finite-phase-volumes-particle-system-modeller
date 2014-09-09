@@ -33,4 +33,6 @@ inline bool isNotCount(double x)
     return false;
 }
 
+#define THREADS_COUNT       2
+
 #endif // GLOBAL_DEFINES_H_INCLUDED

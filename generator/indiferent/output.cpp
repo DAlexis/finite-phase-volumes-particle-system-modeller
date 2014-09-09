@@ -248,7 +248,7 @@ void OutputInstance::createGnuplotFile(const std::string& filenamePrefix)
     std::ofstream gnuplotFile(filename);
     chmod(filename.c_str(), S_IRWXU | S_IRGRP | S_IROTH);
     gnuplotFile << "#!/usr/bin/gnuplot" << std::endl << std::endl;
-    gnuplotFile << "set terminal qt" << std::endl;
+    gnuplotFile << "set terminal wxt" << std::endl;
     gnuplotFile << "set title \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->name << "\"" << std::endl;
     if (axis.size() == 1) {
         /// @bug if it is not space coordinate, this code is not correct

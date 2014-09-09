@@ -3,5 +3,4 @@
 Model::Model()
 {
 ${outputs_init_code}
-    space.initQuantities();
 }

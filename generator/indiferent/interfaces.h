@@ -17,8 +17,9 @@ class IFractionCell
 public:
     virtual void initQuantities() = 0;
     virtual void calculateDerivatives() = 0;
-    virtual void calculateSourceEvolution(double dt) = 0;
-    virtual void calculateFlowsEvolution(double dt) = 0;
+    virtual void calculateSourceEvolution(double dt, unsigned int currentThread = 0) = 0;
+    virtual void calculateFlowsEvolution(double dt, unsigned int currentThread = 0) = 0;
+    virtual void calculateEvolution(double dt, unsigned int currentThread = 0) = 0;
     
     virtual void calculateIntensiveQuantities() = 0;
     virtual void addDelta() = 0;
@@ -26,6 +27,8 @@ public:
     virtual double getQuantitiesDensity(unsigned int index) = 0;
     virtual double getQuantitiesDensityConvolution(unsigned int quantityIndex, const std::vector<unsigned int>& convoluteBy) = 0;
     virtual double getIntensiveQuantity(unsigned int intensiveQuantityIndex) = 0;
+    
+    virtual void addSelf(std::vector<IFractionCell*>& allCells) = 0;
     
     virtual ~IFractionCell() {}
 };
@@ -36,6 +39,7 @@ public:
     virtual void initQuantities() = 0;
     virtual void calculateSourceEvolution(double dt) = 0;
     virtual void calculateFlowsEvolution(double dt) = 0;
+    //virtual void calculateEvolution(double dt) = 0;
     virtual void addDelta() = 0;
     virtual void averageWithNeighbours() = 0;
     
@@ -46,6 +50,8 @@ public:
     virtual const Axis* getAxisDescription(unsigned int axis) = 0;
     virtual const FractionDescription* getFractionDescription() = 0;
     
+    virtual void addElements(std::vector<IFractionCell*>& allCells) = 0;
+    
     virtual ~IFractionSpace() {}
 };
 
@@ -54,6 +60,8 @@ class IFractionsPool
 public:
     virtual IFractionSpace* getFraction(unsigned int fractionId) = 0;
     virtual double getVolume() = 0;
+    
+    virtual void addElements(std::vector<IFractionCell*>& allCells) = 0;
 };
 
 class ISpace

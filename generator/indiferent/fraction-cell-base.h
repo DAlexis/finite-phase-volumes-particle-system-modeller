@@ -17,6 +17,7 @@ template <int FractionIndex,
           int FractionSpaceDimension,
           int ExtensiveQuantitiesCount,
           int IntensiveQuantitiesCount,
+          int ThreadsCount,
           class FractionCellType>
 class FractionCellBase : public GridElementBase<FractionSpaceDimension>, public IFractionCell
 {
@@ -30,7 +31,8 @@ public:
     {
         for (unsigned int i=0; i<ExtensiveQuantitiesCount; i++) {
             extensiveQuantities[i] = 0.0;
-            extensiveQuantitiesDelta[i] = 0.0;
+            for (unsigned int j=0; j<ThreadsCount; j++)
+                extensiveQuantitiesDelta[j][i] = 0.0;
         }
         for (unsigned int i=0; i<IntensiveQuantitiesCount; i++)
             intensiveQuantities[i] = 0.0;
@@ -42,12 +44,23 @@ public:
     {
         for (unsigned int i=0; i<ExtensiveQuantitiesCount; i++)
         {
-            extensiveQuantities[i] += extensiveQuantitiesDelta[i];
-            extensiveQuantitiesDelta[i] = 0.0;
+            for (unsigned int j=0; j<ThreadsCount; j++)
+            {
+                extensiveQuantities[i] += extensiveQuantitiesDelta[j][i];
+                extensiveQuantitiesDelta[j][i] = 0.0;
+            }
         }
     }
     
-    void calculateFlowsEvolution(double dt)
+    void calculateEvolution(double dt, unsigned int currentThread = 0)
+    {
+        calculateIntensiveQuantities();
+        calculateDerivatives();
+        calculateFlowsEvolution(dt, currentThread);
+        calculateSourceEvolution(dt, currentThread);
+    }
+    
+    void calculateFlowsEvolution(double dt, unsigned int currentThread = 0)
     {
         // All calculations below means that particles count in this cell is not zero
         if (isNull(extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]))
@@ -130,7 +143,7 @@ public:
         // Removing quantities
         for (uint quantity=EVERY_FRACTION_COUNT_QUANTITY_INDEX; quantity<ExtensiveQuantitiesCount; quantity++)
         {
-            extensiveQuantitiesDelta[quantity] -= totalFlowOut * quantityOverParticlesCount[quantity];
+            extensiveQuantitiesDelta[currentThread][quantity] -= totalFlowOut * quantityOverParticlesCount[quantity];
         }
         
         // Adding quantities to neighbors
@@ -141,11 +154,11 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
-                    next->extensiveQuantitiesDelta[quantity] += flowOutUpward[coord] * quantityOverParticlesCount[quantity];
+                    next->extensiveQuantitiesDelta[currentThread][quantity] += flowOutUpward[coord] * quantityOverParticlesCount[quantity];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
-                    prev->extensiveQuantitiesDelta[quantity] += flowOutDownward[coord] * quantityOverParticlesCount[quantity];
+                    prev->extensiveQuantitiesDelta[currentThread][quantity] += flowOutDownward[coord] * quantityOverParticlesCount[quantity];
         }
         
         // Adding values in coordinate space
@@ -156,11 +169,11 @@ public:
             // Upward
             if (next)
                 for (uint quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
-                    next->extensiveQuantitiesDelta[quantity] += flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
+                    next->extensiveQuantitiesDelta[currentThread][quantity] += flowOutUpward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
             // Downward
             if (prev)
                 for (uint quantity=0; quantity<ExtensiveQuantitiesCount; quantity++)
-                    prev->extensiveQuantitiesDelta[quantity] += flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
+                    prev->extensiveQuantitiesDelta[currentThread][quantity] += flowOutDownward[FractionSpaceDimension + coord] * quantityOverParticlesCount[quantity];
         }
         
         // Now all transfer coupled with particles transfer is done
@@ -206,11 +219,11 @@ public:
             extensiveQunatitiesTotalBuffer[i] += extensiveQuantities[i];
     }
     
-    void getExtesiveQuantitiesDeltaFromAveragingBuffer(double bufferVolume, double *extensiveQunatitiesTotalBuffer)
+    void getExtesiveQuantitiesDeltaFromAveragingBuffer(double bufferVolume, double *extensiveQunatitiesTotalBuffer, unsigned int currentThread = 0)
     {
         double thisVolOverBufferVol = getSpaceCell()->volume / bufferVolume;
         for (int i=0; i<ExtensiveQuantitiesCount; i++)
-            extensiveQuantitiesDelta[i] = extensiveQunatitiesTotalBuffer[i]*thisVolOverBufferVol - extensiveQuantities[i];
+            extensiveQuantitiesDelta[currentThread][i] = extensiveQunatitiesTotalBuffer[i]*thisVolOverBufferVol - extensiveQuantities[i];
     }
     
     void averageWithNeighbours()
@@ -232,8 +245,13 @@ public:
         getExtesiveQuantitiesDeltaFromAveragingBuffer(bufferVolume, buffer);
     }
     
+    void addSelf(std::vector<IFractionCell*>& allCells)
+    {
+        allCells.push_back(this);
+    }
+    
     double extensiveQuantities[ExtensiveQuantitiesCount];
-    double extensiveQuantitiesDelta[ExtensiveQuantitiesCount];
+    double extensiveQuantitiesDelta[ThreadsCount][ExtensiveQuantitiesCount];
     
     double intensiveQuantities[IntensiveQuantitiesCount];
     

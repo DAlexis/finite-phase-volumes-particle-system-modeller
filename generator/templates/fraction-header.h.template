@@ -13,6 +13,7 @@ typedef FractionCellBase<${fractions_enum_element},
                      ${coordinates_enum_prefix}COUNT,
                      ${extensive_quantities_enum_prefix}COUNT,
                      ${intensive_quantities_enum_prefix}COUNT,
+                     THREADS_COUNT,
                      ${fraction_cell_classname}>       ${fraction_cell_base_classname};
 
 typedef FractionSpaceBase<SPACE_COORDS_COUNT, ${coordinates_enum_prefix}COUNT, FRACTIONS_COUNT, ${fraction_cell_classname}> ${fraction_space_base_classname};
@@ -23,7 +24,7 @@ public:
     virtual ~${fraction_cell_classname}() { }
     void initQuantities();
     void calculateDerivatives();
-    void calculateSourceEvolution(double dt);
+    void calculateSourceEvolution(double dt, unsigned int currentThread = 0);
     void calculateIntensiveQuantities();
     
 protected:
