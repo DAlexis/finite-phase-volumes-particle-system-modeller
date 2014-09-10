@@ -37,6 +37,7 @@ public:
     void unlockThreads(FunctionArgType functionArg)
     {
         m_runningThreadsCount = threads.size();
+        m_runningThreadsCountAtomic = threads.size();
         for (auto it = threads.begin(); it != threads.end(); it++)
         {
             it->currentFunctionArg = functionArg;
@@ -54,7 +55,7 @@ public:
     void addThread(FunctionObject&& function)
     {
         threads.push_back(ThreadData());
-        threads.back().startThread(threadsDone, function, shouldStopThreads, m_doneThreadsCounterMutex, m_runningThreadsCount);
+        threads.back().startThread(threadsDone, function, shouldStopThreads, m_doneThreadsCounterMutex, m_runningThreadsCount, m_runningThreadsCountAtomic);
     }
     
 private:
@@ -75,8 +76,9 @@ private:
             }
         }
         
-        void startThread(sem_t& threadsDone, FunctionObject &function, bool& shouldStop, std::mutex& doneThreadsCounterMutex, uint& doneThreadsCounter)
+        void startThread(sem_t& threadsDone, FunctionObject &function, bool& shouldStop, std::mutex& doneThreadsCounterMutex, uint& doneThreadsCounter, std::atomic<int>& runningThreadsCountAtomic)
         {
+            m_pRunningThreadsCountAtomic = &runningThreadsCountAtomic;
             m_doneThreadsCounterMutex = &doneThreadsCounterMutex;
             m_pCounter = &doneThreadsCounter;
             m_pThreadsDone = &threadsDone;
@@ -94,10 +96,16 @@ private:
                 if (*m_pShouldStop) return;
                 m_function(currentFunctionArg);
                 
+                // Checking if we are the last thread
+                
+                if (m_pRunningThreadsCountAtomic->fetch_add(-1, std::memory_order_consume) == 1)
+                    sem_post(m_pThreadsDone);
+                /*
                 m_doneThreadsCounterMutex->lock();
                 (*m_pCounter)--;
                 if (*m_pCounter == 0)
-                    sem_post(m_pThreadsDone);
+                    sem_post(m_pThreadsDone);*/
+                
                 m_doneThreadsCounterMutex->unlock();
             }
         }
@@ -112,12 +120,14 @@ private:
         sem_t *m_pThreadsDone;
         bool *m_pShouldStop;
         std::mutex *m_doneThreadsCounterMutex;
+        std::atomic<int> *m_pRunningThreadsCountAtomic;
     };
     
     uint m_runningThreadsCount;
     std::mutex m_doneThreadsCounterMutex;
     sem_t threadsDone;
     std::list<ThreadData> threads;
+    std::atomic<int> m_runningThreadsCountAtomic;
     bool shouldStopThreads;
 };
 
