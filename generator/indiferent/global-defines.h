@@ -34,5 +34,6 @@ inline bool isNotCount(double x)
 }
 
 #define THREADS_COUNT       2
+#define USE_SEMAPHORES
 
 #endif // GLOBAL_DEFINES_H_INCLUDED
