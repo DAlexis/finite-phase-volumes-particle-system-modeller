@@ -33,7 +33,8 @@ inline bool isNotCount(double x)
     return false;
 }
 
-#define THREADS_COUNT       2
-#define USE_SEMAPHORES
+#define THREADS_COUNT       3
+
+//#define USE_NATIVE_LOCKS
 
 #endif // GLOBAL_DEFINES_H_INCLUDED
