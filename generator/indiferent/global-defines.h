@@ -35,5 +35,10 @@ inline bool isNotCount(double x)
 
 #define THREADS_COUNT       3
 //#define USE_NATIVE_LOCKS
+//#define USE_NATIVE_UNLOCK
+
+#ifdef USE_NATIVE_LOCKS
+    #define USE_NATIVE_UNLOCK
+#endif
 
 #endif // GLOBAL_DEFINES_H_INCLUDED

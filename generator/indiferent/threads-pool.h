@@ -26,14 +26,14 @@ public:
     
     ~ThreadsPool()
     {
-#ifdef USE_NATIVE_LOCKS
+#ifdef USE_NATIVE_UNLOCK
         sem_destroy(&(poolContext.threadsDone));
 #endif
     }
     
     void wait()
     {
-#ifdef USE_NATIVE_LOCKS
+#ifdef USE_NATIVE_UNLOCK
         sem_wait(&(poolContext.threadsDone));
 #else
         //while (!poolContext.m_threadsDone) { }
@@ -59,7 +59,7 @@ public:
         poolContext.m_runningThreadsCount = threads.size();
         poolContext.m_threadsDone = false;
         
-#ifdef USE_NATIVE_LOCKS
+#ifdef USE_NATIVE_UNLOCK
         poolContext.m_runningThreadsCountAtomic = threads.size();
 #else
         for (auto it = poolContext.m_isThreadFinished.begin(); it != poolContext.m_isThreadFinished.end(); it++)
@@ -109,7 +109,7 @@ private:
             m_runningThreadsCount(0),
             m_threadsDone(false)
         {
-#ifdef USE_NATIVE_LOCKS
+#ifdef USE_NATIVE_UNLOCK
             sem_init(&threadsDone, 0, 0);
 #endif
         }
@@ -126,18 +126,20 @@ private:
 #endif
         
         uint m_runningThreadsCount;
-#ifdef USE_NATIVE_LOCKS
+#ifdef USE_NATIVE_UNLOCK
         sem_t threadsDone;
         std::atomic<int> m_runningThreadsCountAtomic;
 #else
+        
+        
+#endif
         // Not bool because STL use bit's packing for vector of bool that cause a data race 
         std::vector<int> m_isThreadFinished;
-#endif
+        
         bool allThreadsShouldStop;
         volatile bool m_threadsDone;
     };
     
-    typedef std::atomic<int> DoneThreadsCounterType;
     class ThreadWrapper
     {
     public:
@@ -181,37 +183,13 @@ private:
                 
                 m_function(currentFunctionArg);
                 
-#ifdef USE_NATIVE_LOCKS
+#ifdef USE_NATIVE_UNLOCK
                 // Checking if we are the last thread
                 if (m_pPoolContext->m_runningThreadsCountAtomic.fetch_add(-1, std::memory_order_consume) == 1)
                     sem_post(&(m_pPoolContext->threadsDone));
 #else
                 m_pPoolContext->m_isThreadFinished[m_threadIndex] = 1;
 #endif
-                
-                //std::cout << "?" << m_threadIndex << std::flush;
-                /*
-                if (m_pPoolContext->checkAreAllFinished())
-                {
-                    //std::cout << "!" << m_threadIndex << std::flush;
-                    m_pPoolContext->m_threadsDone = true;
-                }*/
-                
-                /*
-                if (m_pPoolContext->m_runningThreadsCountAtomic.fetch_add(-1, std::memory_order_consume) == 1) {
-                    m_pPoolContext->m_threadsDone = true;
-                    //sem_post(&(m_pPoolContext->threadsDone));
-                }*/
-                
-                /*
-                sem_wait(&threadCanStart);
-                if (m_pPoolContext->allThreadsShouldStop) return;
-                m_function(currentFunctionArg);
-                
-                // Checking if we are the last thread
-                if (m_pPoolContext->m_runningThreadsCountAtomic.fetch_add(-1, std::memory_order_consume) == 1)
-                    sem_post(&(m_pPoolContext->threadsDone));
-                */
             }
         }
         
