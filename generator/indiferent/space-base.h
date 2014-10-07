@@ -82,8 +82,8 @@ public:
                 std::bind(
                     &SpaceBase::iterateByIndexedCells,
                     this,
-                    allCells.size() / m_threadsCount * i,
-                    allCells.size() / m_threadsCount * (i+1),
+                    allCells.size() * i / m_threadsCount,
+                    allCells.size() * (i+1) / m_threadsCount,
                     std::placeholders::_1,
                     i
                     )

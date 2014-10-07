@@ -34,7 +34,6 @@ inline bool isNotCount(double x)
 }
 
 #define THREADS_COUNT       3
-
 //#define USE_NATIVE_LOCKS
 
 #endif // GLOBAL_DEFINES_H_INCLUDED
