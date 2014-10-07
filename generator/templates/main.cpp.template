@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-unsigned int threadsCount = ${threads_count};
 double timeStep = ${time_step};
 double stopTime = ${stop_time};
 double stabilisationPeriod = ${stabilisation_period};
@@ -15,6 +14,7 @@ int main()
     try {
         cout << "Model initialisation... ";
         model = new Model;
+        model->prepareThreads(THREADS_COUNT);
         cout << "Using " << THREADS_COUNT << " threads" << endl;
         model->setStabilisationPeriod(stabilisationPeriod);
         cout << "Initialisation done." << endl;

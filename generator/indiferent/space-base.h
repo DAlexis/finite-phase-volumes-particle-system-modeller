@@ -13,7 +13,8 @@
 #include <memory>
 #include <vector>
 
-template<int SpaceDimension, class FractionPoolType>
+template<int SpaceDimension,
+         class FractionPoolType>
 class SpaceBase : public Grid<SpaceDimension, FractionPoolType>, public ISpace
 {
 public:
@@ -22,7 +23,7 @@ public:
     typedef GridElementBase<SpaceDimension> SpaceGridElementInstance;
     
     SpaceBase() :
-        m_threadsCount(THREADS_COUNT),
+        m_threadsCount(1),
         cellsAreIndexed(false)
     {
     }
@@ -40,14 +41,14 @@ public:
             this->elements[i].initQuantities();
     }
     
-    void indexateCells()
+    void prepareThreads(unsigned int threadsCount)
     {
         if (cellsAreIndexed)
             return;
         for (size_t i=0; i<this->elementsCount; i++)
             this->elements[i].addElements(allCells);
         cellsAreIndexed = true;
-        
+        m_threadsCount = threadsCount;
         initThreads();
     }
     
@@ -74,8 +75,6 @@ public:
     
     void initThreads()
     {
-        m_threadsCount = THREADS_COUNT;
-        
         for (unsigned int i=0; i<m_threadsCount; i++)
         {
             threadsPool.addThread(

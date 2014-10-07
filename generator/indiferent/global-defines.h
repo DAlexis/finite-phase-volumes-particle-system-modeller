@@ -33,7 +33,6 @@ inline bool isNotCount(double x)
     return false;
 }
 
-#define THREADS_COUNT       3
 //#define USE_NATIVE_LOCKS
 //#define USE_NATIVE_UNLOCK
 

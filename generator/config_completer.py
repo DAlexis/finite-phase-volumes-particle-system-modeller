@@ -322,6 +322,9 @@ def completeConfig(configTree):
     #
     if not 'stabilisation_period' in configTree['run_options']:
         configTree['run_options']['stabilisation_period'] = configTree['run_options']['stop_time']
+    
+    if not 'threads_count' in configTree['run_options']:
+        configTree['run_options']['threads_count'] = 1
     #
     # Generating constants initialisation code
     #

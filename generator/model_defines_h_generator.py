@@ -70,7 +70,17 @@ def generate(destinationDir, config, generatedFileHeadComment):
         
         enumElements.append(currentFraction['intensive_quantities_enum_prefix'] + 'COUNT')
         modDef_h.write(code_utils.createEnum(currentFraction['fraction_secondary_quantity_enum'], enumElements) + "\n");
-        
+    
+    #
+    # Threads defines
+    #
+    modDef_h.write('#define THREADS_COUNT   ' + str(config['run_options']['threads_count']) + "\n");
+    modDef_h.write("\n");
+    
+    #
+    # Bottom of header guard
+    #
+    
     modDef_h.write(code_utils.headerGuardBottom("model-defines.h"))
 
     modDef_h.close()

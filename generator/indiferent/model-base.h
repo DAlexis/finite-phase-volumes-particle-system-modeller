@@ -23,7 +23,6 @@ public:
     {
         space.setParent(this);
         space.initQuantities();
-        space.indexateCells();
     }
     
     ~ModelBase()
@@ -32,6 +31,11 @@ public:
     }
 
     SpaceType space;
+    
+    void prepareThreads(unsigned int threadsCount)
+    {
+        space.prepareThreads(threadsCount);
+    }
     
     void iterate(double dt)
     {
