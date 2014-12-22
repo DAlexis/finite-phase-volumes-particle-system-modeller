@@ -12,14 +12,14 @@ import time
 # Parsing command line
 
 cmdLineParser = OptionParser()
-cmdLineParser.add_option("-d", "--directory", dest="derectory", default="../test/",
+cmdLineParser.add_option("-d", "--directory", dest="directory", default="../test/",
                   help="Directory whewre to put generated program", metavar="DIRECTORY")
 cmdLineParser.add_option("-c", "--config", dest="config", default="configs/1d.yml",
                   help="Configuration file", metavar="CONFIG")
 
 (cmdLineOptions, cmdLineArgs) = cmdLineParser.parse_args()
 configFileName = cmdLineOptions.config
-destinationDir = cmdLineOptions.derectory
+destinationDir = cmdLineOptions.directory
 
 # Beginning work
 print ""
