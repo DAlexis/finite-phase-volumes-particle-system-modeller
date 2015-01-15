@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 currentProcedure=""
 
 function enterProcedure
@@ -8,41 +10,27 @@ function enterProcedure
     currentProcedure=$1
 }
 
-function checkExitCode 
-{
-    if [ "$?" != "0" ];
-    then
-        echo "  ! Error while $currentProcedure. Stopping."
-        exit -1
-    fi
-}
-
 enterProcedure "Clearing old generated files"
-rm -rf ./test/fvm
-rm -f ./test/*
+#rm -rf ./test/fvm
+rm -rf ./test/*
+rm -rf ./build/*
 
 enterProcedure "Generating code"
 (cd ./generator && ./generator.py --config=./configs/$1 )
-checkExitCode
-
-
 
 if [ "$2" == "release" ]
 then
     enterProcedure "Building release version"
     make -C test cfg=release
-    checkExitCode
     
     enterProcedure "Running release version"
     (cd ./build/release && time ./sample)
 else
     enterProcedure "Building debug version"
     make -C test cfg=debug
-    checkExitCode
     
     enterProcedure "Running debug version"
     (cd ./build/debug && time ./sample)
 fi
 
-checkExitCode
 echo "  = Testing script done."
