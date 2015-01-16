@@ -8,7 +8,7 @@ def formHeaderGuard(headerName):
 
 def headerGuardTop(key):
     guard = formHeaderGuard(key)
-    return "#ifndef "+guard+"_INCLUDED\n#define "+guard+"\n\n"
+    return "#ifndef "+guard+"\n#define "+guard+"\n\n"
 
 def headerGuardBottom(key):
     guard = formHeaderGuard(key)
