@@ -36,8 +36,8 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
         result = re.sub(r'\b' + fractionId + r'\b', fractionFullName, result)
     
     # Replacing this fraction's coords
-    if 'fraction_space_grid' in fraction:
-        if fraction['fraction_space_grid']:
+    if 'fraction_space_grid' in thisFraction:
+        if thisFraction['fraction_space_grid']:
             for coordId in thisFraction['fraction_space_grid']:
                 coordDerFullName = 'fractionCoordsDerivatives[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
                 result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)

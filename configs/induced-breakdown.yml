@@ -1,0 +1,112 @@
+#
+# This is a config for modelling electron's distribution in
+# 0-d laser-induced breakdown in O2 and N2 atmosphere
+# with pressure 1 atm
+# Note: particles count quantity synonim is 'particles_count'
+model:
+    name: Dry air in square 2d box
+    cordinate_space_grid:
+        x_coord:
+            name: Coordinate X, cm
+            division:
+                mode: uniform
+                min: -1
+                max: 1
+                segments_count: 1
+    fractions:
+        electrons:
+            name: Electrons
+            stabilisation: off
+            extensive_quantities:
+                particles_count:
+                    name: Count of electrons
+            
+            fraction_space_grid:
+                energy:
+                    name: Electron's energy, eV
+                    division:
+                        mode: uniform
+                        min: 0.0
+                        max: 30
+                        segments_count: 100
+            
+            intensive_quantities:
+                velocity:
+                    name: Velocity, cm/sec
+                    counting: |
+                        // todo: add velocity counting
+                        //pressure = (1.4-1) * internal_energy / space_volume;
+            
+            init_quantities: |
+                particles_count = 0;
+                
+            sources: |
+                // Here sources
+                
+            space_coords_derivatives: |
+                x_coord.DER = 0;
+            
+            fraction_coords_derivatives: |
+                energy.DER = 0;
+            
+            boundary_conditions:
+                x_coord:
+                    top: wall
+                    bottom: wall
+            diffusion:
+                x_coord: |
+                    diffusion = 0;
+        #################################################
+        O2:
+            name: Non-exited O2
+            extensive_quantities:
+                particles_count:
+                    name: Count of air, moll
+            
+            intensive_quantities:
+                pressure:
+                    name: Air pressure
+                    counting: |
+                        // todo
+            
+            init_quantities: |
+                particles_count = 0;
+                
+            sources: |
+                // Here sources
+                
+            space_coords_derivatives: |
+                x_coord.DER = 0;
+            
+            boundary_conditions:
+                x_coord:
+                    top: wall
+                    bottom: wall
+            diffusion:
+                x_coord: |
+                    diffusion = 0;
+output:
+    e_concentration_vs_energy:
+        name: Electrons-concentration-vs-energy
+        fraction: electrons
+        quantity: particles_count
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        time_step: 0.01
+    
+run_options:
+    start_time: 0
+    stop_time: 1
+    time_step:            0.00001
+    stabilisation_period: 0.00150
+    threads_count: 5
+
+constants:
+    Mair: 0.029 // kg / Moll 
+    Na: 6.02e23 // particles / Moll
+    R: 8.3144 // J / Moll*K
