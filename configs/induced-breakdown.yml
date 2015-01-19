@@ -121,7 +121,7 @@ output:
         output_axis:
             energy:
                 points_count: 100
-        time_step: 0
+        time_step: 5e-19
         
     e_velocity_vs_energy:
         name: Velocirty-vs-energy
@@ -134,12 +134,25 @@ output:
         output_axis:
             energy:
                 points_count: 100
-        time_step: 0
+        time_step: 5e-19
+    
+    elastic_col_flow:
+        name: elastic_col_flow-vs-energy
+        fraction: electrons
+        quantity: elastic_col_flow
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        time_step: 5e-19
     
 run_options:
     start_time: 0
-    stop_time: 1e-8
-    time_step: 1e-10
+    stop_time: 1e-16
+    time_step: 1e-19
     threads_count: 5
 
 constants:
