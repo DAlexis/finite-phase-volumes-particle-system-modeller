@@ -26,19 +26,43 @@ model:
                     name: Electron's energy, eV
                     division:
                         mode: uniform
-                        min: 0.0
-                        max: 30
+                        min: 0.0*1.602e-19
+                        max: 30*1.602e-19
                         segments_count: 100
             
             intensive_quantities:
                 velocity:
                     name: Velocity, cm/sec
                     counting: |
-                        // todo: add velocity counting
-                        //pressure = (1.4-1) * internal_energy / space_volume;
+                        velocity = sqrt(2*energy / me);
+                nu_m_ee:
+                    name: Electron-electron transport collision frequency
+                    counting: |
+                        nu_m_ee = particles_count*velocity * 2.8e-15; // Fixme: need real electron transport cross-section
+                
+                nu_m_eo2:
+                    name: Electron-O2 transport collision frequency
+                    counting: |
+                        nu_m_eo2 = 1/(22e-3) * Na
+                            * velocity * 120e-12; // Fixme: need real O2 transport cross-section
+                
+                energy_diffusion_coefficient:
+                    name: Diffusion through energy axis coefficient
+                    counting: |
+                        if (particles_count < 1e-5)
+                            energy_diffusion_coefficient = 0;
+                        else
+                            energy_diffusion_coefficient = 2*e_charge*e_charge*E_field*E_field/(3*me*nu_m_ee);
+                
+                elastic_col_flow:
+                    name: Flow through energy axis due to elastic collision with air
+                    counting: |
+                        elastic_col_flow = -2*me/(Mair/Na) * nu_m_eo2*energy;
             
             init_quantities: |
                 particles_count = 0;
+                if (energy > 10*EV)
+                    particles_count = 1e10/20*1/100;
                 
             sources: |
                 // Here sources
@@ -47,7 +71,7 @@ model:
                 x_coord.DER = 0;
             
             fraction_coords_derivatives: |
-                energy.DER = 0;
+                energy.DER = elastic_col_flow;
             
             boundary_conditions:
                 x_coord:
@@ -97,16 +121,32 @@ output:
         output_axis:
             energy:
                 points_count: 100
-        time_step: 0.01
+        time_step: 0
+        
+    e_velocity_vs_energy:
+        name: Velocirty-vs-energy
+        fraction: electrons
+        quantity: velocity
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        time_step: 0
     
 run_options:
     start_time: 0
-    stop_time: 1
-    time_step:            0.00001
-    stabilisation_period: 0.00150
+    stop_time: 1e-8
+    time_step: 1e-10
     threads_count: 5
 
 constants:
-    Mair: 0.029 // kg / Moll 
-    Na: 6.02e23 // particles / Moll
-    R: 8.3144 // J / Moll*K
+    Mair: 0.029                 // kg / Moll        - Air molar mass
+    Na: 6.02e23                 // particles / Moll - Avogadro number
+    R: 8.3144                   // J / Moll*K       - Universal gase constant
+    me: 9.10938291e-31          // kg               - Electron mass
+    e_charge: 1.60217657e-19    // C                - Electron's charge
+    E_field: 1000               // V/m              - External field
+    EV: 1.602e-19               // J                - Joules in one electronvolt

@@ -144,7 +144,7 @@ def completeConfig(configTree):
                     dimension = fraction['fraction_space_grid'][dimensionId]
                     dimension['fraction_coordinate_enum_element'] = fraction['coordinates_enum_prefix'] + dimensionId.upper()
                     axisConfig = axisConfig + generateAxisConfig(dimension, dimensionId, dimension['fraction_coordinate_enum_element'], 'fraction')
-        fraction['axis_configuration'] = axisConfig
+        fraction['axis_configuration'] = code_utils.indentCode(axisConfig, "    ")
         #
         # Fraction's quantities configuration
         #
@@ -172,7 +172,7 @@ def completeConfig(configTree):
                 for secQuantityId in fraction['intensive_quantities']:
                     currentSecQuantity = fraction['intensive_quantities'][secQuantityId]
                     currentSecQuantity['fraction_secondary_quantity_enum_element'] = fraction['intensive_quantities_enum_prefix'] + secQuantityId.upper()
-                    secQuantitiesCountingCode = secQuantitiesCountingCode + currentSecQuantity['counting'] + '\n'
+                    secQuantitiesCountingCode = secQuantitiesCountingCode + '//' + currentSecQuantity['name'] + '\n' + currentSecQuantity['counting'] + '\n'
                     fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + 'intensiveQuantitiesNames[' + currentSecQuantity['fraction_secondary_quantity_enum_element'] + '] = "' \
                      + currentSecQuantity['name'] + '";\n'
         fraction['intensive_quantities_counting_code'] = secQuantitiesCountingCode
