@@ -25,6 +25,7 @@ public:
     typedef FractionCellBase FractionCellBaseInstance;
     typedef FractionSpaceBase<SpaceDimension, FractionSpaceDimension, FractionsCount, FractionCellType> FractionSpaceBaseInstance;
     typedef Grid<SpaceDimension, FractionCellType> GridInstance;
+    typedef GridElementBase<FractionSpaceDimension> GridElementInstance;
     typedef FractionsPoolBase<SpaceDimension, FractionsCount> FractionsPoolBaseInstance;
     
     FractionCellBase()
@@ -81,7 +82,8 @@ public:
             FractionCellBaseInstance* prev = prevInFractionSpace(coord);
             double transfer = 0;
             if (next)
-                transfer = getConvectiveFlowOutInFractionSpaceUpward(coord, next)*dt;
+                transfer = (getConvectiveFlowOutInFractionSpaceUpward(coord, next)
+                    + getParticlesCountDiffusionFlowOutInFractionSpace(coord, next)) * dt;
             else
                 transfer = getConvectiveFlowOutThroughFractionTopBorder(coord) * dt;
             
@@ -89,7 +91,8 @@ public:
             totalFlowOut += transfer;
             
             if (prev)
-                transfer = getConvectiveFlowOutInFractionSpaceDownward(coord, prev)*dt;
+                transfer = (getConvectiveFlowOutInFractionSpaceDownward(coord, prev)
+                    + getParticlesCountDiffusionFlowOutInFractionSpace(coord, prev)) * dt;
             else
                 transfer = -getConvectiveFlowOutThroughFractionBottomBorder(coord) * dt;
             
@@ -299,7 +302,7 @@ protected:
     inline FractionCellBase* prevInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->prev[coordinate]); }
     
     virtual double getSpaceDiffusionCoefficient(uint axisIndex) = 0;
-    
+    virtual double getFractionSpaceDiffusionCoefficient(uint axisIndex) { return 0; }
 private:
     
     ///////////////////
@@ -358,6 +361,14 @@ private:
     
     ///////////////////
     // Diffusion flows couning
+    
+    /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
+    inline double getParticlesCountDiffusionFlowOutInFractionSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
+    {
+        double l1 = this->size[coordinate];
+        double l2 = neighbor->size[coordinate];
+        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * getFractionSpaceDiffusionCoefficient(coordinate);
+    }
     
     /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
     inline double getParticlesCountDiffusionFlowOutInSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)

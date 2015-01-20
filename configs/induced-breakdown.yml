@@ -49,10 +49,7 @@ model:
                 energy_diffusion_coefficient:
                     name: Diffusion through energy axis coefficient
                     counting: |
-                        if (particles_count < 1e-5)
-                            energy_diffusion_coefficient = 0;
-                        else
-                            energy_diffusion_coefficient = 2*e_charge*e_charge*E_field*E_field/(3*me*nu_m_ee);
+                        energy_diffusion_coefficient = 2*e_charge*e_charge*E_field*E_field/(3*me*nu_m_ee);
                 
                 elastic_col_flow:
                     name: Flow through energy axis due to elastic collision with air
