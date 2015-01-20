@@ -35,6 +35,7 @@ model:
                     name: Velocity, cm/sec
                     counting: |
                         velocity = sqrt(2*energy / me);
+                
                 nu_m_ee:
                     name: Electron-electron transport collision frequency
                     counting: |
@@ -49,7 +50,10 @@ model:
                 energy_diffusion_coefficient:
                     name: Diffusion through energy axis coefficient
                     counting: |
-                        energy_diffusion_coefficient = 2*e_charge*e_charge*E_field*E_field/(3*me*nu_m_ee);
+                        if (particles_count > 10)
+                            energy_diffusion_coefficient = 2*e_charge*e_charge/me*E_field*E_field*energy /(3*nu_m_ee);
+                        else
+                            energy_diffusion_coefficient = 0.0;
                 
                 elastic_col_flow:
                     name: Flow through energy axis due to elastic collision with air
@@ -57,8 +61,8 @@ model:
                         elastic_col_flow = -2*me/(Mair/Na) * nu_m_eo2*energy;
             
             init_quantities: |
-                particles_count = 0;
-                if (energy > 10*EV)
+                particles_count = 1e8/20*1/100;
+                if (energy > 10*EV && energy < 20*EV)
                     particles_count = 1e10/20*1/100;
                 
             sources: |
@@ -68,7 +72,7 @@ model:
                 x_coord.DER = 0;
             
             fraction_coords_derivatives: |
-                energy.DER = elastic_col_flow;
+                energy.DER = 0;//elastic_col_flow;
             
             boundary_conditions:
                 x_coord:
@@ -77,6 +81,8 @@ model:
             diffusion:
                 x_coord: |
                     diffusion = 0;
+                energy: |
+                    diffusion = 0;//energy_diffusion_coefficient; // Test
         #################################################
         O2:
             name: Non-exited O2
@@ -146,10 +152,36 @@ output:
                 points_count: 100
         time_step: 5e-19
     
+    energy_diff_coeff:
+        name: energy_diff_coeff-vs-energy
+        fraction: electrons
+        quantity: energy_diffusion_coefficient
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        time_step: 5e-19
+
+    nu_m_ee:
+        name: nu_m_ee
+        fraction: electrons
+        quantity: nu_m_ee
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        time_step: 5e-19
+    
 run_options:
     start_time: 0
     stop_time: 1e-16
-    time_step: 1e-19
+    time_step: 1e-22
     threads_count: 5
 
 constants:

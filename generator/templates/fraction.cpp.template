@@ -59,6 +59,14 @@ ${diffusion_coefficient_counting_code}
     return diffusion;
 }
 
+double ${fraction_cell_classname}::getFractionSpaceDiffusionCoefficient(uint axisIndex)
+{
+    double diffusion = 0.0;
+${diffusion_coefficient_in_fractions_space_counting_code}
+    return diffusion;
+}
+
+
 void ${fraction_cell_classname}::calculateIntensiveQuantities()
 {
     if (isNull(extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX])) {

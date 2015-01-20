@@ -91,6 +91,123 @@ def generateAxisConfig(asixDescriptionSubtree, axisId, axisIndex, axisType):
             filename    = asixDescriptionSubtree['division']['filename'],
             )
 
+def addIntensiveQuantities(fraction, configTree, fractionQuantitiesNamesInitCode):
+    """
+    This function sorts intensive quantities according to dependensies and generates counting code
+    """
+    done = []
+    deps = {}
+    
+    def checkIfSatisfied(identifier):
+        if not deps[identifier]:
+            return True, None
+        for element in deps[identifier]:
+            if not element in done:
+                return False, element;
+        return True, None
+    
+    fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + "\n"
+    secQuantitiesCountingCode = ""
+    if (not 'intensive_quantities' in fraction) or (not fraction['intensive_quantities']):
+        # No intensive quantities
+        return fractionQuantitiesNamesInitCode;
+    
+    
+    for result in fraction['intensive_quantities']:
+        deps[result] = []
+        for dependency in fraction['intensive_quantities']:
+            if re.search(r'\b' + dependency + r'\b', fraction['intensive_quantities'][result]['counting']) and dependency != result:
+                deps[result].append(dependency)
+    
+    while deps:
+        firstNotSat = deps.iterkeys().next()
+        satisfied = False
+        extQuantityId = firstNotSat
+        while not satisfied:
+            extQuantityId = firstNotSat
+            (satisfied, firstNotSat) = checkIfSatisfied(firstNotSat)
+        
+        currentSecQuantity = fraction['intensive_quantities'][extQuantityId]
+        currentSecQuantity['fraction_secondary_quantity_enum_element'] = fraction['intensive_quantities_enum_prefix'] + extQuantityId.upper()
+        secQuantitiesCountingCode = secQuantitiesCountingCode + '//' + currentSecQuantity['name'] + '\n' + currentSecQuantity['counting'] + '\n'
+        fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + 'intensiveQuantitiesNames[' + currentSecQuantity['fraction_secondary_quantity_enum_element'] + '] = "' \
+          + currentSecQuantity['name'] + '";\n'
+         
+        done.append(extQuantityId)
+        del deps[extQuantityId]
+    
+    fraction['intensive_quantities_counting_code'] = secQuantitiesCountingCode
+    fraction['quantities_names_init_code'] = code_utils.indentCode(fractionQuantitiesNamesInitCode, "    ");
+    return fractionQuantitiesNamesInitCode;
+    
+def addBoundaryConditionsConfig(fraction, configTree):
+    boundaryConditionsInitCode = ""
+    if 'boundary_conditions' in fraction:
+        if fraction['boundary_conditions']:
+            
+            for axisId in fraction['boundary_conditions']:
+                if axisId in configTree['model']['cordinate_space_grid']:
+                    # Space axis borders
+                    if 'top' in fraction['boundary_conditions'][axisId]:
+                        if fraction['boundary_conditions'][axisId]['top'] == 'open':
+                            boundaryConditionsInitCode = boundaryConditionsInitCode + 'spaceTopBorderType[' \
+                                + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] \
+                                + '] = BT_OPEN;\n'
+                    if 'bottom' in fraction['boundary_conditions'][axisId]:
+                        if fraction['boundary_conditions'][axisId]['bottom'] == 'open':
+                            boundaryConditionsInitCode = boundaryConditionsInitCode + 'spaceBottomBorderType[' \
+                                + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] \
+                                + '] = BT_OPEN;\n'
+                else:
+                    # Fraction axis borders
+                    if 'top' in fraction['boundary_conditions'][axisId]:
+                        if fraction['boundary_conditions'][axisId]['top'] == 'open':
+                            boundaryConditionsInitCode = boundaryConditionsInitCode + 'fractionTopBorderType[' \
+                                + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
+                                + '] = BT_OPEN;\n'
+                    if 'bottom' in fraction['boundary_conditions'][axisId]:
+                        if fraction['boundary_conditions'][axisId]['bottom'] == 'open':
+                            boundaryConditionsInitCode = boundaryConditionsInitCode + 'fractionBottomBorderType[' \
+                                + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
+                                + '] = BT_OPEN;\n'
+    fraction['boundary_conditions_config'] = code_utils.indentCode(boundaryConditionsInitCode, "    ")
+    
+def addDifusionCounting(fraction, configTree):
+    diffInSpaceCountingCode = ""
+    diffInFracSpaceCountingCode = ""
+    if 'diffusion' in fraction:
+        if fraction['diffusion']:
+            spaceAxisSwitchCases = {}
+            fractionSpaceAxisSwitchCases = {}
+            for axisId in fraction['diffusion']:
+                # Check if this cordinate in fraction space or not
+                if ('fraction_space_grid' in fraction) and (axisId in fraction['fraction_space_grid']):
+                    fractionSpaceAxisSwitchCases[ fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] ] = \
+                        fraction['diffusion'][axisId] # Adding code to cases dictionary
+                else:
+                    spaceAxisSwitchCases[ configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] ] = \
+                        fraction['diffusion'][axisId] # Adding code to cases dictionary
+            
+            diffInFracSpaceCountingCode = code_utils.createSwitch("axisIndex", fractionSpaceAxisSwitchCases)
+            diffInSpaceCountingCode = code_utils.createSwitch("axisIndex", spaceAxisSwitchCases)
+            
+    fraction['diffusion_coefficient_counting_code'] = diffInSpaceCountingCode
+    fraction['diffusion_coefficient_in_fractions_space_counting_code'] = diffInFracSpaceCountingCode
+    
+
+def resolveAndIndent(configTree):
+    for fractionId in configTree['model']['fractions']:
+        fraction = configTree['model']['fractions'][fractionId]
+        # Resolving id's in code
+        fraction['sources'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction), "    ")
+        fraction['space_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction), "    ")
+        fraction['fraction_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction), "    ")
+        fraction['intensive_quantities_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['intensive_quantities_counting_code'], configTree, fraction), "    ")
+        fraction['init_quantities'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['init_quantities'], configTree, fraction), "    ")
+        fraction['diffusion_coefficient_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['diffusion_coefficient_counting_code'], configTree, fraction), "    ")
+        fraction['diffusion_coefficient_in_fractions_space_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['diffusion_coefficient_in_fractions_space_counting_code'], configTree, fraction), "    ")
+
+
 def completeConfig(configTree):
     #
     # Space axis configuration
@@ -165,64 +282,15 @@ def completeConfig(configTree):
         #
         # Intensive quantities
         #
-        fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + "\n"
-        secQuantitiesCountingCode = ""
-        if 'intensive_quantities' in fraction:
-            if fraction['intensive_quantities']:
-                for secQuantityId in fraction['intensive_quantities']:
-                    currentSecQuantity = fraction['intensive_quantities'][secQuantityId]
-                    currentSecQuantity['fraction_secondary_quantity_enum_element'] = fraction['intensive_quantities_enum_prefix'] + secQuantityId.upper()
-                    secQuantitiesCountingCode = secQuantitiesCountingCode + '//' + currentSecQuantity['name'] + '\n' + currentSecQuantity['counting'] + '\n'
-                    fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + 'intensiveQuantitiesNames[' + currentSecQuantity['fraction_secondary_quantity_enum_element'] + '] = "' \
-                     + currentSecQuantity['name'] + '";\n'
-        fraction['intensive_quantities_counting_code'] = secQuantitiesCountingCode
-        
-        fraction['quantities_names_init_code'] = code_utils.indentCode(fractionQuantitiesNamesInitCode, "    ");
+        fractionQuantitiesNamesInitCode = addIntensiveQuantities(fraction, configTree, fractionQuantitiesNamesInitCode)
         #
         # Boundary conditions configuration
         #
-        boundaryConditionsInitCode = ""
-        if 'boundary_conditions' in fraction:
-            if fraction['boundary_conditions']:
-                
-                for axisId in fraction['boundary_conditions']:
-                    if axisId in configTree['model']['cordinate_space_grid']:
-                        # Space axis borders
-                        if 'top' in fraction['boundary_conditions'][axisId]:
-                            if fraction['boundary_conditions'][axisId]['top'] == 'open':
-                                boundaryConditionsInitCode = boundaryConditionsInitCode + 'spaceTopBorderType[' \
-                                    + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] \
-                                    + '] = BT_OPEN;\n'
-                        if 'bottom' in fraction['boundary_conditions'][axisId]:
-                            if fraction['boundary_conditions'][axisId]['bottom'] == 'open':
-                                boundaryConditionsInitCode = boundaryConditionsInitCode + 'spaceBottomBorderType[' \
-                                    + configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] \
-                                    + '] = BT_OPEN;\n'
-                    else:
-                        # Fraction axis borders
-                        if 'top' in fraction['boundary_conditions'][axisId]:
-                            if fraction['boundary_conditions'][axisId]['top'] == 'open':
-                                boundaryConditionsInitCode = boundaryConditionsInitCode + 'fractionTopBorderType[' \
-                                    + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
-                                    + '] = BT_OPEN;\n'
-                        if 'bottom' in fraction['boundary_conditions'][axisId]:
-                            if fraction['boundary_conditions'][axisId]['bottom'] == 'open':
-                                boundaryConditionsInitCode = boundaryConditionsInitCode + 'fractionBottomBorderType[' \
-                                    + fraction['fraction_space_grid'][axisId]['fraction_coordinate_enum_element'] \
-                                    + '] = BT_OPEN;\n'
-        fraction['boundary_conditions_config'] = code_utils.indentCode(boundaryConditionsInitCode, "    ")
+        addBoundaryConditionsConfig(fraction, configTree)
         #
-        # Diffusion coefficient counting
+        # Diffusion coefficients counting
         #
-        diffCountingCode = ""
-        if 'diffusion' in fraction:
-            if fraction['diffusion']:
-                axisSwitchCases = {}
-                for axisId in fraction['diffusion']:
-                    axisSwitchCases[ configTree['model']['cordinate_space_grid'][axisId]['space_dimension_enum_element'] ] = \
-                        fraction['diffusion'][axisId] # Adding code to cases dictionary
-                diffCountingCode = code_utils.createSwitch("axisIndex", axisSwitchCases)
-        fraction['diffusion_coefficient_counting_code'] = diffCountingCode
+        addDifusionCounting(fraction, configTree)
         #
         # Quantities initialisation code
         #
@@ -342,12 +410,4 @@ def completeConfig(configTree):
     #
     # Resolving macro symbols in code fragments
     #
-    for fractionId in configTree['model']['fractions']:
-        fraction = configTree['model']['fractions'][fractionId]
-        # Resolving id's in code
-        fraction['sources'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction), "    ")
-        fraction['space_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction), "    ")
-        fraction['fraction_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction), "    ")
-        fraction['intensive_quantities_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['intensive_quantities_counting_code'], configTree, fraction), "    ")
-        fraction['init_quantities'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['init_quantities'], configTree, fraction), "    ")
-        fraction['diffusion_coefficient_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['diffusion_coefficient_counting_code'], configTree, fraction), "    ")
+    resolveAndIndent(configTree)

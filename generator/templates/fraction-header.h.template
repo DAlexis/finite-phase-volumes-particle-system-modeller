@@ -29,6 +29,7 @@ public:
     
 protected:
     double getSpaceDiffusionCoefficient(uint axisIndex);
+    double getFractionSpaceDiffusionCoefficient(uint axisIndex);
     
 private:
     void* getModel();

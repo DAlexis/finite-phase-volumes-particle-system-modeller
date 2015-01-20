@@ -25,7 +25,6 @@ public:
     typedef FractionCellBase FractionCellBaseInstance;
     typedef FractionSpaceBase<SpaceDimension, FractionSpaceDimension, FractionsCount, FractionCellType> FractionSpaceBaseInstance;
     typedef Grid<SpaceDimension, FractionCellType> GridInstance;
-    typedef GridElementBase<FractionSpaceDimension> GridElementInstance;
     typedef FractionsPoolBase<SpaceDimension, FractionsCount> FractionsPoolBaseInstance;
     
     FractionCellBase()
@@ -302,7 +301,7 @@ protected:
     inline FractionCellBase* prevInFractionSpace(unsigned int coordinate) { return static_cast<FractionCellBase*>(this->prev[coordinate]); }
     
     virtual double getSpaceDiffusionCoefficient(uint axisIndex) = 0;
-    virtual double getFractionSpaceDiffusionCoefficient(uint axisIndex) { return 0; }
+    virtual double getFractionSpaceDiffusionCoefficient(uint axisIndex) = 0;
 private:
     
     ///////////////////

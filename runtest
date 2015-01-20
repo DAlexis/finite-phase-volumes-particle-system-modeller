@@ -13,7 +13,7 @@ function enterProcedure
 enterProcedure "Clearing old generated files"
 #rm -rf ./test/fvm
 rm -rf ./test/*
-rm -rf ./build/*
+#rm -rf ./build/*
 
 enterProcedure "Generating code"
 ./generator/generator.py --config=./configs/$1
@@ -24,12 +24,14 @@ then
     make -C test cfg=release
     
     enterProcedure "Running release version"
+    (cd ./build/release && rm *.o *.d)
     (cd ./build/release && time ./sample)
 else
     enterProcedure "Building debug version"
     make -C test cfg=debug
     
     enterProcedure "Running debug version"
+    (cd ./build/debug && rm *.o *.d)
     (cd ./build/debug && time ./sample)
 fi
 
