@@ -210,6 +210,12 @@ def resolveAndIndent(configTree):
 
 def completeConfig(configTree):
     #
+    # Model time step configuration
+    #
+    if not 'time_step' in configTree['run_options']:
+        configTree['run_options']['time_step'] = str((float(configTree['run_options']['stop_time']) - float(configTree['run_options']['start_time'])) / float(configTree['run_options']['points_count']))
+    
+    #
     # Space axis configuration
     #
     spaceAxisConfiguration = ""
@@ -332,6 +338,9 @@ def completeConfig(configTree):
             instance['quantity_index'] = fraction['intensive_quantities'][instance['quantity']]['fraction_secondary_quantity_enum_element']
             instance['quantity_type'] = "OCT_INTENSIVE_QUANTITY"
         
+        # Time step configuration
+        if not 'time_step' in instance:
+            instance['time_step'] = str((float(configTree['run_options']['stop_time']) - float(configTree['run_options']['start_time'])) / float(instance['points_count']))
         # Space point config
         spacePointInitCode = ""
         if instance['space_point']:

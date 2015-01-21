@@ -26,7 +26,7 @@ model:
                     name: Electron's energy, eV
                     division:
                         mode: uniform
-                        min: 0.0*1.602e-19
+                        min: 1*1.602e-19
                         max: 30*1.602e-19
                         segments_count: 100
             
@@ -36,34 +36,40 @@ model:
                     counting: |
                         velocity = sqrt(2*energy / me);
                 
-                nu_m_ee:
-                    name: Electron-electron transport collision frequency
-                    counting: |
-                        nu_m_ee = particles_count*velocity * 2.8e-15; // Fixme: need real electron transport cross-section
+                #nu_m_ee:
+                #    name: Electron-electron transport collision frequency
+                #    counting: |
+                #        nu_m_ee = particles_count*velocity * 2.8e-15; // Fixme: need real electron transport cross-section
                 
                 nu_m_eo2:
                     name: Electron-O2 transport collision frequency
                     counting: |
-                        nu_m_eo2 = 1/(22e-3) * Na
-                            * velocity * 120e-12; // Fixme: need real O2 transport cross-section
+                        nu_m_eo2 = 1.0 / (22e-3) * Na * velocity * 3.9e-15;
+                
+                big_a:
+                    name: Coefficient 'A'
+                    counting: |
+                        big_a = 2*e_charge*e_charge*E_field*E_field /(3*me*nu_m_eo2);
+                        
                 
                 energy_diffusion_coefficient:
                     name: Diffusion through energy axis coefficient
                     counting: |
-                        if (particles_count > 10)
-                            energy_diffusion_coefficient = 2*e_charge*e_charge/me*E_field*E_field*energy /(3*nu_m_ee);
-                        else
-                            energy_diffusion_coefficient = 0.0;
+                        energy_diffusion_coefficient = big_a*energy;
                 
-                elastic_col_flow:
+                big_u:
+                    name: Flow through energy axis due to elastic e-e collision
+                    counting: |
+                        big_u = big_a / 2;
+                
+                elastic_col_eo2_flow:
                     name: Flow through energy axis due to elastic collision with air
                     counting: |
-                        elastic_col_flow = -2*me/(Mair/Na) * nu_m_eo2*energy;
+                        elastic_col_eo2_flow = -2*me/(Mair/Na) * nu_m_eo2*energy;
             
             init_quantities: |
-                particles_count = 1e8/20*1/100;
-                if (energy > 10*EV && energy < 20*EV)
-                    particles_count = 1e10/20*1/100;
+                if (energy > 1*EV && energy < 2*EV)
+                    particles_count = 1e16/20*1/100;
                 
             sources: |
                 // Here sources
@@ -72,7 +78,7 @@ model:
                 x_coord.DER = 0;
             
             fraction_coords_derivatives: |
-                energy.DER = 0;//elastic_col_flow;
+                energy.DER = big_u;
             
             boundary_conditions:
                 x_coord:
@@ -82,7 +88,7 @@ model:
                 x_coord: |
                     diffusion = 0;
                 energy: |
-                    diffusion = 0;//energy_diffusion_coefficient; // Test
+                    diffusion = energy_diffusion_coefficient; // Test
         #################################################
         O2:
             name: Non-exited O2
@@ -124,25 +130,12 @@ output:
         output_axis:
             energy:
                 points_count: 100
-        time_step: 5e-19
-        
-    e_velocity_vs_energy:
-        name: Velocirty-vs-energy
-        fraction: electrons
-        quantity: velocity
-        space_point:
-            x_coord: 0
-        fraction_point:
-            energy: 0
-        output_axis:
-            energy:
-                points_count: 100
-        time_step: 5e-19
+        points_count: 300
     
-    elastic_col_flow:
-        name: elastic_col_flow-vs-energy
+    big_u:
+        name: big_u
         fraction: electrons
-        quantity: elastic_col_flow
+        quantity: big_u
         space_point:
             x_coord: 0
         fraction_point:
@@ -150,7 +143,46 @@ output:
         output_axis:
             energy:
                 points_count: 100
-        time_step: 5e-19
+        points_count: 300
+    
+    elastic_col_eo2_flow:
+        name: elastic_col_eo2_flow
+        fraction: electrons
+        quantity: elastic_col_eo2_flow
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 300
+    
+    big_u:
+        name: big_u
+        fraction: electrons
+        quantity: big_u
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 300
+    
+    nu_m_eo2:
+        name: nu_m_eo2
+        fraction: electrons
+        quantity: nu_m_eo2
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 300
     
     energy_diff_coeff:
         name: energy_diff_coeff-vs-energy
@@ -163,25 +195,13 @@ output:
         output_axis:
             energy:
                 points_count: 100
-        time_step: 5e-19
-
-    nu_m_ee:
-        name: nu_m_ee
-        fraction: electrons
-        quantity: nu_m_ee
-        space_point:
-            x_coord: 0
-        fraction_point:
-            energy: 0
-        output_axis:
-            energy:
-                points_count: 100
-        time_step: 5e-19
+        points_count: 300
     
 run_options:
     start_time: 0
-    stop_time: 1e-16
-    time_step: 1e-22
+    stop_time: 1e-5
+    points_count: 100000
+    #time_step: 5e-16
     threads_count: 5
 
 constants:
@@ -190,5 +210,5 @@ constants:
     R: 8.3144                   // J / Moll*K       - Universal gase constant
     me: 9.10938291e-31          // kg               - Electron mass
     e_charge: 1.60217657e-19    // C                - Electron's charge
-    E_field: 1000               // V/m              - External field
+    E_field: 1000000            // V/m              - External field
     EV: 1.602e-19               // J                - Joules in one electronvolt
