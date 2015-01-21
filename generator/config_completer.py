@@ -338,6 +338,12 @@ def completeConfig(configTree):
             instance['quantity_index'] = fraction['intensive_quantities'][instance['quantity']]['fraction_secondary_quantity_enum_element']
             instance['quantity_type'] = "OCT_INTENSIVE_QUANTITY"
         
+        # Output scale configuration
+        if (not 'need_log_scale' in instance) or (instance['need_log_scale'] != True):
+            instance['need_log_scale'] = 'false';
+        else:
+            instance['need_log_scale'] = 'true';
+        
         # Time step configuration
         if not 'time_step' in instance:
             instance['time_step'] = str((float(configTree['run_options']['stop_time']) - float(configTree['run_options']['start_time'])) / float(instance['points_count']))

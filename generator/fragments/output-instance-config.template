@@ -3,7 +3,7 @@ ${space_point_init}
 ${fraction_point_init}
 ${instance_id}
     ->setFilenamePrefix("${name}")
-    ->setFractionAndQuantity(${fraction_index}, ${quantity_index}, ${quantity_type})
+    ->setFractionAndQuantity(${fraction_index}, ${quantity_index}, ${quantity_type}, ${need_log_scale})
 ${output_axis_configuration}
 ${convolution_configureation}
     ->setPeriod(${time_step});

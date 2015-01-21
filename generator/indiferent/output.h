@@ -40,7 +40,7 @@ public:
     OutputInstance* useAllFractionSpaceConvolution(unsigned int fractionSpaceDimension);
     
     OutputInstance* setFilenamePrefix(const std::string& filenamePrefix);
-    OutputInstance* setFractionAndQuantity(uint fractionId, uint quantityId, OutputQuantityType quantityType);
+    OutputInstance* setFractionAndQuantity(uint fractionId, uint quantityId, OutputQuantityType quantityType, bool needLogScale);
     OutputInstance* setPeriod(double period);
     
     
@@ -55,6 +55,7 @@ private:
     void createGnuplotFile(const std::string& filenamePrefix);
     void quantityVsAxisAndTimeIterate();
     void recursiveIterate(uint axisIndex, std::string fileName);
+    double logScale(double x);
     
     struct OutputAxisDescription
     {
@@ -70,6 +71,7 @@ private:
     
     std::vector<OutputAxisDescription> axis;
     std::vector<uint> convolutionAxis;
+    bool m_needLogScale;
     OutputMaker* m_parent;
     ISpace* m_space;
     

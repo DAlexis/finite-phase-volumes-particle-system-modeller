@@ -8,6 +8,7 @@
 #include <limits>
 #include <string.h>
 #include <sys/stat.h>
+#include <math.h>
 
 OutputInstance::OutputInstance() :
     m_parent(NULL),
@@ -67,11 +68,12 @@ OutputInstance* OutputInstance::setPeriod(double period)
     return this;
 }
 
-OutputInstance* OutputInstance::setFractionAndQuantity(uint fractionId, uint quantityId, OutputQuantityType quantityType)
+OutputInstance* OutputInstance::setFractionAndQuantity(uint fractionId, uint quantityId, OutputQuantityType quantityType, bool needLogScale)
 {
     m_fractionId = fractionId;
     m_quantityId = quantityId;
     m_quantityType = quantityType;
+    m_needLogScale = needLogScale;
     return this;
 }
 
@@ -93,6 +95,8 @@ void OutputInstance::recursiveIterate(uint axisIndex, std::string fileName)
             result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
         else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
             result = fractionCell->getIntensiveQuantity(m_quantityId);
+        
+        if (m_needLogScale) result = logScale(result);
         
         for (uint i=axisIndex-2; i<axisIndex; i++)
         {
@@ -192,6 +196,9 @@ void OutputInstance::quantityVsAxisAndTimeIterate()
                     result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
                 else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
                     result = fractionCell->getIntensiveQuantity(m_quantityId);
+                    
+                if (m_needLogScale) result = logScale(result);
+                
                 (*m_dataFile) << m_currentTime << " " << spacePoint[axis[0].axisIndex] << " "<< result << std::endl;
             }
         } break;
@@ -211,6 +218,9 @@ void OutputInstance::quantityVsAxisAndTimeIterate()
                     result = fractionCell->getQuantitiesDensityConvolution(m_quantityId, convolutionAxis) / spaceCell->getVolume();
                 else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
                     result = fractionCell->getIntensiveQuantity(m_quantityId);
+                    
+                if (m_needLogScale) result = logScale(result);
+                
                 (*m_dataFile) << m_currentTime << " " << fractionPoint[axis[0].axisIndex] << " "<< result << std::endl;
             }
         } break;
@@ -253,19 +263,45 @@ void OutputInstance::createGnuplotFile(const std::string& filenamePrefix)
     if (axis.size() == 1) {
         /// @bug if it is not space coordinate, this code is not correct
         gnuplotFile << "set xlabel \"Time, sec\"" << std::endl;
-        gnuplotFile << "set ylabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
+        gnuplotFile << "set ylabel \""
+            << ( (axis[0].type == OAT_SPACE_COORDINATE) ?
+                m_space->getAxisDescription(axis[0].axisIndex)->getName()
+                : m_space->getCellByIndex(0)->getFraction(m_fractionId)->getAxisDescription(axis[0].axisIndex)->getName()
+            ) << "\"" << std::endl;
     } else {
-        gnuplotFile << "set xlabel \"" << m_space->getAxisDescription(axis[0].axisIndex)->getName() << "\"" << std::endl;
-        gnuplotFile << "set ylabel \"" << m_space->getAxisDescription(axis[1].axisIndex)->getName() << "\"" << std::endl;
+        gnuplotFile << "set xlabel \"" 
+            << ( (axis[0].type == OAT_SPACE_COORDINATE) ?
+                m_space->getAxisDescription(axis[0].axisIndex)->getName()
+                : m_space->getCellByIndex(0)->getFraction(m_fractionId)->getAxisDescription(axis[0].axisIndex)->getName()
+            ) << "\"" << std::endl;
+        
+        gnuplotFile << "set ylabel \"" 
+            << ( (axis[1].type == OAT_SPACE_COORDINATE) ?
+                m_space->getAxisDescription(axis[1].axisIndex)->getName()
+                : m_space->getCellByIndex(1)->getFraction(m_fractionId)->getAxisDescription(axis[1].axisIndex)->getName()
+            ) << "\"" << std::endl;
     }
     if (m_quantityType == OCT_EXTENSIVE_QUANTITY)
-        gnuplotFile << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->extensiveQuantitiesNames[m_quantityId] << "\"";
-    else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
-        gnuplotFile << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->intensiveQuantitiesNames[m_quantityId] << "\"";
+    {
+        gnuplotFile << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->extensiveQuantitiesNames[m_quantityId];
+        if (m_needLogScale) gnuplotFile << ", log scale";
+        gnuplotFile << "\"";
+    } else if (m_quantityType == OCT_INTENSIVE_QUANTITY)
+    {
+        gnuplotFile << "set zlabel \"" << m_space->getCellByIndex(0)->getFraction(m_fractionId)->getFractionDescription()->intensiveQuantitiesNames[m_quantityId];
+        if (m_needLogScale) gnuplotFile << ", log scale";
+        gnuplotFile << "\"";
+    }
     gnuplotFile << " rotate by 90 offset -2,0" << std::endl;
     gnuplotFile << "splot \"" << filenamePrefix + ".txt" << "\" with pm3d" << std::endl;
     gnuplotFile << "pause -1" << std::endl;
     gnuplotFile.close();
+}
+
+double OutputInstance::logScale(double x)
+{
+    if (x == 0) return 0;
+    return log(x) / log(10);
 }
 
 //////////////////////
