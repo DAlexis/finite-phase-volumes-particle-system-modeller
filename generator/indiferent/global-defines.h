@@ -17,8 +17,10 @@ typedef unsigned int uint;
 
 inline bool isNotNull(double x)
 {
+    return (x != 0.0);
+    /*
     if (fabs(x) < DOUBLE_NULL) return false;
-    return true;
+    return true;*/
 }
 
 inline bool isNull(double x)

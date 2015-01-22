@@ -69,10 +69,10 @@ ${diffusion_coefficient_in_fractions_space_counting_code}
 
 void ${fraction_cell_classname}::calculateIntensiveQuantities()
 {
-    if (isNull(extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX])) {
+/*    if (isNull(extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX])) {
         for (unsigned int i = 0; i != ${intensive_quantities_enum_prefix}COUNT; i++)
             intensiveQuantities[i] = 0.0;
         return;
-    }
+    }*/
 ${intensive_quantities_counting_code}
 }

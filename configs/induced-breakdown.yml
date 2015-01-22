@@ -23,12 +23,12 @@ model:
             
             fraction_space_grid:
                 energy:
-                    name: Electron's energy, eV
+                    name: Electron's energy, J
                     division:
                         mode: uniform
-                        min: 0.1*1.602e-19
-                        max: 5*1.602e-19
-                        segments_count: 100
+                        min: 0*1.602e-19
+                        max: 100*1.602e-19
+                        segments_count: 300
             
             intensive_quantities:
                 velocity:
@@ -44,7 +44,7 @@ model:
                 nu_m_eo2:
                     name: Electron-O2 transport collision frequency
                     counting: |
-                        nu_m_eo2 = 1.0 / (22e-3) * Na * velocity * 3.9e-15;
+                        nu_m_eo2 = 1.0 / (22e-3) * Na * velocity *  1e-19; //6e-20;
                 
                 big_a:
                     name: Coefficient 'A'
@@ -70,7 +70,7 @@ model:
             init_quantities: |
                 //if (energy > 1*EV && energy < 2*EV)
                 if (energy < 1*EV)
-                    particles_count = 1e15*EV;
+                    particles_count = 1e10/3;
                 
             sources: |
                 // Here sources
@@ -131,8 +131,8 @@ output:
         output_axis:
             energy:
                 points_count: 100
-        points_count: 300
-        need_log_scale: true
+        points_count: 600
+        need_log_scale: false
     
     big_u:
         name: big_u
@@ -201,10 +201,10 @@ output:
     
 run_options:
     start_time: 0
-    stop_time: 1e-12
+    stop_time: 1e-9
     points_count: 100000
     #time_step: 5e-16
-    threads_count: 5
+    threads_count: 4
 
 constants:
     Mair: 0.029                 // kg / Moll        - Air molar mass
@@ -212,5 +212,5 @@ constants:
     R: 8.3144                   // J / Moll*K       - Universal gase constant
     me: 9.10938291e-31          // kg               - Electron mass
     e_charge: 1.60217657e-19    // C                - Electron's charge
-    E_field: 230000000            // V/m              - External field
+    E_field: 400000             // V/m              - External field
     EV: 1.602e-19               // J                - Joules in one electronvolt
