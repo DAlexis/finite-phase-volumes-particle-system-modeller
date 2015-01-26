@@ -1,0 +1,9 @@
+#ifndef EMPIRIC_CURVES_H_INCLUDED
+#define EMPIRIC_CURVES_H_INCLUDED
+
+#include "empiric-curves-reader.h"
+
+${empiric_curves_readers_externs}
+
+
+#endif // EMPIRIC_CURVES_H_INCLUDED

@@ -51,10 +51,15 @@ if not os.path.exists(destinationLibraryDir):
     os.makedirs(destinationLibraryDir)
 
 print ""
+print "Parsing configuration"
+
+config_completer.completeConfig(config)
+
+print ""
 print "Copying FVM library files"
 filesAsIs = [
-            'axis.cpp',
             'axis.h',
+            'axis.cpp',
             'threads-pool.h',
             'fraction-base.h',
             'fraction-space-base.h',
@@ -67,7 +72,9 @@ filesAsIs = [
             'grid-template.h',
             'descriptions.h',
             'output.h',
-            'output.cpp'
+            'output.cpp',
+            'empiric-curves-reader.h',
+            'empiric-curves-reader.cpp'
             ]
 
 for fileName in filesAsIs:
@@ -75,7 +82,13 @@ for fileName in filesAsIs:
     print "Copying " + target + " to " + destinationLibraryDir
     shutil.copy(target, destinationLibraryDir)
 
-config_completer.completeConfig(config)
+print ""
+print "Copying model's resource files"
+resourcesPath = os.path.dirname(cmdLineOptions.config)
+for fileName in config['resourceFiles']:
+    target = os.path.join(resourcesPath, fileName)
+    print "Copying " + target + " to " + destinationDir
+    shutil.copy(target, destinationDir)
 
 #
 # Generating code
@@ -136,10 +149,22 @@ code_utils.genFileByTemplate(os.path.join(destinationDir, 'main.cpp'),
                                 config['run_options'],
                                 generatedFileHeadComment)
 
+print "Generating empiric-curves.h"
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'empiric-curves.h'),
+                                os.path.join(generatorDir, 'templates/empiric-curves.h.template'),
+                                config['empiric_functions'],
+                                generatedFileHeadComment)
+
+print "Generating empiric-curves.cpp"
+code_utils.genFileByTemplate(os.path.join(destinationDir, 'empiric-curves.cpp'),
+                                os.path.join(generatorDir, 'templates/empiric-curves.cpp.template'),
+                                config['empiric_functions'],
+                                generatedFileHeadComment)
+
 print "Generating Makefile"
 code_utils.genFileByTemplate(os.path.join(destinationDir, 'Makefile'),
                                 os.path.join(generatorDir, 'templates/Makefile.template'),
-                                config['model'],
+                                config['makefile'],
                                 generatedFileHeadCommentForMake)
 
 

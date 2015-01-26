@@ -34,7 +34,12 @@ model:
                 velocity:
                     name: Velocity, cm/sec
                     counting: |
-                        velocity = sqrt(2*energy / me);
+                        velocity = sqrt(2*energy / me)
+                
+                test_cross_sect:
+                    name: qqq
+                    counting: |
+                        test_cross_sect = cross_sect(energy / (100*1.602e-19) * 20 - 5);
                 
                 #nu_m_ee:
                 #    name: Electron-electron transport collision frequency
@@ -132,7 +137,7 @@ output:
             energy:
                 points_count: 100
         points_count: 600
-        need_log_scale: false
+        need_log_scale: true
     
     big_u:
         name: big_u
@@ -199,6 +204,19 @@ output:
                 points_count: 100
         points_count: 300
     
+    test_cross_sect:
+        name: test_cross_sect-vs-energy
+        fraction: electrons
+        quantity: test_cross_sect
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 300
+    
 run_options:
     start_time: 0
     stop_time: 1e-9
@@ -212,5 +230,11 @@ constants:
     R: 8.3144                   // J / Moll*K       - Universal gase constant
     me: 9.10938291e-31          // kg               - Electron mass
     e_charge: 1.60217657e-19    // C                - Electron's charge
-    E_field: 400000             // V/m              - External field
+    E_field: 500000             // V/m              - External field
     EV: 1.602e-19               // J                - Joules in one electronvolt
+
+empiric_functions:
+    functions:
+        cross_sect:
+            filename: test-points.txt
+        

@@ -65,6 +65,10 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
         coordFullName = 'getSpaceCell()->coordinates[' + configTree['model']['cordinate_space_grid'][coordId]['space_dimension_enum_element'] + ']'
         result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
+    # Replacing empiric functions names
+    for functionId in configTree['empiric_functions']['functions']:
+        function = configTree['empiric_functions']['functions'][functionId]
+        result = re.sub(r'\b' + functionId + r'\b', function['accessor'], result)
     return result
 
 
@@ -209,6 +213,7 @@ def resolveAndIndent(configTree):
 
 
 def completeConfig(configTree):
+    configTree['resourceFiles'] = []
     #
     # Model time step configuration
     #
@@ -319,7 +324,8 @@ def completeConfig(configTree):
     
     configTree['model']['averaging_enabling_code'] = code_utils.indentCode(averagingEnablingCode, "    ")
     configTree['model']['all_fraction_headers'] = allFractionHeadersInclude
-    configTree['model']['fraction_sources_list'] = fractionSourcesList
+    configTree['makefile'] = {}
+    configTree['makefile']['fraction_sources_list'] = fractionSourcesList
     configTree['model']['fractions_init_code'] = fractionsInitCode
     
     #
@@ -401,6 +407,27 @@ def completeConfig(configTree):
             code_utils.indentCode(outputInstanceInitCodeTemplate.substitute(instance), "    ") + "\n"
     
     configTree['model']['outputs_init_code'] = outputsInitialisationCode
+    #
+    # Empiric curves
+    #
+    if not 'empiric_functions' in configTree:
+        configTree['empiric_functions'] = {}
+    if not 'functions' in configTree['empiric_functions']:
+        configTree['empiric_functions']['empiric_curves_readers_externs'] = ""
+        configTree['empiric_functions']['empiric_curves_readers_instanciations'] = ""
+        configTree['empiric_functions']['functions'] = {}
+    else:
+        empiricCurvesReadersExterns = ""
+        empiricCurvesReadersInstanciations = ""
+        for empiricFunctionId in configTree['empiric_functions']['functions']:
+            empiricFunction = configTree['empiric_functions']['functions'][empiricFunctionId]
+            empiricFunction['id'] = empiricFunctionId
+            empiricFunction['accessor'] = empiricFunctionId + ".get"
+            empiricCurvesReadersExterns = empiricCurvesReadersExterns + "\nextern EmpiricCurvesReader " + empiricFunctionId + ";"
+            empiricCurvesReadersInstanciations = empiricCurvesReadersInstanciations + '\nEmpiricCurvesReader ' + empiricFunctionId + '("' + empiricFunction['filename'] + '");'
+            configTree['resourceFiles'].append(empiricFunction['filename'])
+        configTree['empiric_functions']['empiric_curves_readers_externs'] = empiricCurvesReadersExterns
+        configTree['empiric_functions']['empiric_curves_readers_instanciations'] = empiricCurvesReadersInstanciations
     
     #
     # Filling some run options fields if not specified in config file
@@ -426,3 +453,9 @@ def completeConfig(configTree):
     # Resolving macro symbols in code fragments
     #
     resolveAndIndent(configTree)
+    #
+    # Resources copying for Makefile
+    #
+    configTree['makefile']['copy_resources_code'] = ""
+    for filename in configTree['resourceFiles']:
+        configTree['makefile']['copy_resources_code'] = configTree['makefile']['copy_resources_code'] + "\tcp " + filename + " $(BUILD_DIR)\n"

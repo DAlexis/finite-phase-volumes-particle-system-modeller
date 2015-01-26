@@ -1,0 +1,3 @@
+#include "empiric-curves.h"
+
+${empiric_curves_readers_instanciations}

@@ -16,7 +16,7 @@ rm -rf ./test/*
 #rm -rf ./build/*
 
 enterProcedure "Generating code"
-./generator/generator.py --config=./configs/$1
+./generator/generator.py --config=$1
 
 if [ "$2" == "release" ]
 then
