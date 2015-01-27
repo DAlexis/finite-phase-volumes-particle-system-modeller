@@ -22,7 +22,7 @@ public:
 private:
     std::pair<double, double> findNearestIndexes(double x);
     std::vector<std::pair<double, double>> m_points;
-    InterpolationMode m_interpolationMode = NEAREST;
+    InterpolationMode m_interpolationMode = LINEAR;
 };
 
 #endif // EMPIRIC_CURVES_READER_H_INCLUDED

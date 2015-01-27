@@ -36,13 +36,12 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
         result = re.sub(r'\b' + fractionId + r'\b', fractionFullName, result)
     
     # Replacing this fraction's coords
-    if 'fraction_space_grid' in thisFraction:
-        if thisFraction['fraction_space_grid']:
-            for coordId in thisFraction['fraction_space_grid']:
-                coordDerFullName = 'fractionCoordsDerivatives[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
-                result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)
-                coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
-                result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
+    if ('fraction_space_grid' in thisFraction) and (thisFraction['fraction_space_grid']):
+        for coordId in thisFraction['fraction_space_grid']:
+            coordDerFullName = 'fractionCoordsDerivatives[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
+            result = re.sub(r'\b' + coordId + r'[\s]*.[\s]*DER\b', coordDerFullName, result)
+            coordFullName = 'coordinates[' + thisFraction['fraction_space_grid'][coordId]['fraction_coordinate_enum_element'] + ']'
+            result = re.sub(r'\b' + coordId + r'\b', coordFullName, result)
     
     # Replacing this fraction's extensiveQuantities
     for quantityId in thisFraction['extensive_quantities']:
@@ -52,11 +51,10 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
         result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
     
     # Replacing this fraction's secondary quantities
-    if 'intensive_quantities' in thisFraction:
-        if thisFraction['intensive_quantities']:
-            for secQuantityId in thisFraction['intensive_quantities']:
-                secondaryQuantityFullName = 'intensiveQuantities[' + thisFraction['intensive_quantities'][secQuantityId]['fraction_secondary_quantity_enum_element'] + ']'
-                result = re.sub(r'\b' + secQuantityId + r'\b', secondaryQuantityFullName, result)
+    if ('intensive_quantities' in thisFraction) and (thisFraction['intensive_quantities']):
+        for secQuantityId in thisFraction['intensive_quantities']:
+            secondaryQuantityFullName = 'intensiveQuantities[' + thisFraction['intensive_quantities'][secQuantityId]['fraction_secondary_quantity_enum_element'] + ']'
+            result = re.sub(r'\b' + secQuantityId + r'\b', secondaryQuantityFullName, result)
         
     # Replacing space coords and its derivatives
     for coordId in configTree['model']['cordinate_space_grid']:
@@ -111,7 +109,7 @@ def addIntensiveQuantities(fraction, configTree, fractionQuantitiesNamesInitCode
         return True, None
     
     fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + "\n"
-    secQuantitiesCountingCode = ""
+    intensiveQuantitiesCountingCode = ""
     if (not 'intensive_quantities' in fraction) or (not fraction['intensive_quantities']):
         # No intensive quantities
         return fractionQuantitiesNamesInitCode;
@@ -133,14 +131,14 @@ def addIntensiveQuantities(fraction, configTree, fractionQuantitiesNamesInitCode
         
         currentSecQuantity = fraction['intensive_quantities'][extQuantityId]
         currentSecQuantity['fraction_secondary_quantity_enum_element'] = fraction['intensive_quantities_enum_prefix'] + extQuantityId.upper()
-        secQuantitiesCountingCode = secQuantitiesCountingCode + '//' + currentSecQuantity['name'] + '\n' + currentSecQuantity['counting'] + '\n'
+        intensiveQuantitiesCountingCode = intensiveQuantitiesCountingCode + '//' + currentSecQuantity['name'] + '\n' + currentSecQuantity['counting'] + '\n'
         fractionQuantitiesNamesInitCode = fractionQuantitiesNamesInitCode + 'intensiveQuantitiesNames[' + currentSecQuantity['fraction_secondary_quantity_enum_element'] + '] = "' \
           + currentSecQuantity['name'] + '";\n'
          
         done.append(extQuantityId)
         del deps[extQuantityId]
     
-    fraction['intensive_quantities_counting_code'] = secQuantitiesCountingCode
+    fraction['intensive_quantities_counting_code'] = intensiveQuantitiesCountingCode
     fraction['quantities_names_init_code'] = code_utils.indentCode(fractionQuantitiesNamesInitCode, "    ");
     return fractionQuantitiesNamesInitCode;
     

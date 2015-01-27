@@ -34,13 +34,17 @@ model:
                 velocity:
                     name: Velocity, cm/sec
                     counting: |
-                        velocity = sqrt(2*energy / me)
+                        velocity = sqrt(2*energy / me);
                 
                 test_cross_sect:
-                    name: qqq
+                    name: Simple x^2 example
                     counting: |
                         test_cross_sect = cross_sect(energy / (100*1.602e-19) * 20 - 5);
                 
+                test_cross_sect_transport_o2:
+                    name: test_cross_sect_transport_o2
+                    counting: |
+                        test_cross_sect_transport_o2 = cross_sect_transport_o2(energy / EV) * 1e-4;
                 #nu_m_ee:
                 #    name: Electron-electron transport collision frequency
                 #    counting: |
@@ -49,7 +53,7 @@ model:
                 nu_m_eo2:
                     name: Electron-O2 transport collision frequency
                     counting: |
-                        nu_m_eo2 = 1.0 / (22e-3) * Na * velocity *  1e-19; //6e-20;
+                        nu_m_eo2 = 1.0 / (22e-3) * Na * velocity *  test_cross_sect_transport_o2; //6e-20;
                 
                 big_a:
                     name: Coefficient 'A'
@@ -216,6 +220,20 @@ output:
             energy:
                 points_count: 100
         points_count: 300
+        
+    test_cross_sect_transport_o2:
+        name: test_cross_sect_transport_o2-vs-energy
+        fraction: electrons
+        quantity: test_cross_sect_transport_o2
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 300
+        need_log_scale: true
     
 run_options:
     start_time: 0
@@ -237,4 +255,5 @@ empiric_functions:
     functions:
         cross_sect:
             filename: test-points.txt
-        
+        cross_sect_transport_o2:
+            filename: transport-o2.txt

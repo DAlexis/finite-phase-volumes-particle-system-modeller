@@ -42,16 +42,26 @@ double EmpiricCurvesReader::get(double x)
 double EmpiricCurvesReader::operator[](double x)
 {
     std::pair<double, double> bounds = findNearestIndexes(x);
+    double x1 = m_points[bounds.first].first;
+    double x2 = m_points[bounds.second].first;
+    double y1 = m_points[bounds.first].second;
+    double y2 = m_points[bounds.second].second;
     switch(m_interpolationMode)
     {
         default:
         case NEAREST:
-            if (x-m_points[bounds.first].first < m_points[bounds.second].first-x)
-                return m_points[bounds.first].second;
+            if (x-x1 < x2-x)
+                return y1;
             else
-                return m_points[bounds.second].second;
-        //case LINEAR:
+                return y2;
+        
+        case LINEAR:
+            if (x < m_points.front().first)
+                return m_points[0].second;
+            if (x > m_points.back().first)
+                return m_points.back().second;
             
+            return (x-x1) / (x2-x1) * (y2-y1) + y1;
     }
 }
 
