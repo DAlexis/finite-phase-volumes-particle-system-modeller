@@ -27,6 +27,7 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     result = code
     # Replacing simple words
     result = re.sub(r'\bmodel\b', 'static_cast<Model*>(getModel())', result)
+    result = re.sub(r'\bspace_cell\b', 'getSpaceCell()', result)
     result = re.sub(r'\bspace_volume\b', 'getSpaceCell()->volume', result)
     
     # Replacing fractions id to its adresses
@@ -49,6 +50,11 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
         result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*DELTA\b', nextStepQuantityFullName, result)
         quantityFullName = 'extensiveQuantities[' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
         result = re.sub(r'\b' + quantityId + r'\b', quantityFullName, result)
+    
+    # Replacing this fraction's extensive quantities densities
+    for quantityId in thisFraction['extensive_quantities']:
+        quantityFullName = 'getQuantitiesDensity(' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ')'
+        result = re.sub(r'\b' + quantityId + r'_density\b', quantityFullName, result)
     
     # Replacing this fraction's secondary quantities
     if ('intensive_quantities' in thisFraction) and (thisFraction['intensive_quantities']):
@@ -99,6 +105,7 @@ def addIntensiveQuantities(fraction, configTree, fractionQuantitiesNamesInitCode
     """
     done = []
     deps = {}
+    fraction['intensive_quantities_counting_code'] = ""
     
     def checkIfSatisfied(identifier):
         if not deps[identifier]:
@@ -139,7 +146,6 @@ def addIntensiveQuantities(fraction, configTree, fractionQuantitiesNamesInitCode
         del deps[extQuantityId]
     
     fraction['intensive_quantities_counting_code'] = intensiveQuantitiesCountingCode
-    fraction['quantities_names_init_code'] = code_utils.indentCode(fractionQuantitiesNamesInitCode, "    ");
     return fractionQuantitiesNamesInitCode;
     
 def addBoundaryConditionsConfig(fraction, configTree):
@@ -204,7 +210,8 @@ def resolveAndIndent(configTree):
         fraction['sources'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['sources'], configTree, fraction), "    ")
         fraction['space_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['space_coords_derivatives'], configTree, fraction), "    ")
         fraction['fraction_coords_derivatives'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['fraction_coords_derivatives'], configTree, fraction), "    ")
-        fraction['intensive_quantities_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['intensive_quantities_counting_code'], configTree, fraction), "    ")
+        if ('intensive_quantities' in fraction) and (fraction['intensive_quantities']):
+            fraction['intensive_quantities_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['intensive_quantities_counting_code'], configTree, fraction), "    ")
         fraction['init_quantities'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['init_quantities'], configTree, fraction), "    ")
         fraction['diffusion_coefficient_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['diffusion_coefficient_counting_code'], configTree, fraction), "    ")
         fraction['diffusion_coefficient_in_fractions_space_counting_code'] = code_utils.indentCode(resolveSymbolsInFractionCode(fraction['diffusion_coefficient_in_fractions_space_counting_code'], configTree, fraction), "    ")
@@ -292,6 +299,7 @@ def completeConfig(configTree):
         # Intensive quantities
         #
         fractionQuantitiesNamesInitCode = addIntensiveQuantities(fraction, configTree, fractionQuantitiesNamesInitCode)
+        fraction['quantities_names_init_code'] = code_utils.indentCode(fractionQuantitiesNamesInitCode, "    ");
         #
         # Boundary conditions configuration
         #
