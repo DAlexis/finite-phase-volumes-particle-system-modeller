@@ -24,6 +24,10 @@ public:
     virtual void calculateIntensiveQuantities() = 0;
     virtual void addDelta() = 0;
     
+    /// Get extensive quantity directly
+    virtual double& extensive(unsigned int index) = 0;
+    virtual double& extensiveDelta(unsigned int index, unsigned int currentThread = 0) = 0;
+    virtual double intensive(unsigned int index) = 0;
     virtual double getQuantitiesDensity(unsigned int index) = 0;
     virtual double getQuantitiesDensityConvolution(unsigned int quantityIndex, const std::vector<unsigned int>& convoluteBy) = 0;
     virtual double getIntensiveQuantity(unsigned int intensiveQuantityIndex) = 0;

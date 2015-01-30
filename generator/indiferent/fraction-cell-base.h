@@ -181,6 +181,21 @@ public:
         // Now all transfer coupled with particles transfer is done
     }
     
+    double& extensive(unsigned int index)
+    {
+        return extensiveQuantities[index];
+    }
+    
+    double& extensiveDelta(unsigned int index, unsigned int currentThread = 0)
+    {
+        return extensiveQuantitiesDelta[currentThread][index];
+    }
+    
+    double intensive(unsigned int index)
+    {
+        return intensiveQuantities[index];
+    }
+    
     double getQuantitiesDensity(unsigned int index)
     {
         return extensiveQuantities[index] / this->volume;

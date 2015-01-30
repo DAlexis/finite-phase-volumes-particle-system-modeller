@@ -46,6 +46,10 @@ def resolveSymbolsInFractionCode(code, configTree, thisFraction):
     
     # Replacing this fraction's extensiveQuantities
     for quantityId in thisFraction['extensive_quantities']:
+        quantityAccessorFullName = '->extensiveDelta(' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ', currentThread)'
+        result = re.sub(r'[\s]*->[\s]*' + quantityId + r'[\s]*.[\s]*DELTA\b', quantityAccessorFullName, result)
+        quantityAccessorFullName = '->extensive(' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ')'
+        result = re.sub(r'[\s]*->[\s]*' + quantityId + r'\b', quantityAccessorFullName, result)
         nextStepQuantityFullName = 'extensiveQuantitiesDelta[currentThread][' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
         result = re.sub(r'\b' + quantityId + r'[\s]*.[\s]*DELTA\b', nextStepQuantityFullName, result)
         quantityFullName = 'extensiveQuantities[' + thisFraction['extensive_quantities'][quantityId]['fraction_quantity_enum_element'] + ']'
