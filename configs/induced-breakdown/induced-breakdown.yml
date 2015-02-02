@@ -50,7 +50,7 @@ model:
                     name: Momentum transfer cross-section for N2
                     counting: |
                         sigma_m_n2 = cross_sect_transport_n2(energy / EV) * 1e-4;
-                
+                        
                 sigma_vibrational_o2:
                     name: Electron-O2 vibrational excitation cross-section
                     counting: |
@@ -100,13 +100,13 @@ model:
             
             init_quantities: |
                 //if (energy > 1*EV && energy < 2*EV)
-                
+                /*
                 if (energy < 1*EV)
                     particles_count = 1e10/3;
+                */
                 
-                /*
                 double pointWhereToPut[] = {0.0};
-                electrons->getCell(pointWhereToPut)->particles_count = 1e30;*/
+                electrons->getCell(pointWhereToPut)->particles_count = 1e30;
                 
             sources: |
                 // Outgoing due to vibrational excitation
