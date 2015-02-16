@@ -27,7 +27,7 @@ model:
                     division:
                         mode: uniform
                         min: 0*1.602e-19
-                        max: 30*1.602e-19
+                        max: 20*1.602e-19
                         segments_count: 300
             
             intensive_quantities:
@@ -36,45 +36,40 @@ model:
                     counting: |
                         velocity = sqrt(2*energy / me);
                 
-                test_cross_sect:
-                    name: Simple x^2 example
+                n2_count:
+                    name: Count of n2 particles
                     counting: |
-                        test_cross_sect = cross_sect(energy / (100*1.602e-19) * 20 - 5);
+                        n2_count = N2->getCell(NULL)->particles_count_density * space_volume;
                 
-                sigma_m_o2:
-                    name: Momentum transfer cross-section for O2
+                sigma_druyvestain:
+                    name: Test value of const sigma
                     counting: |
-                        sigma_m_o2 = cross_sect_transport_o2(energy / EV) * 1e-4;
+                        sigma_druyvestain = 5e-16*1e-4;
                 
-                sigma_m_n2:
-                    name: Momentum transfer cross-section for N2
-                    counting: |
-                        sigma_m_n2 = cross_sect_transport_n2(energy / EV) * 1e-4;
-                        
-                sigma_vibrational_o2:
-                    name: Electron-O2 vibrational excitation cross-section
-                    counting: |
-                        sigma_vibrational_o2 = cross_sect_vibrational_total_o2(energy / EV) * 1e-4;
                 
-                nu_m_o2:
-                    name: Electron-O2 transport collision frequency
+                l_druyvestain:
+                    name: Electrons free path
                     counting: |
-                        nu_m_o2 = O2->getCell(NULL)->particles_count_density * space_volume * velocity * sigma_m_o2;
+                        l_druyvestain = 1 / (sigma_druyvestain * n2_count);
                 
-                nu_vibrational_o2:
-                    name: Electron-O2 vibrational excitation frequency
+                n_druyvestain:
+                    name: Theoretical value of n(E) when l=const
                     counting: |
-                        nu_vibrational_o2 = O2->getCell(NULL)->particles_count_density * space_volume * velocity * sigma_vibrational_o2;
+                        double e0 = e_charge*E_field*l_druyvestain;
+                        n_druyvestain = velocity * exp(-3*me/(Mair/Na)  *  energy*energy / (e0*e0));
                 
-                nu_m_n2:
-                    name: Electron-N2 transport collision frequency
+                n_maxwell:
+                    name: Theoretical value of n(E) when nu=const
                     counting: |
-                        nu_m_n2 = N2->getCell(NULL)->particles_count_density * space_volume * velocity * sigma_m_n2;
+                        double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*nu_m)), 2);
+                        n_maxwell = 1e20*sqrt(energy) * exp(-energy / kT0);
                 
                 nu_m:
                     name: Total electron elastic collision frequency
                     counting: |
-                        nu_m = nu_m_o2 + nu_m_n2;
+                        //nu_m = n2_count * velocity * sigma_druyvestain;
+                        nu_m = 2.5e12;
+                
                 
                 ##########
                 big_a:
@@ -91,48 +86,126 @@ model:
                 big_u:
                     name: Flow through energy axis due to elastic e-e collision
                     counting: |
-                        big_u = big_a / 2;
+                        big_u = big_a / 2.0;
                 
-                elastic_col_flow:
+                elastic_col_flow_speed:
                     name: Flow through energy axis due to elastic collision with air
                     counting: |
-                        elastic_col_flow = -2*me/(Mair/Na) * nu_m*energy;
-            
+                        elastic_col_flow_speed = -2*me/(Mair/Na) * nu_m*energy;
+                
+                diffusion_flow:
+                    name: Count of diffusion flow
+                    counting: |
+                        
+                        
+                        ElectronsCell *next = static_cast<ElectronsCell*>(nextInFractionSpace(0));
+                        if (next == nullptr)
+                            diffusion_flow = 0;
+                        else {
+                            double l1 = this->size[0];
+                            double l2 = next->size[0];
+                            diffusion_flow = -energy_diffusion_coefficient * (next->particles_count / l2 - particles_count / l1) / (l1+l2)*2;
+                        }
+                
+                diffusion_flow2:
+                    name: Count of diffusion flow counted by higher
+                    counting: |
+                        ElectronsCell *prev = static_cast<ElectronsCell*>(prevInFractionSpace(0));
+                        if (prev == nullptr)
+                            diffusion_flow2 = 0;
+                        else {
+                            double l1 = this->size[0];
+                            double l2 = prev->size[0];
+                            diffusion_flow2 = -energy_diffusion_coefficient * (prev->particles_count / l2 - particles_count / l1) / (l1+l2)*2;
+                        }
+                
+                diffusion_flow_speed:
+                    name: Speed of diffusion flow
+                    counting: |
+                        
+                        if (particles_count == 0)
+                            diffusion_flow_speed = 0;
+                        else
+                            diffusion_flow_speed = diffusion_flow / (particles_count / this->size[0]);
+                
+                diffusion_flow_theor:
+                    name: Theoretical value of diffusion flow
+                    counting: |
+                        {
+                            double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*nu_m)), 2);
+                            diffusion_flow_theor = 1e20* (-big_a) * energy * ( 1/(2*sqrt(energy)) - sqrt(energy)/(kT0))
+                                * exp(- energy / kT0);
+                        }
+                
+                diff_frac:
+                    name: Counted/thoretical diffusion
+                    counting: |
+                        if (isNotNull(diffusion_flow_theor))
+                            diff_frac = (-diffusion_flow2) / diffusion_flow_theor;
+                        else
+                            diff_frac = 1;
+                
+                total_flow:
+                    name: Total flow
+                    counting: |
+                        double l = this->size[0];
+                        total_flow = (big_u + elastic_col_flow_speed)*particles_count/l + diffusion_flow_theor;
+                        {
+                        /*
+                            double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*nu_m)), 2);
+                            total_flow = (e_charge*e_charge*E_field*E_field /(3*me*nu_m)
+                                - 2*me/(Mair/Na) * nu_m*energy
+                                ) * 1e20*energy*exp(- energy / kT0);
+                                //*particles_count/l;
+                                
+                                // + diffusion_flow_theor;
+                                */
+                        }
+                
             init_quantities: |
                 //if (energy > 1*EV && energy < 2*EV)
+                
                 /*
-                if (energy < 1*EV)
-                    particles_count = 1e10/3;
+                if (energy < 5*EV && energy > 4*EV)
+                    particles_count = 1e5;
                 */
                 
+                
+                double l = this->size[0];
+                double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*2.5e12)), 2);
+                particles_count = 1e60*sqrt(energy) * exp(-energy / kT0) * (1+0.3*sin(energy/(20*EV)*6*3.1415))
+                    * l;
+                
+                
+                
+                /*
                 double pointWhereToPut[] = {0.0};
                 electrons->getCell(pointWhereToPut)->particles_count = 1e30;
+                */
                 
             sources: |
-                // Outgoing due to vibrational excitation
-                double out_o2VibrationalExcitingCount = particles_count*nu_vibrational_o2*dt;
                 
-                double out_total = out_o2VibrationalExcitingCount;
-                
-                if (out_total > particles_count)
-                {
-                    double k=particles_count/out_total;
-                    
-                    out_o2VibrationalExcitingCount *= k;
-                    
-                    out_total = particles_count;
+                // No sources
+                /*
+                ElectronsCell *next = static_cast<ElectronsCell*>(nextInFractionSpace(0));
+                if (next) {
+                    particles_count.DELTA -= diffusion_flow*dt;
+                    next->particles_count.DELTA += diffusion_flow*dt;
                 }
+                */
                 
-                particles_count.DELTA -= out_total;
-                double pointWhereToPut[] = {0.0};
-                electrons->getCell(pointWhereToPut)->particles_count.DELTA += out_o2VibrationalExcitingCount;
-                
+                /*
+                ElectronsCell *prev = static_cast<ElectronsCell*>(prevInFractionSpace(0));
+                if (prev) {
+                    particles_count.DELTA -= diffusion_flow2*dt;
+                    prev->particles_count.DELTA += diffusion_flow2*dt;
+                }*/
                 
             space_coords_derivatives: |
                 x_coord.DER = 0;
             
             fraction_coords_derivatives: |
-                energy.DER = big_u + elastic_col_flow;
+                energy.DER = big_u + elastic_col_flow_speed;
             
             boundary_conditions:
                 x_coord:
@@ -143,21 +216,6 @@ model:
                     diffusion = 0;
                 energy: |
                     diffusion = energy_diffusion_coefficient;
-        #################################################
-        O2:
-            name: Non-exited O2
-            extensive_quantities:
-                particles_count:
-                    name: Count of oxygen, molecules
-            
-            init_quantities: |
-                particles_count = 0.20 * 1.0 * 1.0 * space_volume / (22e-3) * Na;
-                
-            sources: |
-                // Here sources
-            
-            space_coords_derivatives: |
-                x_coord.DER = 0;
         
         #################################################
         N2:
@@ -167,7 +225,7 @@ model:
                     name: Count of nitrogen, molecules
             
             init_quantities: |
-                particles_count = 0.78 * 1.0 * 1.0 * space_volume / (22e-3) * Na;
+                particles_count = 1.0 * 1.0 * space_volume / (22e-3) * Na;
                 
             sources: |
                 // Here sources
@@ -190,10 +248,10 @@ output:
         points_count: 100
         need_log_scale: false
     
-    elastic_col_flow:
-        name: elastic_col_flow
+    elastic_col_flow_speed:
+        name: elastic_col_flow_speed
         fraction: electrons
-        quantity: elastic_col_flow
+        quantity: elastic_col_flow_speed
         space_point:
             x_coord: 0
         fraction_point:
@@ -229,21 +287,8 @@ output:
                 points_count: 100
         points_count: 100
     
-    nu_vibrational_o2:
-        name: nu_vibrational_o2
-        fraction: electrons
-        quantity: nu_vibrational_o2
-        space_point:
-            x_coord: 0
-        fraction_point:
-            energy: 0
-        output_axis:
-            energy:
-                points_count: 100
-        points_count: 300
-    
     energy_diff_coeff:
-        name: energy_diff_coeff-vs-energy
+        name: energy_diff_coeff
         fraction: electrons
         quantity: energy_diffusion_coefficient
         space_point:
@@ -252,26 +297,13 @@ output:
             energy: 0
         output_axis:
             energy:
-                points_count: 100
+                points_count: 300
         points_count: 100
     
-    test_cross_sect:
-        name: test_cross_sect-vs-energy
+    diffusion_flow_theor:
+        name: diffusion_flow_theor
         fraction: electrons
-        quantity: test_cross_sect
-        space_point:
-            x_coord: 0
-        fraction_point:
-            energy: 0
-        output_axis:
-            energy:
-                points_count: 100
-        points_count: 10
-    
-    sigma_vibrational_o2:
-        name: sigma_vibrational_o2-vs-energy
-        fraction: electrons
-        quantity: sigma_vibrational_o2
+        quantity: diffusion_flow_theor
         space_point:
             x_coord: 0
         fraction_point:
@@ -279,26 +311,103 @@ output:
         output_axis:
             energy:
                 points_count: 300
-        points_count: 10
-        
-    sigma_m_o2:
-        name: sigma_m_o2-vs-energy
+        points_count: 100
+    
+    diff_frac:
+        name: diff_frac
         fraction: electrons
-        quantity: sigma_m_o2
+        quantity: diff_frac
         space_point:
             x_coord: 0
         fraction_point:
             energy: 0
         output_axis:
             energy:
-                points_count: 100
-        points_count: 10
-        need_log_scale: true
+                points_count: 300
+        points_count: 100
+    
+    n_druyvestain:
+        name: n_druyvestain
+        fraction: electrons
+        quantity: n_druyvestain
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    n_maxwell:
+        name: n_maxwell
+        fraction: electrons
+        quantity: n_maxwell
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    diffusion_flow:
+        name: diffusion_flow
+        fraction: electrons
+        quantity: diffusion_flow
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    diffusion_flow_speed:
+        name: diffusion_flow_speed
+        fraction: electrons
+        quantity: diffusion_flow_speed
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    diffusion_flow2:
+        name: diffusion_flow2
+        fraction: electrons
+        quantity: diffusion_flow2
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    total_flow:
+        name: total_flow-vs-energy
+        fraction: electrons
+        quantity: total_flow
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
     
 run_options:
     start_time: 0
-    stop_time: 4e-9
-    points_count: 100000
+    stop_time: 2e-9
+    points_count: 40000
     #time_step: 5e-16
     threads_count: 4
 
@@ -310,14 +419,3 @@ constants:
     e_charge: 1.60217657e-19    // C                - Electron's charge
     E_field: 100000             // V/m              - External field
     EV: 1.602e-19               // J                - Joules in one electronvolt
-
-empiric_functions:
-    functions:
-        cross_sect:
-            filename: test-points.txt
-        cross_sect_transport_o2:
-            filename: transport-o2.txt
-        cross_sect_transport_n2:
-            filename: transport-n2.txt
-        cross_sect_vibrational_total_o2:
-            filename: vibrational-o2.txt

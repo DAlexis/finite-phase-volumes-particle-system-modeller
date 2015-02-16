@@ -67,7 +67,6 @@ ${diffusion_coefficient_in_fractions_space_counting_code}
     return diffusion;
 }
 
-
 void ${fraction_cell_classname}::calculateIntensiveQuantities()
 {
 /*    if (isNull(extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX])) {

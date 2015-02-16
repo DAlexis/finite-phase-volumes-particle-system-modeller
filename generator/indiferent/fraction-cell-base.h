@@ -334,6 +334,7 @@ private:
     inline double getConvectiveFlowInFractionSpace(unsigned int coordinate, FractionCellBaseInstance* neighbor)
     {
         double l1 = this->size[coordinate];
+        //double l2 = neighbor->size[coordinate];
         return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]*fractionCoordsDerivatives[coordinate]/l1;
     }
     
@@ -381,7 +382,11 @@ private:
     {
         double l1 = this->size[coordinate];
         double l2 = neighbor->size[coordinate];
-        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * getFractionSpaceDiffusionCoefficient(coordinate);
+        
+        /// @todo Add interpolation
+        double d1 = getFractionSpaceDiffusionCoefficient(coordinate);
+        double d2 = neighbor->getFractionSpaceDiffusionCoefficient(coordinate);
+        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * (d1+d2)/2;
     }
     
     /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
