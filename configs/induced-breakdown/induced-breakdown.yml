@@ -1,0 +1,323 @@
+#
+# This is a config for modelling electron's distribution in
+# 0-d laser-induced breakdown in O2 and N2 atmosphere
+# with pressure 1 atm
+# Note: particles count quantity synonim is 'particles_count'
+model:
+    name: Electron's energy distribution in 0-d laser-induced breakdown with normal conditions
+    cordinate_space_grid:
+        x_coord:
+            name: Coordinate X, m
+            division:
+                mode: uniform
+                min: 0
+                max: 1
+                segments_count: 1
+    fractions:
+        electrons:
+            name: Electrons
+            stabilisation: off
+            extensive_quantities:
+                particles_count:
+                    name: Count of electrons
+            
+            fraction_space_grid:
+                energy:
+                    name: Electron's energy, J
+                    division:
+                        mode: uniform
+                        min: 0*1.602e-19
+                        max: 30*1.602e-19
+                        segments_count: 300
+            
+            intensive_quantities:
+                velocity:
+                    name: Velocity, cm/sec
+                    counting: |
+                        velocity = sqrt(2*energy / me);
+                
+                test_cross_sect:
+                    name: Simple x^2 example
+                    counting: |
+                        test_cross_sect = cross_sect(energy / (100*1.602e-19) * 20 - 5);
+                
+                sigma_m_o2:
+                    name: Momentum transfer cross-section for O2
+                    counting: |
+                        sigma_m_o2 = cross_sect_transport_o2(energy / EV) * 1e-4;
+                
+                sigma_m_n2:
+                    name: Momentum transfer cross-section for N2
+                    counting: |
+                        sigma_m_n2 = cross_sect_transport_n2(energy / EV) * 1e-4;
+                        
+                sigma_vibrational_o2:
+                    name: Electron-O2 vibrational excitation cross-section
+                    counting: |
+                        sigma_vibrational_o2 = cross_sect_vibrational_total_o2(energy / EV) * 1e-4;
+                
+                nu_m_o2:
+                    name: Electron-O2 transport collision frequency
+                    counting: |
+                        nu_m_o2 = O2->getCell(NULL)->particles_count_density * space_volume * velocity * sigma_m_o2;
+                
+                nu_vibrational_o2:
+                    name: Electron-O2 vibrational excitation frequency
+                    counting: |
+                        nu_vibrational_o2 = O2->getCell(NULL)->particles_count_density * space_volume * velocity * sigma_vibrational_o2;
+                
+                nu_m_n2:
+                    name: Electron-N2 transport collision frequency
+                    counting: |
+                        nu_m_n2 = N2->getCell(NULL)->particles_count_density * space_volume * velocity * sigma_m_n2;
+                
+                nu_m:
+                    name: Total electron elastic collision frequency
+                    counting: |
+                        nu_m = nu_m_o2 + nu_m_n2;
+                
+                ##########
+                big_a:
+                    name: Coefficient 'A'
+                    counting: |
+                        big_a = 2*e_charge*e_charge*E_field*E_field /(3*me*nu_m);
+                        
+                
+                energy_diffusion_coefficient:
+                    name: Diffusion through energy axis coefficient
+                    counting: |
+                        energy_diffusion_coefficient = big_a*energy;
+                
+                big_u:
+                    name: Flow through energy axis due to elastic e-e collision
+                    counting: |
+                        big_u = big_a / 2;
+                
+                elastic_col_flow:
+                    name: Flow through energy axis due to elastic collision with air
+                    counting: |
+                        elastic_col_flow = -2*me/(Mair/Na) * nu_m*energy;
+            
+            init_quantities: |
+                //if (energy > 1*EV && energy < 2*EV)
+                /*
+                if (energy < 1*EV)
+                    particles_count = 1e10/3;
+                */
+                
+                double pointWhereToPut[] = {0.0};
+                electrons->getCell(pointWhereToPut)->particles_count = 1e30;
+                
+            sources: |
+                // Outgoing due to vibrational excitation
+                double out_o2VibrationalExcitingCount = particles_count*nu_vibrational_o2*dt;
+                
+                double out_total = out_o2VibrationalExcitingCount;
+                
+                if (out_total > particles_count)
+                {
+                    double k=particles_count/out_total;
+                    
+                    out_o2VibrationalExcitingCount *= k;
+                    
+                    out_total = particles_count;
+                }
+                
+                particles_count.DELTA -= out_total;
+                double pointWhereToPut[] = {0.0};
+                electrons->getCell(pointWhereToPut)->particles_count.DELTA += out_o2VibrationalExcitingCount;
+                
+                
+            space_coords_derivatives: |
+                x_coord.DER = 0;
+            
+            fraction_coords_derivatives: |
+                energy.DER = big_u + elastic_col_flow;
+            
+            boundary_conditions:
+                x_coord:
+                    top: wall
+                    bottom: wall
+            diffusion:
+                x_coord: |
+                    diffusion = 0;
+                energy: |
+                    diffusion = energy_diffusion_coefficient;
+        #################################################
+        O2:
+            name: Non-exited O2
+            extensive_quantities:
+                particles_count:
+                    name: Count of oxygen, molecules
+            
+            init_quantities: |
+                particles_count = 0.20 * 1.0 * 1.0 * space_volume / (22e-3) * Na;
+                
+            sources: |
+                // Here sources
+            
+            space_coords_derivatives: |
+                x_coord.DER = 0;
+        
+        #################################################
+        N2:
+            name: Non-exited N2
+            extensive_quantities:
+                particles_count:
+                    name: Count of nitrogen, molecules
+            
+            init_quantities: |
+                particles_count = 0.78 * 1.0 * 1.0 * space_volume / (22e-3) * Na;
+                
+            sources: |
+                // Here sources
+            
+            space_coords_derivatives: |
+                x_coord.DER = 0;
+        
+output:
+    e_concentration_vs_energy:
+        name: Electrons-concentration-vs-energy
+        fraction: electrons
+        quantity: particles_count
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+        need_log_scale: false
+    
+    elastic_col_flow:
+        name: elastic_col_flow
+        fraction: electrons
+        quantity: elastic_col_flow
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 100
+    
+    big_u:
+        name: big_u
+        fraction: electrons
+        quantity: big_u
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 100
+    
+    nu_m:
+        name: nu_m
+        fraction: electrons
+        quantity: nu_m
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 100
+    
+    nu_vibrational_o2:
+        name: nu_vibrational_o2
+        fraction: electrons
+        quantity: nu_vibrational_o2
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 300
+    
+    energy_diff_coeff:
+        name: energy_diff_coeff-vs-energy
+        fraction: electrons
+        quantity: energy_diffusion_coefficient
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 100
+    
+    test_cross_sect:
+        name: test_cross_sect-vs-energy
+        fraction: electrons
+        quantity: test_cross_sect
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 10
+    
+    sigma_vibrational_o2:
+        name: sigma_vibrational_o2-vs-energy
+        fraction: electrons
+        quantity: sigma_vibrational_o2
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 10
+        
+    sigma_m_o2:
+        name: sigma_m_o2-vs-energy
+        fraction: electrons
+        quantity: sigma_m_o2
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 10
+        need_log_scale: true
+    
+run_options:
+    start_time: 0
+    stop_time: 4e-9
+    points_count: 100000
+    #time_step: 5e-16
+    threads_count: 4
+
+constants:
+    Mair: 0.029                 // kg / Moll        - Air molar mass
+    Na: 6.02e23                 // particles / Moll - Avogadro number
+    R: 8.3144                   // J / Moll*K       - Universal gase constant
+    me: 9.10938291e-31          // kg               - Electron mass
+    e_charge: 1.60217657e-19    // C                - Electron's charge
+    E_field: 100000             // V/m              - External field
+    EV: 1.602e-19               // J                - Joules in one electronvolt
+
+empiric_functions:
+    functions:
+        cross_sect:
+            filename: test-points.txt
+        cross_sect_transport_o2:
+            filename: transport-o2.txt
+        cross_sect_transport_n2:
+            filename: transport-n2.txt
+        cross_sect_vibrational_total_o2:
+            filename: vibrational-o2.txt
