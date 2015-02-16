@@ -1,0 +1,415 @@
+#
+# This is a config for modelling electron's distribution maxwellization
+model:
+    name: Electron's energy distribution in 0-d laser-induced breakdown with normal conditions
+    cordinate_space_grid:
+        x_coord:
+            name: Coordinate X, m
+            division:
+                mode: uniform
+                min: 0
+                max: 1
+                segments_count: 1
+    fractions:
+        electrons:
+            name: Electrons
+            stabilisation: off
+            extensive_quantities:
+                particles_count:
+                    name: Count of electrons
+            
+            fraction_space_grid:
+                energy:
+                    name: Electron's energy, J
+                    division:
+                        mode: uniform
+                        min: 0*1.602e-19
+                        max: 15*1.602e-19
+                        segments_count: 300
+            
+            intensive_quantities:
+                velocity:
+                    name: Velocity, cm/sec
+                    counting: |
+                        velocity = sqrt(2*energy / me);
+                
+                n2_count:
+                    name: Count of n2 particles
+                    counting: |
+                        n2_count = N2->getCell(NULL)->particles_count_density * space_volume;
+                
+                sigma_druyvestain:
+                    name: Test value of const sigma
+                    counting: |
+                        sigma_druyvestain = 5e-16*1e-4;
+                
+                l_druyvestain:
+                    name: Electrons free path
+                    counting: |
+                        l_druyvestain = 1 / (sigma_druyvestain * n2_count);
+                
+                n_druyvestain:
+                    name: Theoretical value of n(E) when l=const
+                    counting: |
+                        double e0 = e_charge*E_field*l_druyvestain;
+                        n_druyvestain = sqrt(energy)* exp(-3*me/(Mair/Na)  *  energy*energy / (e0*e0));
+                
+                n_maxwell:
+                    name: Theoretical value of n(E) when nu=const
+                    counting: |
+                        double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*nu_m)), 2);
+                        n_maxwell = 1e20*sqrt(energy) * exp(-energy / kT0);
+                
+                nu_m:
+                    name: Total electron elastic collision frequency
+                    counting: |
+                        //nu_m = n2_count * velocity * sigma_druyvestain;
+                        nu_m = 2.5e12;
+                
+                
+                ##########
+                big_a:
+                    name: Coefficient 'A'
+                    counting: |
+                        big_a = 2*e_charge*e_charge*E_field*E_field /(3*me*nu_m);
+                        
+                
+                energy_diffusion_coefficient:
+                    name: Diffusion through energy axis coefficient
+                    counting: |
+                        energy_diffusion_coefficient = big_a*energy;
+                
+                big_u:
+                    name: Flow through energy axis due to elastic e-e collision
+                    counting: |
+                        big_u = big_a / 2.0;
+                
+                elastic_col_flow_speed:
+                    name: Flow through energy axis due to elastic collision with air
+                    counting: |
+                        elastic_col_flow_speed = -2*me/(Mair/Na) * nu_m*energy;
+                
+                diffusion_flow:
+                    name: Count of diffusion flow
+                    counting: |
+                        
+                        
+                        ElectronsCell *next = static_cast<ElectronsCell*>(nextInFractionSpace(0));
+                        if (next == nullptr)
+                            diffusion_flow = 0;
+                        else {
+                            double l1 = this->size[0];
+                            double l2 = next->size[0];
+                            diffusion_flow = -energy_diffusion_coefficient * (next->particles_count / l2 - particles_count / l1) / (l1+l2)*2;
+                        }
+                
+                diffusion_flow2:
+                    name: Count of diffusion flow counted by higher
+                    counting: |
+                        ElectronsCell *prev = static_cast<ElectronsCell*>(prevInFractionSpace(0));
+                        if (prev == nullptr)
+                            diffusion_flow2 = 0;
+                        else {
+                            double l1 = this->size[0];
+                            double l2 = prev->size[0];
+                            diffusion_flow2 = -energy_diffusion_coefficient * (prev->particles_count / l2 - particles_count / l1) / (l1+l2)*2;
+                        }
+                
+                diffusion_flow_speed:
+                    name: Speed of diffusion flow
+                    counting: |
+                        
+                        if (particles_count == 0)
+                            diffusion_flow_speed = 0;
+                        else
+                            diffusion_flow_speed = diffusion_flow / (particles_count / this->size[0]);
+                
+                diffusion_flow_theor:
+                    name: Theoretical value of diffusion flow
+                    counting: |
+                        {
+                            double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*nu_m)), 2);
+                            diffusion_flow_theor = 1e20* (-big_a) * energy * ( 1/(2*sqrt(energy)) - sqrt(energy)/(kT0))
+                                * exp(- energy / kT0);
+                        }
+                
+                diff_frac:
+                    name: Counted/thoretical diffusion
+                    counting: |
+                        if (isNotNull(diffusion_flow_theor))
+                            diff_frac = (-diffusion_flow2) / diffusion_flow_theor;
+                        else
+                            diff_frac = 1;
+                
+                total_flow:
+                    name: Total flow
+                    counting: |
+                        double l = this->size[0];
+                        total_flow = (big_u + elastic_col_flow_speed)*particles_count/l + diffusion_flow_theor;
+                        {
+                        /*
+                            double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*nu_m)), 2);
+                            total_flow = (e_charge*e_charge*E_field*E_field /(3*me*nu_m)
+                                - 2*me/(Mair/Na) * nu_m*energy
+                                ) * 1e20*energy*exp(- energy / kT0);
+                                //*particles_count/l;
+                                
+                                // + diffusion_flow_theor;
+                                */
+                        }
+                
+            init_quantities: |
+                //if (energy > 1*EV && energy < 2*EV)
+                
+                /*
+                if (energy < 0.1*EV && energy > 0*EV)
+                    particles_count = 1e6;
+                */
+                
+                /*
+                double l = this->size[0];
+                double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*2.5e12)), 2);
+                particles_count = 1e20*sqrt(energy) * exp(-energy / kT0) * (1+0.3*sin(energy/(20*EV)*6*3.1415))
+                    * l;
+                */
+                
+                double pointWhereToPut[] = {0.0};
+                electrons->getCell(pointWhereToPut)->particles_count = 1e30;
+                
+                
+            sources: |
+                
+                // No sources
+                /*
+                ElectronsCell *next = static_cast<ElectronsCell*>(nextInFractionSpace(0));
+                if (next) {
+                    particles_count.DELTA -= diffusion_flow*dt;
+                    next->particles_count.DELTA += diffusion_flow*dt;
+                }
+                */
+                
+                /*
+                ElectronsCell *prev = static_cast<ElectronsCell*>(prevInFractionSpace(0));
+                if (prev) {
+                    particles_count.DELTA -= diffusion_flow2*dt;
+                    prev->particles_count.DELTA += diffusion_flow2*dt;
+                }*/
+                
+            space_coords_derivatives: |
+                x_coord.DER = 0;
+            
+            fraction_coords_derivatives: |
+                energy.DER = big_u + elastic_col_flow_speed;
+            
+            boundary_conditions:
+                x_coord:
+                    top: wall
+                    bottom: wall
+            diffusion:
+                x_coord: |
+                    diffusion = 0;
+                energy: |
+                    diffusion = energy_diffusion_coefficient;
+        
+        #################################################
+        N2:
+            name: Non-exited N2
+            extensive_quantities:
+                particles_count:
+                    name: Count of nitrogen, molecules
+            
+            init_quantities: |
+                particles_count = 1.0 * 1.0 * space_volume / (22e-3) * Na;
+                
+            sources: |
+                // Here sources
+            
+            space_coords_derivatives: |
+                x_coord.DER = 0;
+        
+output:
+    e_concentration_vs_energy:
+        name: Electrons-concentration-vs-energy
+        fraction: electrons
+        quantity: particles_count
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+        need_log_scale: false
+    
+    elastic_col_flow_speed:
+        name: elastic_col_flow_speed
+        fraction: electrons
+        quantity: elastic_col_flow_speed
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 100
+    
+    big_u:
+        name: big_u
+        fraction: electrons
+        quantity: big_u
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 100
+    
+    nu_m:
+        name: nu_m
+        fraction: electrons
+        quantity: nu_m
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 100
+        points_count: 100
+    
+    energy_diff_coeff:
+        name: energy_diff_coeff
+        fraction: electrons
+        quantity: energy_diffusion_coefficient
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    diffusion_flow_theor:
+        name: diffusion_flow_theor
+        fraction: electrons
+        quantity: diffusion_flow_theor
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    diff_frac:
+        name: diff_frac
+        fraction: electrons
+        quantity: diff_frac
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    n_druyvestain:
+        name: n_druyvestain
+        fraction: electrons
+        quantity: n_druyvestain
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    n_maxwell:
+        name: n_maxwell
+        fraction: electrons
+        quantity: n_maxwell
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    diffusion_flow:
+        name: diffusion_flow
+        fraction: electrons
+        quantity: diffusion_flow
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    diffusion_flow_speed:
+        name: diffusion_flow_speed
+        fraction: electrons
+        quantity: diffusion_flow_speed
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    diffusion_flow2:
+        name: diffusion_flow2
+        fraction: electrons
+        quantity: diffusion_flow2
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+    total_flow:
+        name: total_flow-vs-energy
+        fraction: electrons
+        quantity: total_flow
+        space_point:
+            x_coord: 0
+        fraction_point:
+            energy: 0
+        output_axis:
+            energy:
+                points_count: 300
+        points_count: 100
+    
+run_options:
+    start_time: 0
+    stop_time: 20e-9
+    points_count: 400000
+    #time_step: 5e-16
+    threads_count: 4
+
+constants:
+    Mair: 0.029                 // kg / Moll        - Air molar mass
+    Na: 6.02e23                 // particles / Moll - Avogadro number
+    R: 8.3144                   // J / Moll*K       - Universal gase constant
+    me: 9.10938291e-31          // kg               - Electron mass
+    e_charge: 1.60217657e-19    // C                - Electron's charge
+    E_field: 100000             // V/m              - External field
+    EV: 1.602e-19               // J                - Joules in one electronvolt

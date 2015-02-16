@@ -1,8 +1,5 @@
 #
-# This is a config for modelling electron's distribution in
-# 0-d laser-induced breakdown in O2 and N2 atmosphere
-# with pressure 1 atm
-# Note: particles count quantity synonim is 'particles_count'
+# This is a config for modelling electron's distribution maxwellization
 model:
     name: Electron's energy distribution in 0-d laser-induced breakdown with normal conditions
     cordinate_space_grid:
@@ -27,7 +24,7 @@ model:
                     division:
                         mode: uniform
                         min: 0*1.602e-19
-                        max: 20*1.602e-19
+                        max: 15*1.602e-19
                         segments_count: 300
             
             intensive_quantities:
@@ -45,7 +42,6 @@ model:
                     name: Test value of const sigma
                     counting: |
                         sigma_druyvestain = 5e-16*1e-4;
-                
                 
                 l_druyvestain:
                     name: Electrons free path
@@ -67,8 +63,8 @@ model:
                 nu_m:
                     name: Total electron elastic collision frequency
                     counting: |
-                        //nu_m = n2_count * velocity * sigma_druyvestain;
-                        nu_m = 2.5e12;
+                        nu_m = n2_count * velocity * sigma_druyvestain;
+                        //nu_m = 2.5e12;
                 
                 
                 ##########
@@ -166,22 +162,20 @@ model:
                 //if (energy > 1*EV && energy < 2*EV)
                 
                 /*
-                if (energy < 5*EV && energy > 4*EV)
-                    particles_count = 1e5;
+                if (energy < 0.1*EV && energy > 0*EV)
+                    particles_count = 1e6;
                 */
-                
-                
-                double l = this->size[0];
-                double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*2.5e12)), 2);
-                particles_count = 1e60*sqrt(energy) * exp(-energy / kT0) * (1+0.3*sin(energy/(20*EV)*6*3.1415))
-                    * l;
-                
-                
                 
                 /*
+                double l = this->size[0];
+                double kT0 = (Mair/Na)/3 * pow((e_charge*E_field/(me*2.5e12)), 2);
+                particles_count = 1e20*sqrt(energy) * exp(-energy / kT0) * (1+0.3*sin(energy/(20*EV)*6*3.1415))
+                    * l;
+                */
+                
                 double pointWhereToPut[] = {0.0};
                 electrons->getCell(pointWhereToPut)->particles_count = 1e30;
-                */
+                
                 
             sources: |
                 
@@ -406,8 +400,8 @@ output:
     
 run_options:
     start_time: 0
-    stop_time: 2e-9
-    points_count: 40000
+    stop_time: 20e-9
+    points_count: 400000
     #time_step: 5e-16
     threads_count: 4
 

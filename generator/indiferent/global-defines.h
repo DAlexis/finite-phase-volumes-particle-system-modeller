@@ -9,7 +9,7 @@
 
 #define EVERY_FRACTION_COUNT_QUANTITY_INDEX     0
 
-#define DOUBLE_NULL        1e-8
+//#define DOUBLE_NULL        1e-8
 
 typedef unsigned int uint;
 
@@ -25,14 +25,19 @@ inline bool isNotNull(double x)
 
 inline bool isNull(double x)
 {
+    return (x == 0.0);
+    /*
     if (fabs(x) < DOUBLE_NULL) return true;
     return false;
+    */
 }
 
 inline bool isNotCount(double x)
 {
+    return (x <= 0.0);
+    /*
     if (x < DOUBLE_NULL) return true;
-    return false;
+    return false;*/
 }
 
 //#define USE_NATIVE_LOCKS
