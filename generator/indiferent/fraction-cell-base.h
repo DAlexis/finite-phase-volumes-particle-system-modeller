@@ -383,10 +383,12 @@ private:
         double l1 = this->size[coordinate];
         double l2 = neighbor->size[coordinate];
         
-        /// @todo Add interpolation
         double d1 = getFractionSpaceDiffusionCoefficient(coordinate);
         double d2 = neighbor->getFractionSpaceDiffusionCoefficient(coordinate);
-        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * (d1+d2)/2;
+        
+        double interpolatedDiffusion = (d2*l1+d1*l2)/(l1+l2);
+        
+        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * interpolatedDiffusion;
     }
     
     /// This function calculates diffusion flow from this to neighbor, so no multiplying by -1 needed to get OUTGOING flow
@@ -397,7 +399,12 @@ private:
         double l1 = thisSpaceCell->size[coordinate];
         double l2 = neighborSpaceCell->size[coordinate];
         
-        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * getSpaceDiffusionCoefficient(coordinate);
+        double d1 = getSpaceDiffusionCoefficient(coordinate);
+        double d2 = neighbor->getSpaceDiffusionCoefficient(coordinate);
+        
+        double interpolatedDiffusion = (d2*l1+d1*l2)/(l1+l2);
+        
+        return extensiveQuantities[EVERY_FRACTION_COUNT_QUANTITY_INDEX]/l1 / ((l1+l2) / 2) * interpolatedDiffusion;
     }
     
     /// @todo May be optimexed checking of velocity sign. Now sign is sign of flow projection.
