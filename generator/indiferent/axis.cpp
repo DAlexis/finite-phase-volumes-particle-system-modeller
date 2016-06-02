@@ -3,6 +3,7 @@
  */
 
 #include "axis.h"
+#include "math.h"
 #include <algorithm>
 #include <fstream>
 
